@@ -1,0 +1,103 @@
+2,6c2,8
+< SDB/SMSから全データを読み込みファイル(test.txt)に書き出す
+< 書き出し終ってもプログラムが終了しないのでCtrl+Zで強制終了
+< （5秒程度で書き出しは終わる）
+< gcc smsread.c なんちゃら -lm デコンパイル
+< ./なんちゃら　ほにゃらら.sms　で実行
+---
+> up, perpイオンのカウント数計算用プログラム①
+> 
+> SDB/SMSからthermal(0-25eV)のH+,O+のデータを読み込み
+> ファイル（thermalh.txt, thermalo.txt)に書き出す
+> （書き出し終ってもプログラムが終了しない場合はCtrl+Zで強制終了、
+> 5秒程度で書き出しは終わる）
+> 
+15c17
+< 	FILE	*file, *wfile;
+---
+> 	FILE	*file, *wfh, *wfo;
+36c38,39
+< 	wfile = fopen("test.txt", "w");
+---
+> 	wfh = fopen("thermalh.txt", "w");
+> 	wfo = fopen("thermalo.txt", "w");
+42d44
+< 		printf("%c", dd);
+49d50
+< 		printf("%c", dd);
+55d55
+< 		printf("%c", dd);
+61d60
+< 		printf("%c", dd);
+69c68
+< 	for( k = 0; k <= 108; k++){ 
+---
+> 	for( k = 0; k <= 3648; k++){ 
+71,74d69
+< 		printf("%c", dd);
+< 		}
+< 	for(k = 0; k <= 3539; k++){
+< 		dd = fscanf(file, "%d", &dd);
+103,106c98,99
+< 				fprintf(wfile, "(Thermalmode) Time: %d %d %d / min pitch angle: %d\n",ihh,imm,isc,iaper);
+< 				}
+< 			if( mfl == 2 ){
+< 				fprintf(wfile, "(Suprathermalmode) Time: %d %d %d / min pitch angle: %d\n",ihh,imm,isc,iaper);
+---
+> 				fprintf(wfh, "%d %d %d\n",ihh,imm,isc);
+> 				fprintf(wfo, "%d %d %d\n",ihh,imm,isc);
+110,111c103
+< 			for(k=0; k<=2; k++){
+< 			for(j=0; j<=7; j++){
+---
+> 			for(j=0; j<=3; j++){
+132c124
+< 					for(i=0; i<=15; i++){fprintf(wfile, "%5.1f\t%6.1f\t%f\n", dbl[i][0], dbl[i][1], dbl[i][2]);}
+---
+> 					for(i=0; i<=15; i++){fprintf(wfh, "%f %f %f\n", dbl[i][0], dbl[i][1], dbl[i][2]);}
+135,136c127
+< 				if( mfl == 1 && dd != EOF ){fprintf(wfile, "\n");}
+< 				else if( dd == EOF )goto OUT;	
+---
+> 				if( dd == EOF )goto OUT;
+137a129,134
+> 			for(j=0; j<=3; j++){
+> 				for(i=0; i<=15; i++){
+> 					dd = getc(file);
+> 					df = ((float)dd)/50.0;
+> 					if( dd == EOF )goto OUT;	
+> 					}
+139,141c136,137
+< 			}
+< 
+< 			for(k=0; k<=3; k++){
+---
+> 				}
+> 			for(j=0; j<=3; j++){
+161,162c157,158
+< 				if( mfl == 2 && dd != EOF ){
+< 					for(i=0; i<=15; i++){fprintf(wfile, "%5.1f\t%6.1f\t%f\n", dbl[i][0], dbl[i][1], dbl[i][2]);}
+---
+> 				if( mfl == 1 && dd != EOF ){
+> 					for(i=0; i<=15; i++){fprintf(wfo, "%f %f %f\n", dbl[i][0], dbl[i][1], dbl[i][2]);}
+165d160
+< 				if( mfl == 2 && dd != EOF ){fprintf(wfile, "\n");}
+169c164,170
+< 			if( dd == EOF )goto OUT;	
+---
+> 			for(k=0; k<=2; k++){
+> 			for(i=0; i<=15; i++){
+> 				dd = getc(file);
+> 				df = ((float)dd)/50.0;
+> 				if( dd == EOF )goto OUT;	
+> 				}
+> 				if( dd == EOF )goto OUT;	
+171d171
+< 			
+172a173
+> 	}
+174c175,176
+< 	fclose(wfile);
+---
+> 	fclose(wfh);
+> 	fclose(wfo);

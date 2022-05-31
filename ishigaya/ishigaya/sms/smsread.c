@@ -2,6 +2,8 @@
 SDB/SMSから全データを読み込みファイル(test.txt)に書き出す
 書き出し終ってもプログラムが終了しないのでCtrl+Zで強制終了
 （5秒程度で書き出しは終わる）
+gcc smsread.c なんちゃら -lm デコンパイル
+./なんちゃら　ほにゃらら.sms　で実行
 */
 
 #include <stdio.h>
@@ -108,7 +110,7 @@ int main(int argc, char *argv[])
 			for(k=0; k<=2; k++){
 			for(j=0; j<=7; j++){
 				for(i=0; i<=7; i++){
-					dd = getc(file);
+					dd = getc(file); //2byte ずつ
 					df = ((float)dd)/50.0;
 					ii = i + 8;
 					d = pow(10, (double)df);
@@ -120,7 +122,7 @@ int main(int argc, char *argv[])
 				for(i=0; i<=7; i++){
 					dd = getc(file);
 					df = ((float)dd)/50.0;
-					d = pow(10, (double)df);
+					d = pow(10, (double)df);   //number fluxを(coun/cc)対数から整数値に戻してる
 					dbl[i][0] = (double)t;
 					dbl[i][1] = (double)sab[i];
 					dbl[i][2] = d;

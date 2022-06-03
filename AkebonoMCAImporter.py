@@ -11,7 +11,7 @@ class AkebonoMCAimporter:
     def __init__(self,date):
         self.input_date = date
     
-    def input_date(self,date):
+    def attach_date(self,date):
         self.input_date = date
         
     def output_mca_data(self,type = 'Epoch',dirname = 'Akebono_MCA_data',headname='data'):

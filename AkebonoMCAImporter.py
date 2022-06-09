@@ -6,8 +6,6 @@ import urllib.request as IMurllibreq
 
 class AkebonoMCAimporter:
     
-    input_date = '19920101'
-    
     def __init__(self,date):
         self.input_date = date
     

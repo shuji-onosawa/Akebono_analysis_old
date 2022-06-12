@@ -1,4 +1,4 @@
-import AkebonoMCAImporter #ˆé–ì‚³‚ñ‚Éì‚Á‚Ä‚¢‚½‚¾‚¢‚½cdf“Ç‚İ‚İƒvƒƒOƒ‰ƒ€‚Å‚·
+import AkebonoMCAImporter 
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.dates as mdates
@@ -65,14 +65,13 @@ Eave = Eave[start_time:end_time]
 Eave = (10**(Eave/10)) * (E0**2) /bandwidth
 Eave = np.fliplr(Eave)
 
-epoch = epoch[start_time:end_time]
 for i in range(len(epoch)):
     epoch[i].pop()
     epoch[i] = "/".join(map(str, epoch[i]))
 epoch_list = [datetime.strptime(x, '%Y/%m/%d/%H/%M/%S') for x in epoch]
+epoch_list = epoch_list[start_time:end_time]
 
-
-channel_list = importer.output_mca_data('Epoch', 'Epoch').tolist()
+channel_list = importer.output_mca_data('channel', 'channel')
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
@@ -86,7 +85,7 @@ plt.xlabel('June 7, 1989')
 plt.ylabel('E_ferq [Hz]')
 plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'), )
 plt.xticks(rotation = 45)
-plt.gca().set_aspect('0.0005')
+plt.gca().set_aspect('0.001')
 plt.show()
 
 

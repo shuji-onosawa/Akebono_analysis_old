@@ -1,6 +1,5 @@
 import os as IMos
 import sys as IMsys
-import zipfile
 import urllib.request as IMurllibreq
 import urllib
 import pytplot
@@ -10,18 +9,18 @@ class Akebono_orb_load:
     
     def __init__(self,date):
         self.input_date = date
-    
+    #input_date = yyyymmdd
     def attach_date(self,date):
         self.input_date = date
         
-    def mca(self,dirname = 'Akebono_orb_data'):
-        url_former_text = 'https://www.darts.isas.jaxa.jp/stp/akebono/ORBIT/'
-        year = self.input_date[:4]
+    def orb(self,dirname = 'Akebono_orb_data'):
+        url_former_text = 'https://darts.isas.jaxa.jp/stp/data/exosd/orbit/daily/'
         year_month = self.input_date[:6]
-        url_later_text = 'orb.zip'
+        year_month_day = self.input_date[2:]
+        url_later_text = '.txt'
 
-        url=url_former_text+'/'+year+'/'+year_month+url_later_text
-        #https://www.darts.isas.jaxa.jp/stp/akebono/ORBIT/1989/198905orb.zip
+        url=url_former_text+'/'+year_month+'/ED'+year_month_day+url_later_text
+        #https://darts.isas.jaxa.jp/stp/data/exosd/orbit/daily/201401/ED140101.txt
         pathname = './'+dirname+'/'
 
         try:
@@ -30,7 +29,7 @@ class Akebono_orb_load:
             pass
         
         
-        save_name=pathname+self.input_date+'orb.zip'
+        save_name=pathname+self.input_date+'.orb'
                   
         if(IMos.path.isfile(save_name)==False):
             
@@ -38,14 +37,14 @@ class Akebono_orb_load:
             try:
                 with open(save_name, mode="wb") as f:
                     f.write(get_data)
-            
-                with zipfile.ZipFile(save_name) as obj_zip:
-                    obj_zip.extractall(pathname)
-        
-            
+                   
             except urllib.error.URLError as e:
                     print(e)
                     IMsys.exit(1)
         
-        tvars = pytplot.cdf_to_tplot(save_name)
-        return tvars
+        with open(save_name) as f:
+            datalist = f.readlines()
+            for i in range(len(datalist)):
+                datalist[i] = datalist[i].split()
+        
+        return datalist

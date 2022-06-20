@@ -5,7 +5,7 @@ from pytplot import tplot
 from pytplot import tlimit
 from pytplot import tplot_options
 import Akebono_mca_load
-
+import numpy as np
 importer = Akebono_mca_load.Akebono_mca_load('19890607')
 importer.mca()
 
@@ -19,6 +19,9 @@ for i in range(4):
     pytplot.store_data(tplot_names[i] +'_power', data={'x': tplot_variable.times, 'y': tplot_variable_power, 'v': tplot_variable.v})
 
 tlimit(['1989-06-07 00:00:00', '1989-06-07 23:39:00'])
+times = pytplot.get_data('Emax').times[0::2]
+test_var_label = range(0, times.size*2, 2)
+pytplot.store_data('var_label_test', data={'x': times, 'y': test_var_label})
 options('Emax', 'spec', 1)
 options('Emax', 'ytitle', 'Freq')
 options('Emax', 'ysubtitle', '[Hz]')
@@ -28,4 +31,5 @@ options('Eave', 'spec', 1)
 options('Eave', 'ytitle', 'Freq')
 options('Eave', 'ysubtitle', '[Hz]')
 options('Eave', 'ztitle', '$Emax [dB]$')
-tplot(['Emax', 'Eave'])
+tplot_options('var_label', 'var_label_test')
+tplot(['Emax', 'Eave'], var_label='var_label_test',save_png = 'var_label_test')

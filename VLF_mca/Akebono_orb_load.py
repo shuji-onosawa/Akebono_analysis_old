@@ -47,4 +47,5 @@ class Akebono_orb_load:
             for i in range(len(datalist)):
                 datalist[i] = datalist[i].split()
         
+        datalist = datalist.T
         return datalist

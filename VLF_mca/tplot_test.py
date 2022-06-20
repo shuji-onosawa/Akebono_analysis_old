@@ -8,7 +8,6 @@ import Akebono_mca_load
 import numpy as np
 importer = Akebono_mca_load.Akebono_mca_load('19890607')
 importer.mca()
-
 tplot_names = pytplot.tplot_names(True)
 
 for i in range(4):

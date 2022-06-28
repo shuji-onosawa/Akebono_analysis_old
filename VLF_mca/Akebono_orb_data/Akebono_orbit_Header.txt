@@ -1,3 +1,7 @@
+////////////////////////////
+these headers do not perfectly macth with the headers in yyyyddmm.orb in this folder.
+////////////////////////////
+From https://github.com/spedas-j/member_contrib/blob/master/akb_lib/Akebono_orbit_Header.txt
 #####
 PASS                      :YYMMDDXX00.0 ; XX: ORBIT NO. ON THE DAY OF YYMMDD
 UT                        :DATE AND UT  ;YYMMDDHHMMSS.MS

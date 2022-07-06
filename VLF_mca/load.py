@@ -65,14 +65,11 @@ def orb(trange = ['2014-01-01', '2014-01-03']):
     except:
         pass
 
-    files = []
-
     for remote_name in remote_names:  
     # remote_name = 'https://darts.isas.jaxa.jp/stp/data/exosd/orbit/daily/%Y%m/ED%y%m%d.txt'
         get_data = urllib.request.urlopen(remote_name).read()
 
-        save_name = pathname + remote_name 
-        save_name = save_name.replace(remote_name_prefix, '')
+        save_name = pathname + remote_name[-12:]
 
         with open(save_name, mode="wb") as f:
             f.write(get_data)
@@ -84,6 +81,10 @@ def orb(trange = ['2014-01-01', '2014-01-03']):
     # out_files = list of './Akebono_orb_data/ED%y%m%d.txt'
 
     UT_time_double = []
+    ILAT = []
+    MLAT = []
+    MLT = []
+    ALT = []
 
     for out_file in out_files:
         datalines = []
@@ -99,13 +100,16 @@ def orb(trange = ['2014-01-01', '2014-01-03']):
 
         data_array = np.array(datalines, dtype=float).T
 
-        YY = out_file.replace('https://darts.isas.jaxa.jp/stp/data/exosd/orbit/daily/', '')
-        year = YY[:4]
+        year = out_file[-10:-8]
+        #decide %Y from %y in file name, 'ED%y%m%d.txt'
+        if float(year) < 20: 
+            year = '20' + year
+        else:
+            year = '19' + year
 
         UT = data_array[1].tolist()
         UT = [int(n) for n in UT]
         UT = [str(n) for n in UT]
-        UT_time_double = []#‚±‚±‚ÅUT‘S•”‰Šú‰»‚µ‚Ä‚µ‚Ü‚Á‚Ä‚é‚©‚à
         for time_index in range(len(UT)):
             time = UT[time_index]
             month, day, hour, minute, second = time[2:4], time[4:6], time[6:8], time[8:10], time[10:12]
@@ -114,6 +118,11 @@ def orb(trange = ['2014-01-01', '2014-01-03']):
             #To use pyspedas.time_double, change format from 'yymmddhhmmss' to 'yyyy/mm/dd/hh:mm:ss'
             time_time_double = time_double(time_string)
             UT_time_double.append(time_time_double)
+        ILAT = ILAT + data_array[20].tolist()
+        MLAT = MLAT + data_array[22].tolist()
+        MLT = MLT + data_array[23].tolist()
+        ALT = ALT + data_array[29].tolist()
+
     '''
     datalist_header = [ 'PASS',
                         'UT', 
@@ -135,11 +144,12 @@ def orb(trange = ['2014-01-01', '2014-01-03']):
                         's/c_vel(km/s)_x', 's/c_vel(km/s)_y','s/c_vel(km/s)_z' ]
     '''
     prefix = 'akb_orb_'
-    store_data(prefix+'ILAT', data={'x': UT_time_double, 'y': data_array[20]})
-    store_data(prefix+'MLAT', data={'x': UT_time_double, 'y': data_array[22]})
-    store_data(prefix+'MLT', data={'x': UT_time_double, 'y': data_array[23]})
-    store_data(prefix+'ALT', data={'x': UT_time_double, 'y': data_array[29]})
+    print(len(UT_time_double))
+    print(len(ILAT))
+    print(len(MLAT))
+    store_data(prefix+'ILAT', data={'x': UT_time_double, 'y': ILAT})
+    store_data(prefix+'MLAT', data={'x': UT_time_double, 'y': MLAT})
+    store_data(prefix+'MLT', data={'x': UT_time_double, 'y': MLT})
+    store_data(prefix+'ALT', data={'x': UT_time_double, 'y': ALT})
     
     return 
-trange = ['1991-07-11', '1991-07-13']
-mca(trange=trange)

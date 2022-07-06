@@ -94,7 +94,7 @@ class Akebono_orb_load:
             #To use pyspedas.time_double, change format from 'yymmddhhmmss' to 'yyyy/mm/dd/hh:mm:ss'
             time_time_double = time_double(time_string)
             UT_time_double.append(time_time_double)
-
+        store_data(prefix+'Pass', data={'x': UT_time_double, 'y':data_array[0]})
         store_data(prefix+'ILAT', data={'x': UT_time_double, 'y': data_array[20]})
         store_data(prefix+'MLT', data={'x': UT_time_double, 'y': data_array[23]})
         store_data(prefix+'ALT', data={'x': UT_time_double, 'y': data_array[29]})

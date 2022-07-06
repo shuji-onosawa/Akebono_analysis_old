@@ -14,7 +14,7 @@ def mca(trange = ['2014-01-01', '2014-01-03'],
         time_clip = True):
 
     remote_name_prefix = 'https://akebono-vlf.db.kanazawa-u.ac.jp/permalink.php?keyword='
-    pathformat = 'https://akebono-vlf.db.kanazawa-u.ac.jp/permalink.php?keyword=ak_h1_mca_%Y%m%d-v02.cdf'
+    pathformat = 'https://akebono-vlf.db.kanazawa-u.ac.jp/permalink.php?keyword=ak_h1_mca_%Y%m%d_v02.cdf'
 
     remote_names = dailynames(file_format=pathformat, trange=trange)
 

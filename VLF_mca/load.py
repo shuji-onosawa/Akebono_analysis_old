@@ -105,7 +105,7 @@ def orb(trange = ['2014-01-01', '2014-01-03']):
         UT = data_array[1].tolist()
         UT = [int(n) for n in UT]
         UT = [str(n) for n in UT]
-        UT_time_double = []
+        UT_time_double = []#‚±‚±‚ÅUT‘S•”‰Šú‰»‚µ‚Ä‚µ‚Ü‚Á‚Ä‚é‚©‚à
         for time_index in range(len(UT)):
             time = UT[time_index]
             month, day, hour, minute, second = time[2:4], time[4:6], time[6:8], time[8:10], time[10:12]

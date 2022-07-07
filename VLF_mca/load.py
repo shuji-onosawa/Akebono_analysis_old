@@ -1,9 +1,10 @@
+import pytplot
 from pyspedas.utilities.dailynames import dailynames
 from pyspedas.utilities.download import download
 from pyspedas.analysis.time_clip import time_clip as tclip
 from pyspedas import time_double
 from pytplot import cdf_to_tplot
-from pytplot import store_data
+from pytplot import store_data, get_data
 import os
 import urllib.request
 import numpy as np
@@ -79,7 +80,8 @@ def orb(trange = ['2014-01-01', '2014-01-03']):
 
     out_files = sorted(out_files)
     # out_files = list of './Akebono_orb_data/ED%y%m%d.txt'
-
+    
+    Pass = []
     UT_time_double = []
     ILAT = []
     MLAT = []
@@ -93,23 +95,21 @@ def orb(trange = ['2014-01-01', '2014-01-03']):
             for i in range(len(datalines)):
                 datalines[i] = datalines[i].split()
 
-        for data_list_index in range(1, len(datalines[1:])):
-                for data_index in range(len(datalines[data_list_index])):
-                    datalines[data_list_index][data_index] = float(datalines[data_list_index][data_index])
         del datalines[0]
 
-        data_array = np.array(datalines, dtype=float).T
-
-        year = out_file[-10:-8]
+        data_array = np.array(datalines, dtype=str).T
+        
         #decide %Y from %y in file name, 'ED%y%m%d.txt'
-        if float(year) < 20: 
-            year = '20' + year
-        else:
-            year = '19' + year
 
         UT = data_array[1].tolist()
-        UT = [int(n) for n in UT]
-        UT = [str(n) for n in UT]
+        
+        year_suffix = UT[0][:2]
+        
+        if int(year_suffix) < 16:
+            year = '20' + year_suffix
+        else:
+            year = '19' + year_suffix
+            
         for time_index in range(len(UT)):
             time = UT[time_index]
             month, day, hour, minute, second = time[2:4], time[4:6], time[6:8], time[8:10], time[10:12]
@@ -118,11 +118,19 @@ def orb(trange = ['2014-01-01', '2014-01-03']):
             #To use pyspedas.time_double, change format from 'yymmddhhmmss' to 'yyyy/mm/dd/hh:mm:ss'
             time_time_double = time_double(time_string)
             UT_time_double.append(time_time_double)
+        Pass = Pass + data_array[0].tolist()
         ILAT = ILAT + data_array[20].tolist()
         MLAT = MLAT + data_array[22].tolist()
         MLT = MLT + data_array[23].tolist()
         ALT = ALT + data_array[29].tolist()
-
+    
+    Pass = [float(n) for n in Pass]
+    ILAT = [float(n) for n in ILAT]
+    MLAT = [float(n) for n in MLAT]
+    MLT = [float(n) for n in MLT]
+    ALT = [float(n) for n in ALT]
+    
+    
     '''
     datalist_header = [ 'PASS',
                         'UT', 
@@ -144,9 +152,7 @@ def orb(trange = ['2014-01-01', '2014-01-03']):
                         's/c_vel(km/s)_x', 's/c_vel(km/s)_y','s/c_vel(km/s)_z' ]
     '''
     prefix = 'akb_orb_'
-    print(len(UT_time_double))
-    print(len(ILAT))
-    print(len(MLAT))
+    store_data(prefix+'Pass', data={'x': UT_time_double, 'y': Pass})
     store_data(prefix+'ILAT', data={'x': UT_time_double, 'y': ILAT})
     store_data(prefix+'MLAT', data={'x': UT_time_double, 'y': MLAT})
     store_data(prefix+'MLT', data={'x': UT_time_double, 'y': MLT})

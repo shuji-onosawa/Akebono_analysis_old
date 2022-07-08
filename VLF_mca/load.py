@@ -151,7 +151,7 @@ def orb(trange = ['2014-01-01', '2014-01-03']):
                         's/c_pos_x', 's/c_pos_y', 's/c_pos_z', 
                         's/c_vel(km/s)_x', 's/c_vel(km/s)_y','s/c_vel(km/s)_z' ]
     '''
-    prefix = 'akb_orb_'
+    prefix = 'akb_'
     store_data(prefix+'Pass', data={'x': UT_time_double, 'y': Pass})
     store_data(prefix+'ILAT', data={'x': UT_time_double, 'y': ILAT})
     store_data(prefix+'MLAT', data={'x': UT_time_double, 'y': MLAT})

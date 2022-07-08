@@ -30,24 +30,27 @@ def mca(trange = ['2014-01-01', '2014-01-03'],
         pass
 
     for remote_name in remote_names:                           
-        get_data = urllib.request.urlopen(remote_name).read()
-
+        
         save_name = pathname + remote_name 
         save_name = save_name.replace(remote_name_prefix, '')
 
-        with open(save_name, mode="wb") as f:
-            f.write(get_data)
+        if(os.path.isfile(save_name)==False):
+            
+            get_data = urllib.request.urlopen(remote_name).read()
+        
+            with open(save_name, mode="wb") as f:
+                f.write(get_data)
         
         out_files.append(save_name)
 
     out_files = sorted(out_files)
 
     tvars = cdf_to_tplot(out_files)
-
+    '''
     if time_clip:
         for new_var in tvars:
             tclip(new_var, trange[0], trange[1], suffix='')
-    
+    '''
     return tvars
 
 #orbit
@@ -68,12 +71,15 @@ def orb(trange = ['2014-01-01', '2014-01-03']):
 
     for remote_name in remote_names:  
     # remote_name = 'https://darts.isas.jaxa.jp/stp/data/exosd/orbit/daily/%Y%m/ED%y%m%d.txt'
-        get_data = urllib.request.urlopen(remote_name).read()
 
         save_name = pathname + remote_name[-12:]
-
-        with open(save_name, mode="wb") as f:
-            f.write(get_data)
+        
+        if(os.path.isfile(save_name)==False):
+            
+            get_data = urllib.request.urlopen(remote_name).read()
+            
+            with open(save_name, mode="wb") as f:
+                f.write(get_data)
         
         out_files.append(save_name)
     # save_name = './Akebono_orb_data/ED%y%m%d.txt'

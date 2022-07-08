@@ -1,14 +1,11 @@
 import pyspedas
 import pytplot
-from pytplot import options
-from pytplot import tplot
-from pytplot import tlimit
-from pytplot import tplot_options
+from pytplot import options, tplot, tlimit, tplot_options, get_data, store_data
 import Akebono_mca_load
 import Akebono_orb_load
 import numpy as np
 from load import mca, orb
-date = '19910711'
+
 #importer1 = Akebono_mca_load.Akebono_mca_load(date)
 #importer2 = Akebono_orb_load.Akebono_orb_load(date)
 #importer1.mca()
@@ -28,21 +25,44 @@ for i in range(4):
     
 pytplot.tplot_names()
 
-Pass = pytplot.get_data('akb_orb_Pass')
-start_pass_number = Pass.y[3]
-pass_start_time = Pass.times[3]
-for i in range(0, Pass.y.size):
-    if start_pass_number < Pass.y[i+1]:
-        pass_end_time = Pass.times[i]
-        pass_number_index = i
-        break
-pass_start_time = pyspedas.time_string(pass_start_time, fmt = '%Y-%m-%d %H:%M:%S')
-pass_end_time = pyspedas.time_string(pass_end_time, fmt = '%Y-%m-%d %H:%M:%S')
 
-trange = [pass_start_time, pass_end_time]
-print(trange)
+pyspedas.tinterpol('akb_ILAT', interp_to='Emax_Amp', newname = 'ILAT')
+pyspedas.tinterpol('akb_MLAT', interp_to='Emax_Amp', newname = 'MLAT')
+pyspedas.tinterpol('akb_Pass', interp_to='Emax_Amp', newname = 'Pass')
 
-tlimit(trange)
+Emax = get_data('Emax_Amp')
+time, Emax = Emax.times, Emax.y
+ILAT = get_data('ILAT')
+ILAT = ILAT.y
+MLAT = get_data('MLAT')
+MLAT = MLAT.y
+
+plus_index_tuple = np.where((MLAT>0) & (ILAT>65))
+minus_index_tuple = np.where((MLAT<0) & (ILAT>65))
+
+plus_index = plus_index_tuple[0]
+minus_index = minus_index_tuple[0]
+
+#make start_time list, end_time list
+plus_start_time_index = [plus_index[0]]
+plus_end_time_index = []
+for i in range(plus_index.size-1):
+    if plus_index[i+1] - plus_index[i] > 1:
+        plus_end_time_index.append(plus_index[i])
+        plus_start_time_index.append(plus_index[i+1])
+        
+plus_end_time_index.append(plus_index[-1])
+
+plus_start_time_index = np.array(plus_start_time_index)
+plus_end_time_index = np.array(plus_end_time_index)
+
+plus_start_time_list = pyspedas.time_string(time[plus_start_time_index], fmt='%Y-%m-%d %H:%M:%S')
+plus_end_time_list = pyspedas.time_string(time[plus_end_time_index], fmt='%Y-%m-%d %H:%M:%S')
+
+start_time = plus_start_time_list[0]
+end_time = plus_end_time_list[0]
+
+tlimit([start_time, end_time])
 options(['Emax_amplitude', 'Bmax_amplitude'], 'spec', 1)
 options(['Emax_amplitude', 'Bmax_amplitude'], 'ylog', 1)
 options(['Emax_amplitude', 'Bmax_amplitude'], 'zlog', 1)
@@ -50,10 +70,10 @@ options(['Emax_amplitude', 'Bmax_amplitude'], 'zrange', [1e-5, 100])
 options(['Emax_amplitude', 'Bmax_amplitude'], 'yrange', [1, 2e4])
 options('Emax_amplitude', 'ztitle', '[mV/m/Hz^1/2]')
 options('Bmax_amplitude', 'ztitle', '[pT/Hz^1/2]')
-options('akb_orb_ALT', 'xlabel', 'ALT [km]')
-options('akb_orb_MLT', 'xlabel', 'MLT [h]')
-options('akb_orb_ILAT', 'ylabel', 'ILAT [deg]')
-options('akb_orb_ILAT', 'panel_size', 0.3)
-tplot_options('title', str(Pass.y[pass_number_index]) + 'MCA data' + date)
-tplot(['Emax_amplitude', 'Bmax_amplitude', 'akb_orb_ILAT'], var_label = ['akb_orb_ALT', 'akb_orb_MLT', 'akb_orb_ILAT'], save_png = 'akb'+ date + '-pass_number_test')
+options('akb_ALT', 'xlabel', 'ALT [km]')
+options('akb_MLT', 'xlabel', 'MLT [h]')
+options('akb_ILAT', 'ylabel', 'ILAT [deg]')
+options('akb_ILAT', 'panel_size', 0.2)
+tplot_options('title', str(Pass.y[pass_number_index]) + 'MCA data')
+tplot(['Emax_amplitude', 'Bmax_amplitude', 'akb_ILAT'], var_label = ['akb_ALT', 'akb_MLT', 'akb_ILAT'], save_png = 'akb'+ '-pass_number_test')
 

@@ -20,16 +20,17 @@ for i in range(4):
     tplot_variable_0dB = 1e-6 #mV or pT
     bandwidth = tplot_variable.v * 0.3
     tplot_variable_amplitude = (10**(tplot_variable.y/20)) * (tplot_variable_0dB)  / np.sqrt(bandwidth)
-    pytplot.store_data(tplot_names[i] +'_amplitude', data={'x': tplot_variable.times, 'y': tplot_variable_amplitude, 'v': tplot_variable.v})
+    pytplot.store_data(tplot_names[i] +'_Amp', data={'x': tplot_variable.times, 'y': tplot_variable_amplitude, 'v': tplot_variable.v})
     
     
 pytplot.tplot_names()
 
-
+#Time interpolate
 pyspedas.tinterpol('akb_ILAT', interp_to='Emax_Amp', newname = 'ILAT')
 pyspedas.tinterpol('akb_MLAT', interp_to='Emax_Amp', newname = 'MLAT')
-pyspedas.tinterpol('akb_Pass', interp_to='Emax_Amp', newname = 'Pass')
+pyspedas.tinterpol('akb_Pass', interp_to='Emax_Amp', newname = 'Pass', method = 'nearest')
 
+#Limit ILAT range
 Emax = get_data('Emax_Amp')
 time, Emax = Emax.times, Emax.y
 ILAT = get_data('ILAT')
@@ -59,21 +60,40 @@ plus_end_time_index = np.array(plus_end_time_index)
 plus_start_time_list = pyspedas.time_string(time[plus_start_time_index], fmt='%Y-%m-%d %H:%M:%S')
 plus_end_time_list = pyspedas.time_string(time[plus_end_time_index], fmt='%Y-%m-%d %H:%M:%S')
 
+#make Passname list corresponding with start(end) time list
+Passname = get_data('Pass')
+Passname = Passname.y
+Passname_list = Passname[plus_start_time_index]
+
+#make tplot vars of Electric field Amplitude at 3.16 - 100 Hz
+Emax = get_data('Emax_Amp')
+
+Emax_channel1 = Emax.y.T[0] #3.16 Hz
+Emax_channel2 = Emax.y.T[1] #5.62 Hz
+Emax_channel3 = Emax.y.T[2] #10 Hz
+Emax_channel4 = Emax.y.T[3] #17.8 Hz
+Emax_channel5 = Emax.y.T[4] #31.6 Hz
+Emax_channel6 = Emax.y.T[5] #56.2 Hz
+Emax_channel7 = Emax.y.T[6] #100 Hz
+
+store_data(name = 'Emax_channel1', data={'x':time, 'y':Emax_channel1})
+
 start_time = plus_start_time_list[0]
 end_time = plus_end_time_list[0]
+Passname = Passname_list[0]
 
 tlimit([start_time, end_time])
-options(['Emax_amplitude', 'Bmax_amplitude'], 'spec', 1)
-options(['Emax_amplitude', 'Bmax_amplitude'], 'ylog', 1)
-options(['Emax_amplitude', 'Bmax_amplitude'], 'zlog', 1)
-options(['Emax_amplitude', 'Bmax_amplitude'], 'zrange', [1e-5, 100])
-options(['Emax_amplitude', 'Bmax_amplitude'], 'yrange', [1, 2e4])
-options('Emax_amplitude', 'ztitle', '[mV/m/Hz^1/2]')
-options('Bmax_amplitude', 'ztitle', '[pT/Hz^1/2]')
+options(['Emax_Amp', 'Bmax_Amp'], 'spec', 1)
+options(['Emax_Amp', 'Bmax_Amp'], 'ylog', 1)
+options(['Emax_Amp', 'Bmax_Amp'], 'zlog', 1)
+options('Emax_Amp', 'zrange', [1e-5, 10])
+options('Bmax_Amp', 'zrange', [1e-5, 100])
+options(['Emax_Amp', 'Bmax_Amp'], 'yrange', [1, 2e4])
+options('Emax_Amp', 'ztitle', '[mV/m/Hz^1/2]')
+options('Bmax_Amp', 'ztitle', '[pT/Hz^1/2]')
 options('akb_ALT', 'xlabel', 'ALT [km]')
 options('akb_MLT', 'xlabel', 'MLT [h]')
 options('akb_ILAT', 'ylabel', 'ILAT [deg]')
-options('akb_ILAT', 'panel_size', 0.2)
-tplot_options('title', str(Pass.y[pass_number_index]) + 'MCA data')
-tplot(['Emax_amplitude', 'Bmax_amplitude', 'akb_ILAT'], var_label = ['akb_ALT', 'akb_MLT', 'akb_ILAT'], save_png = 'akb'+ '-pass_number_test')
+tplot_options('title', str(int(Passname)) + 'MCA data')
+tplot(['Emax_Amp', 'Bmax_Amp'], var_label = ['akb_ALT', 'akb_MLT', 'akb_ILAT'], save_png = 'akb'+str(int(Passname))+'-pass_number_test')
 

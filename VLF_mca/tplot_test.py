@@ -78,6 +78,45 @@ Emax_channel7 = Emax.y.T[6] #100 Hz
 
 store_data(name = 'Emax_channel1', data={'x':time, 'y':Emax_channel1})
 
+#store data: Line spectrum
+Emax = get_data('Emax_Amp')
+Emax.v, Emax.y.T[0].size
+Emax_channel1 = Emax.y.T[0]
+Emax_channel2 = Emax.y.T[1]
+Emax_channel3 = Emax.y.T[2]
+Emax_channel4 = Emax.y.T[3]
+Emax_channel5 = Emax.y.T[4]
+Emax_channel6 = Emax.y.T[5]
+Emax_channel7 = Emax.y.T[6]
+
+store_data(name = 'Emax_channel1', data={'x':time, 'y':Emax_channel1})
+store_data(name = 'Emax_channel2', data={'x':time, 'y':Emax_channel2})
+store_data(name = 'Emax_channel3', data={'x':time, 'y':Emax_channel3})
+store_data(name = 'Emax_channel4', data={'x':time, 'y':Emax_channel4})
+store_data(name = 'Emax_channel5', data={'x':time, 'y':Emax_channel5})
+store_data(name = 'Emax_channel6', data={'x':time, 'y':Emax_channel6})
+store_data(name = 'Emax_channel7', data={'x':time, 'y':Emax_channel7})
+
+colorlist = ["r", "g", "b", "c", "m", "y", "k", "w"]
+
+options('Emax_channel1', 'color', colorlist[1])
+options('Emax_channel2', 'color', colorlist[1])
+options('Emax_channel3', 'color', colorlist[2])
+options('Emax_channel4', 'color', colorlist[3])
+options('Emax_channel5', 'color', colorlist[4])
+options('Emax_channel6', 'color', colorlist[5])
+options('Emax_channel7', 'color', colorlist[6])
+
+store_data(name = 'Amplitude at 3.16-100 Hz', 
+           data=['Emax_channel1', 
+                 'Emax_channel2', 
+                 'Emax_channel3', 
+                 'Emax_channel4', 
+                 'Emax_channel5',
+                 'Emax_channel6',
+                 'Emax_channel7'])
+
+#designate start, end time and Passname 
 start_time = plus_start_time_list[0]
 end_time = plus_end_time_list[0]
 Passname = Passname_list[0]
@@ -91,9 +130,13 @@ options('Bmax_Amp', 'zrange', [1e-5, 100])
 options(['Emax_Amp', 'Bmax_Amp'], 'yrange', [1, 2e4])
 options('Emax_Amp', 'ztitle', '[mV/m/Hz^1/2]')
 options('Bmax_Amp', 'ztitle', '[pT/Hz^1/2]')
+options('Amplitude at 3.16-100 Hz', 'ylog', 1)
+options('Amplitude at 3.16-100 Hz', 'yrange', [1e-5, 10])
 options('akb_ALT', 'xlabel', 'ALT [km]')
 options('akb_MLT', 'xlabel', 'MLT [h]')
 options('akb_ILAT', 'ylabel', 'ILAT [deg]')
 tplot_options('title', str(int(Passname)) + 'MCA data')
-tplot(['Emax_Amp', 'Bmax_Amp'], var_label = ['akb_ALT', 'akb_MLT', 'akb_ILAT'], save_png = 'akb'+str(int(Passname))+'-pass_number_test')
+tplot(['Emax_Amp', 'Amplitude at 3.16-100 Hz'], 
+      var_label = ['akb_ALT', 'akb_MLT', 'akb_ILAT'], 
+      save_png = 'akb'+str(int(Passname))+'-line_plot_test')
 

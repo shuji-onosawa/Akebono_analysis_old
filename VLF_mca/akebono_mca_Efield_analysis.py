@@ -127,14 +127,19 @@ start_time = north_start_time_list[input_index_int]
 end_time = north_end_time_list[input_index_int]
 Passname = north_Passname_list[input_index_int]
 
-dir = './akb_north_mca/'
+dir = './akb_north_mca_plot/'
 hemisphere = 'north'
 surfix = input('Amp or Pwr: ')
+
+color_list = ['red', 'b', 'red', 'red',
+              'red', 'red', 'red', 'red',
+              'red', 'red']
 
 tlimit([start_time, end_time])
 options('Emax_' + surfix, 'spec', 1)
 options('Emax_' + surfix, 'ylog', 1)
 options('Emax_' + surfix, 'zlog', 1)
+options('Emax_' + surfix, 'Colormap', 'viridis')
 if surfix == 'Amp':
     options('Emax_' + surfix, 'zrange', [1e-5, 10])
 elif surfix == 'Pwr':
@@ -151,6 +156,7 @@ options('Emax_lines_' + surfix, 'legend_names', ["3.16 Hz", "5.62 Hz", "10 Hz", 
                                        "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
                                        "316 Hz", "562 Hz"])
 options('Emax_lines_' + surfix, 'ysubtitle', '$[mV/m/Hz^(1/2)]$')
+options('Emax_lines_' + surfix, 'Colormap', 'viridis')
 options('akb_ALT', 'xlabel', 'ALT [km]')
 options('akb_MLT', 'xlabel', 'MLT [h]')
 options('akb_ILAT', 'ylabel', 'ILAT [deg]')
@@ -161,5 +167,5 @@ tplot_options('var_label', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6Hz",
                             "316 Hz", "562 Hz"])
 tplot(['Emax_' + surfix, 'Emax_lines_' + surfix], 
       var_label = ['akb_ALT', 'akb_MLT', 'akb_ILAT'], 
-      save_png = dir + 'akb-' + hemisphere+str(int(Passname))+'-MCA-'+ surfix)
+      save_png = dir + 'akb-' + hemisphere+str(int(Passname))+'-MCA-'+ surfix + 'linecolor_test1')
 

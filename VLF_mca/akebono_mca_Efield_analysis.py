@@ -175,5 +175,6 @@ tplot_options('var_label', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6Hz",
                             "316 Hz", "562 Hz"])
 tplot(['Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix], 
       var_label = ['akb_ALT', 'akb_MLT', 'akb_ILAT'], 
-      save_png = dir + 'akb-' + hemisphere+str(int(Passname))+'-MCA-'+ surfix + 'xlabel_test')
+      save_png = dir + 'akb-' + hemisphere+str(int(Passname))+'-MCA-'+ surfix + 'wsize_test',
+      xsize=16, ysize=10)
 

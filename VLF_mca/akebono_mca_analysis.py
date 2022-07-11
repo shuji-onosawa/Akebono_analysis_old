@@ -4,7 +4,7 @@ from pytplot import options, tplot, tlimit, tplot_options, get_data, store_data
 import numpy as np
 from load import mca, orb
 
-trange = ['1990-02-11', '1990-02-13']
+trange = ['1991-02-11', '1991-02-13']
 ILAT_min = 55
 mca(trange= trange)
 orb(trange= trange)
@@ -20,15 +20,12 @@ for i in range(4):
     tplot_variable_power = (10**(tplot_variable.y/10)) * ((tplot_variable_0dB)**2)  / bandwidth
     pytplot.store_data(tplot_names[i] +'_Amp', data={'x': tplot_variable.times, 'y': tplot_variable_amplitude, 'v': tplot_variable.v})
     pytplot.store_data(tplot_names[i] +'_Pwr', data={'x': tplot_variable.times, 'y': tplot_variable_power, 'v': tplot_variable.v})
-    
-    
-pytplot.tplot_names()
 
 #Time interpolate
 pyspedas.tinterpol('akb_ILAT', interp_to='Emax_Amp', newname = 'ILAT')
 pyspedas.tinterpol('akb_MLAT', interp_to='Emax_Amp', newname = 'MLAT')
 pyspedas.tinterpol('akb_Pass', interp_to='Emax_Amp', newname = 'Pass', method = 'nearest')
-
+pyspedas.tinterpol('akb_ALT', interp_to='Emax_Amp', newname = 'ALT')
 #Limit ILAT range
 Emax = get_data('Emax_Amp')
 time = Emax.times
@@ -53,11 +50,31 @@ for i in range(north_index.size-1):
         
 north_end_time_index.append(north_index[-1])
 
-pnorth_start_time_index = np.array(north_start_time_index)
+north_start_time_index = np.array(north_start_time_index)
 north_end_time_index = np.array(north_end_time_index)
 
 north_start_time_list = pyspedas.time_string(time[north_start_time_index], fmt='%Y-%m-%d %H:%M:%S')
 north_end_time_list = pyspedas.time_string(time[north_end_time_index], fmt='%Y-%m-%d %H:%M:%S')
+
+south_start_time_index = [south_index[0]]
+south_end_time_index = []
+for i in range(south_index.size-1):
+    if south_index[i+1] - south_index[i] > 1:
+        south_end_time_index.append(south_index[i])
+        south_start_time_index.append(south_index[i+1])
+        
+south_end_time_index.append(south_index[-1])
+
+south_start_time_index = np.array(south_start_time_index)
+south_end_time_index = np.array(south_end_time_index)
+
+south_start_time_list = pyspedas.time_string(time[south_start_time_index], fmt='%Y-%m-%d %H:%M:%S')
+south_end_time_list = pyspedas.time_string(time[south_end_time_index], fmt='%Y-%m-%d %H:%M:%S')
+
+
+start_time_list_list = [north_start_time_list, south_start_time_list]
+end_time_list_list = [north_end_time_list, south_end_time_list]
+
 
 #make tplot vars of Electric field Amplitude at 3.16 - 100 Hz
 Emax = get_data('Emax_Amp')
@@ -71,6 +88,7 @@ Emax_channel7 = Emax.y.T[6] #100 Hz
 Emax_channel8 = Emax.y.T[7] #178 Hz
 Emax_channel9 = Emax.y.T[8] #316 Hz
 Emax_channel10 = Emax.y.T[9] #562 Hz
+Emax_channel11 = Emax.y.T[10] #1000 Hz
 
 Amp_data = [Emax_channel1, 
             Emax_channel2, 
@@ -81,7 +99,8 @@ Amp_data = [Emax_channel1,
             Emax_channel7,
             Emax_channel8,
             Emax_channel9,
-            Emax_channel10]
+            Emax_channel10,
+            Emax_channel11]
 
 store_data(name = 'Emax_lines_Amp', 
            data={'x': time,
@@ -99,6 +118,7 @@ Emax_channel7 = Emax.y.T[6] #100 Hz
 Emax_channel8 = Emax.y.T[7] #178 Hz
 Emax_channel9 = Emax.y.T[8] #316 Hz
 Emax_channel10 = Emax.y.T[9] #562 Hz
+Emax_channel11 = Emax.y.T[10] #1000 Hz
 
 Pwr_data = [Emax_channel1, 
             Emax_channel2, 
@@ -109,72 +129,90 @@ Pwr_data = [Emax_channel1,
             Emax_channel7,
             Emax_channel8,
             Emax_channel9,
-            Emax_channel10]
+            Emax_channel10,
+            Emax_channel11]
 
 store_data(name = 'Emax_lines_Pwr', 
            data={'x': time,
                  'y': np.array(Pwr_data).T})
 
+
 #make Passname list corresponding with start(end) time list
 Passname = get_data('Pass')
 Passname = Passname.y
 north_Passname_list = Passname[north_start_time_index]
+south_Passname_list = Passname[south_start_time_index]
 
-#dict start, end time and Passname 
-print(north_start_time_list)
-input_index_str = input('dict start time index: ')
-input_index_int = int(input_index_str)
-start_time = north_start_time_list[input_index_int]
-end_time = north_end_time_list[input_index_int]
-Passname = north_Passname_list[input_index_int]
+Passname_list_list = [north_Passname_list, south_Passname_list]
 
-dir = './akb_north_mca_plot/'
-hemisphere = 'north'
-surfix = input('Amp or Pwr: ')
+dir_list = ['./akb_north_mca_plot/', './akb_south_mca_plot/']
+hemisphere_list = ['N', 'S']
+surfix = 'Pwr'
 
 #make color table for line plots
 color_table = ['red', 'yellow', 'blue', 'green',
-               'crimson', 'y', 'c', 'lime',
-               'deeppink', 'orange']
+               'crimson', 'y', 'dodgerblue', 'lime',
+               'deeppink', 'orange', 'c']
 
 #plot
-tlimit([start_time, end_time])
-options(['Emax_' + surfix, 'Bmax_' + surfix], 'spec', 1)
-options(['Emax_' + surfix, 'Bmax_' + surfix], 'ylog', 1)
-options(['Emax_' + surfix, 'Bmax_' + surfix], 'zlog', 1)
-options(['Emax_' + surfix, 'Bmax_' + surfix], 'Colormap', 'viridis')
-if surfix == 'Amp':
-    options('Emax_' + surfix, 'zrange', [1e-5, 10])
-    options('Bmax_' + surfix, 'zrange', [1e-5, 10])
-    options('Emax_lines_' + surfix, 'yrange', [1e-3, 10])
-    options('Emax_' + surfix, 'ztitle', '$[mV/m/Hz^(1/2)]$')
-    options('Bmax_' + surfix, 'ztitle', '$[pT/Hz^(1/2)]$')
-    options('Emax_lines_' + surfix, 'ysubtitle', '$[mV/m/Hz^(1/2)]$')
-elif surfix == 'Pwr':
-    options('Emax_' + surfix, 'zrange', [1e-10, 100])
-    options('Bmax_' + surfix, 'zrange', [1e-10, 100])
-    options('Emax_lines_' + surfix, 'yrange', [1e-6, 100])
-    options('Emax_' + surfix, 'ztitle', '$[(mV/m)^2/Hz]$')
-    options('Bmax_' + surfix, 'ztitle', '$[pT^2/Hz]$')
-    options('Emax_lines_' + surfix, 'ysubtitle', '$[(mV/m)^2/Hz]$')
-options(['Emax_' + surfix, 'Bmax_' + surfix], 'yrange', [1, 2e4])
-options(['Emax_' + surfix, 'Bmax_' + surfix], 'ysubtitle', 'freq [Hz]')
-options('Emax_lines_' + surfix, 'ylog', 1)
-options('Emax_lines_' + surfix, 'legend_names', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6 Hz",
-                                                 "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
-                                                 "316 Hz", "562 Hz"])
-options('Emax_lines_' + surfix, 'Color', color_table)
-options('akb_ALT', 'ylabel', 'ALT [km]')
-options('akb_MLT', 'ylabel', 'MLT [h]')
-options('akb_ILAT', 'ylabel', 'ILAT [deg]')
-tplot_options('wsize', [500, 100000])
-tplot_options('title', hemisphere+str(int(Passname)) + ' MCA ' + surfix)
-tplot_options('axis_font_size', 8)
-tplot_options('var_label', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6Hz",
-                            "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
-                            "316 Hz", "562 Hz"])
-tplot(['Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix], 
-      var_label = ['akb_ALT', 'akb_MLT', 'akb_ILAT'], 
-      save_png = dir + 'akb-' + hemisphere+str(int(Passname))+'-MCA-'+ surfix + 'wsize_test',
-      xsize=16, ysize=10)
+for i in range(2):
+    dir = dir_list[i]
+    hemisphere = hemisphere_list[i]
+    start_time_list = start_time_list_list[i]
+    end_time_list = end_time_list_list[i]
+    Passname_list = Passname_list_list[i]
+
+    for j in range(len(start_time_list)):
+        start_time = start_time_list[j]
+        end_time = end_time_list[j]
+
+        year = start_time[:4]
+        Month = start_time[5:7]
+        day = start_time[8:10]
+        hour = start_time[11:13]
+        minute = start_time[14:16]
+        second = start_time[17:19]
+
+        Passname = Passname_list[j]
+        Passname = str(int(Passname))
+        Passname = Passname[-4:]
+
+        tlimit([start_time, end_time])
+        options(['Emax_' + surfix, 'Bmax_' + surfix], 'spec', 1)
+        options(['Emax_' + surfix, 'Bmax_' + surfix], 'ylog', 1)
+        options(['Emax_' + surfix, 'Bmax_' + surfix], 'zlog', 1)
+        #options(['Emax_' + surfix, 'Bmax_' + surfix], 'Colormap', 'viridis')
+        if surfix == 'Amp':
+            options('Emax_' + surfix, 'zrange', [1e-5, 10])
+            options('Bmax_' + surfix, 'zrange', [1e-5, 10])
+            options('Emax_lines_' + surfix, 'yrange', [1e-3, 10])
+            options('Emax_' + surfix, 'ztitle', '$[mV/m/Hz^(1/2)]$')
+            options('Bmax_' + surfix, 'ztitle', '$[pT/Hz^(1/2)]$')
+            options('Emax_lines_' + surfix, 'ysubtitle', '$[mV/m/Hz^(1/2)]$')
+        elif surfix == 'Pwr':
+            options('Emax_' + surfix, 'zrange', [1e-10, 100])
+            options('Bmax_' + surfix, 'zrange', [1e-8, 1e6])
+            options('Emax_lines_' + surfix, 'yrange', [1e-6, 100])
+            options('Emax_' + surfix, 'ztitle', '$[(mV/m)^2/Hz]$')
+            options('Bmax_' + surfix, 'ztitle', '$[pT^2/Hz]$')
+            options('Emax_lines_' + surfix, 'ysubtitle', '$[(mV/m)^2/Hz]$')
+        options(['Emax_' + surfix, 'Bmax_' + surfix], 'yrange', [1, 2e4])
+        options(['Emax_' + surfix, 'Bmax_' + surfix], 'ysubtitle', 'freq [Hz]')
+        options('Emax_lines_' + surfix, 'ylog', 1)
+        options('Emax_lines_' + surfix, 'legend_names', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6 Hz",
+                                                        "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
+                                                        "316 Hz", "562 Hz", "1000 Hz"])
+        options('Emax_lines_' + surfix, 'Color', color_table)
+        options('ALT', 'ytitle', 'ALT [km]')
+        options('akb_MLT', 'ytitle', 'MLT [h]')
+        options('ILAT', 'ytitle', 'ILAT [deg]')
+        tplot_options('wsize', [500, 100000])
+        tplot_options('title', Passname + hemisphere + '_' + year+Month+day+ ' MCA ' + surfix)
+        tplot_options('var_label', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6Hz",
+                                    "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
+                                    "316 Hz", "562 Hz", '1000 Hz'])
+        tplot(['Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix], 
+            var_label = ['ALT', 'akb_MLT', 'ILAT'], 
+            save_png = dir + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
+            xsize=14, ysize=10)
 

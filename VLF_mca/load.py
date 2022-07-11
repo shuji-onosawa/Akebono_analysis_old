@@ -1,3 +1,4 @@
+from cgi import test
 import pytplot
 from pyspedas.utilities.dailynames import dailynames
 from pyspedas.utilities.download import download
@@ -12,7 +13,7 @@ import numpy as np
 
 #mca
 def mca(trange = ['2014-01-01', '2014-01-03'],
-        time_clip = True):
+        downloadonly = False):
 
     remote_name_prefix = 'https://akebono-vlf.db.kanazawa-u.ac.jp/permalink.php?keyword='
     pathformat = 'https://akebono-vlf.db.kanazawa-u.ac.jp/permalink.php?keyword=ak_h1_mca_%Y%m%d_v02.cdf'
@@ -43,6 +44,9 @@ def mca(trange = ['2014-01-01', '2014-01-03'],
         
         out_files.append(save_name)
 
+    if downloadonly:
+        return 
+    
     out_files = sorted(out_files)
 
     tvars = cdf_to_tplot(out_files)
@@ -54,7 +58,7 @@ def mca(trange = ['2014-01-01', '2014-01-03'],
     return tvars
 
 #orbit
-def orb(trange = ['2014-01-01', '2014-01-03']):
+def orb(trange = ['2014-01-01', '2014-01-03'], downloadonly = False):
     
     remote_name_prefix = 'https://darts.isas.jaxa.jp/stp/data/exosd/orbit/daily/%Y%m/'
     pathformat = 'https://darts.isas.jaxa.jp/stp/data/exosd/orbit/daily/%Y%m/ED%y%m%d.txt'
@@ -84,6 +88,9 @@ def orb(trange = ['2014-01-01', '2014-01-03']):
         out_files.append(save_name)
     # save_name = './Akebono_orb_data/ED%y%m%d.txt'
 
+    if downloadonly:
+        return 
+    
     out_files = sorted(out_files)
     # out_files = list of './Akebono_orb_data/ED%y%m%d.txt'
     

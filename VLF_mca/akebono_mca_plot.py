@@ -227,7 +227,7 @@ for k in range(len(day_list)-1):
                 var_label = ['ALT', 'akb_MLT', 'ILAT'], 
                 save_png = dir + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
                 xsize=14, ysize=10,
-                display=True)
+                display=False)
             
     
     tplot_names = pytplot.tplot_names(True)

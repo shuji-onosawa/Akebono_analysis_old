@@ -9,13 +9,13 @@ start_day_string = '1991-02-05'
 start_day_time_double = pyspedas.time_double(start_day_string)
 seconds_per_day = 86400
 day_list = []
-for i in range(0, 31):
+for i in range(0, 100):
     time_double = start_day_time_double + i * seconds_per_day
     day_list.append(pyspedas.time_string(time_double, fmt='%Y-%m-%d %H:%M:%S'))
 
-for k in range(len(day_list)-2):
+for k in range(len(day_list)-1):
     
-    trange = [day_list[k], day_list[k+2]]
+    trange = [day_list[k], day_list[k+1]]
     print(trange)
 
     mca(trange= trange)
@@ -188,7 +188,7 @@ for k in range(len(day_list)-2):
             Passname = Passname_list[j]
             Passname = str(int(Passname))
             Passname = Passname[-4:]
-
+            
             tlimit([start_time, end_time])
             options(['Emax_' + surfix, 'Bmax_' + surfix], 'spec', 1)
             options(['Emax_' + surfix, 'Bmax_' + surfix], 'ylog', 1)
@@ -226,7 +226,10 @@ for k in range(len(day_list)-2):
             tplot(['Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix], 
                 var_label = ['ALT', 'akb_MLT', 'ILAT'], 
                 save_png = dir + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
-                xsize=14, ysize=10)
+                xsize=14, ysize=10,
+                display=True)
+            
+    
     tplot_names = pytplot.tplot_names(True)
     pytplot.store_data(tplot_names, delete=True)
     print(pytplot.tplot_names())

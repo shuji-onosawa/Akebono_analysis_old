@@ -5,11 +5,11 @@ import numpy as np
 from load import mca, orb
 
 ILAT_min = 55
-start_day_string = '1991-03-01'
+start_day_string = '1991-04-01'
 start_day_time_double = pyspedas.time_double(start_day_string)
 seconds_per_day = 86400
 day_list = []
-for i in range(0, 100):
+for i in range(0, 2):
     time_double = start_day_time_double + i * seconds_per_day
     day_list.append(pyspedas.time_string(time_double, fmt='%Y-%m-%d %H:%M:%S'))
 
@@ -17,10 +17,26 @@ for k in range(len(day_list)-1):
     
     trange = [day_list[k], day_list[k+1]]
     print(trange)
-    #pyspedas.omni.data(trange = trange)
+    
     mca(trange= trange)
     orb(trange= trange)
+    pyspedas.omni.data(trange = trange, level = 'hro', datatype='5min')
+    
+    IMFx_tvar = pytplot.get_data('BX_GSE')
+    IMFy_tvar = pytplot.get_data('BY_GSM')
+    IMFz_tvar = pytplot.get_data('BZ_GSM')
 
+    time = IMFx_tvar.times
+    IMFx = IMFx_tvar.y
+    IMFy = IMFy_tvar.y
+    IMFz = IMFz_tvar.y
+
+    IMF_matrix = [IMFx,
+                  IMFy,
+                  IMFz]
+    IMF_matrix = np.array(IMF_matrix).T
+    pytplot.store_data('IMF', data = {'x':time, 'y':IMF_matrix})
+    
     tplot_names = pytplot.tplot_names(True)
 
     #dB to amplitude
@@ -218,15 +234,19 @@ for k in range(len(day_list)-1):
             options('ALT', 'ytitle', 'ALT [km]')
             options('akb_MLT', 'ytitle', 'MLT [h]')
             options('ILAT', 'ytitle', 'ILAT [deg]')
-            tplot_options('wsize', [500, 100000])
+            
+            omni_data_names = ['SYM_H', 'IMF', 'flow_speed', 'proton_density', 'Pressure', 'E']
+            options(omni_data_names, 'panel_size', 0.5)
+            options('IMF', 'legend_names', ['IMF x', "IMF y", "IMF z"])
+            
             tplot_options('title', Passname + hemisphere + '_' + year+Month+day+ ' MCA ' + surfix)
             tplot_options('var_label', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6Hz",
                                         "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
                                         "316 Hz", "562 Hz", '1000 Hz'])
-            tplot(['Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix], 
+            tplot(['Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix] + omni_data_names, 
                 var_label = ['ALT', 'akb_MLT', 'ILAT'], 
                 save_png = dir + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
-                xsize=14, ysize=10,
+                xsize=14, ysize=16,
                 display=False)
             
     

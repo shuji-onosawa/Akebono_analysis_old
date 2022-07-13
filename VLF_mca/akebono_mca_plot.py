@@ -17,7 +17,7 @@ for k in range(len(day_list)-1):
     
     trange = [day_list[k], day_list[k+1]]
     print(trange)
-
+    #pyspedas.omni.data(trange = trange)
     mca(trange= trange)
     orb(trange= trange)
 

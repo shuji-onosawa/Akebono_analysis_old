@@ -42,10 +42,12 @@ for k in range(len(day_list)-1):
     #dB to amplitude
     for i in range(4):
         tplot_variable = pytplot.get_data(tplot_names[i])
+        tplot_variable_float = (tplot_variable.y).astype(float)
+        np.place(tplot_variable_float, tplot_variable_float == 254, np.nan)
         tplot_variable_0dB = 1e-6 #mV or pT
         bandwidth = tplot_variable.v * 0.3
-        tplot_variable_amplitude = (10**(tplot_variable.y/20)) * (tplot_variable_0dB)  / np.sqrt(bandwidth)
-        tplot_variable_power = (10**(tplot_variable.y/10)) * ((tplot_variable_0dB)**2)  / bandwidth
+        tplot_variable_amplitude = (10**(tplot_variable_float/20)) * (tplot_variable_0dB)  / np.sqrt(bandwidth)
+        tplot_variable_power = (10**(tplot_variable_float/10)) * ((tplot_variable_0dB)**2)  / bandwidth
         pytplot.store_data(tplot_names[i] +'_Amp', data={'x': tplot_variable.times, 'y': tplot_variable_amplitude, 'v': tplot_variable.v})
         pytplot.store_data(tplot_names[i] +'_Pwr', data={'x': tplot_variable.times, 'y': tplot_variable_power, 'v': tplot_variable.v})
 

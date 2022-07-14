@@ -238,12 +238,14 @@ for k in range(len(day_list)-1):
             omni_data_names = ['SYM_H', 'IMF', 'flow_speed', 'proton_density', 'Pressure', 'E']
             options(omni_data_names, 'panel_size', 0.5)
             options('IMF', 'legend_names', ['IMF x', "IMF y", "IMF z"])
-            
+            options('SYM_H', 'ytitle', 'SYM-H')
+            options('SYM_H', 'ysubtitle', '')
+
             tplot_options('title', Passname + hemisphere + '_' + year+Month+day+ ' MCA ' + surfix)
             tplot_options('var_label', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6Hz",
                                         "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
                                         "316 Hz", "562 Hz", '1000 Hz'])
-            tplot(['Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix] + omni_data_names, 
+            tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'E','Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'SYM_H'], 
                 var_label = ['ALT', 'akb_MLT', 'ILAT'], 
                 save_png = dir + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
                 xsize=14, ysize=16,

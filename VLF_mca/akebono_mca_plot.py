@@ -238,7 +238,8 @@ for k in range(len(day_list)-1):
             omni_data_names = ['SYM_H', 'IMF', 'flow_speed', 'proton_density', 'Pressure', 'E']
             options(omni_data_names, 'panel_size', 0.5)
             options('IMF', 'legend_names', ['IMF x', "IMF y", "IMF z"])
-            
+            pytplot.timebar(0.0, varname = 'IMF', databar=True)
+
             tplot_options('title', Passname + hemisphere + '_' + year+Month+day+ ' MCA ' + surfix)
             tplot_options('var_label', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6Hz",
                                         "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",

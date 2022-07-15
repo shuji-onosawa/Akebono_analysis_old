@@ -5,11 +5,11 @@ import numpy as np
 from load import mca, orb
 
 ILAT_min = 55
-start_day_string = '1991-04-01'
+start_day_string = '1991-01-01'
 start_day_time_double = pyspedas.time_double(start_day_string)
 seconds_per_day = 86400
 day_list = []
-for i in range(0, 2):
+for i in range(0, 365):
     time_double = start_day_time_double + i * seconds_per_day
     day_list.append(pyspedas.time_string(time_double, fmt='%Y-%m-%d %H:%M:%S'))
 
@@ -20,7 +20,7 @@ for k in range(len(day_list)-1):
     
     mca(trange= trange)
     orb(trange= trange)
-    pyspedas.omni.data(trange = trange, level = 'hro', datatype='5min')
+    pyspedas.omni.data(trange = trange, level = 'hro', datatype='1min')
     
     IMFx_tvar = pytplot.get_data('BX_GSE')
     IMFy_tvar = pytplot.get_data('BY_GSM')
@@ -52,12 +52,12 @@ for k in range(len(day_list)-1):
         pytplot.store_data(tplot_names[i] +'_Pwr', data={'x': tplot_variable.times, 'y': tplot_variable_power, 'v': tplot_variable.v})
 
     #Time interpolate
-    pyspedas.tinterpol('akb_ILAT', interp_to='Emax_Amp', newname = 'ILAT')
-    pyspedas.tinterpol('akb_MLAT', interp_to='Emax_Amp', newname = 'MLAT')
-    pyspedas.tinterpol('akb_Pass', interp_to='Emax_Amp', newname = 'Pass', method = 'nearest')
-    pyspedas.tinterpol('akb_ALT', interp_to='Emax_Amp', newname = 'ALT')
+    pyspedas.tinterpol('akb_ILAT', interp_to='Emax_Pwr', newname = 'ILAT')
+    pyspedas.tinterpol('akb_MLAT', interp_to='Emax_Pwr', newname = 'MLAT')
+    pyspedas.tinterpol('akb_Pass', interp_to='Emax_Pwr', newname = 'Pass', method = 'nearest')
+    pyspedas.tinterpol('akb_ALT', interp_to='Emax_Pwr', newname = 'ALT')
     #Limit ILAT range
-    Emax = get_data('Emax_Amp')
+    Emax = get_data('Emax_Pwr')
     time = Emax.times
     ILAT = get_data('ILAT')
     ILAT = ILAT.y
@@ -175,7 +175,7 @@ for k in range(len(day_list)-1):
 
     Passname_list_list = [north_Passname_list, south_Passname_list]
 
-    dir_list = ['./akb_north_mca_plot/', './akb_south_mca_plot/']
+    dir_list = ['./akb_North_mca_plot/', './akb_South_mca_plot/']
     hemisphere_list = ['N', 'S']
     surfix = 'Pwr'
 
@@ -206,6 +206,16 @@ for k in range(len(day_list)-1):
             Passname = Passname_list[j]
             Passname = str(int(Passname))
             Passname = Passname[-4:]
+            
+            #dict event case
+            pyspedas.time_clip('Emax_Pwr', time_start=start_time, time_end = end_time, new_names='Emax_Pwr_clip')
+            Emax_cliped = get_data('Emax_Pwr_clip')
+            Emax_10Hz = Emax_cliped.y.T[2]
+            event_case=''
+            if np.nanmax(Emax_10Hz) >=10:
+                event_case = 'super_strong'
+            elif np.nanmax(Emax_10Hz) >=1:
+                event_case = 'strong'
             
             tlimit([start_time, end_time])
             options(['Emax_' + surfix, 'Bmax_' + surfix], 'spec', 1)
@@ -241,7 +251,13 @@ for k in range(len(day_list)-1):
             options(omni_data_names, 'panel_size', 0.5)
             options('IMF', 'legend_names', ['IMF x', "IMF y", "IMF z"])
             options('SYM_H', 'ytitle', 'SYM-H')
-            options('SYM_H', 'ysubtitle', '')
+            options('SYM_H', 'ysubtitle', '[nT]')
+            options('flow_speed', 'ytitle', 'flow \n speed')
+            options('flow_speed', 'ysubtitle', '[km/s]')
+            options('proton_density', 'ytitle', 'proton \n density')
+            options('Pressure', 'ytitle', 'flow \n pressure')
+            options('E', 'ytitle', 'E_sw')
+            options('E', 'ysubtitle', 'mV/m')
 
             tplot_options('title', Passname + hemisphere + '_' + year+Month+day+ ' MCA ' + surfix)
             tplot_options('var_label', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6Hz",
@@ -252,8 +268,18 @@ for k in range(len(day_list)-1):
                 save_png = dir + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
                 xsize=14, ysize=16,
                 display=False)
-            
-    
+            if event_case =='super_strong':
+                tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'E','Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'SYM_H'], 
+                var_label = ['ALT', 'akb_MLT', 'ILAT'], 
+                save_png = dir + 'super_strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
+                xsize=14, ysize=16,
+                display=False)
+            if event_case =='strong':
+                tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'E','Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'SYM_H'], 
+                var_label = ['ALT', 'akb_MLT', 'ILAT'], 
+                save_png = dir + 'strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
+                xsize=14, ysize=16,
+                display=False)
     tplot_names = pytplot.tplot_names(True)
     pytplot.store_data(tplot_names, delete=True)
     print(pytplot.tplot_names())

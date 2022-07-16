@@ -5,7 +5,7 @@ import numpy as np
 from load import mca, orb
 
 ILAT_min = 55
-start_day_string = '1991-01-01'
+start_day_string = '1997-01-01'
 start_day_time_double = pyspedas.time_double(start_day_string)
 seconds_per_day = 86400
 day_list = []
@@ -19,23 +19,30 @@ for k in range(len(day_list)-1):
     print(trange)
     
     mca(trange= trange)
-    orb(trange= trange)
-    pyspedas.omni.data(trange = trange, level = 'hro', datatype='1min')
+    try:
+        orb(trange= trange)
+    except:
+        with open('/Document/Akebono_analysis/VLF_mca/akebono_orbit_error_day_list.txt', mode="a") as f:
+                f.write(trange[0] + '\n')
+        print('orbit file does not exists')
+        continue
     
-    IMFx_tvar = pytplot.get_data('BX_GSE')
-    IMFy_tvar = pytplot.get_data('BY_GSM')
-    IMFz_tvar = pytplot.get_data('BZ_GSM')
+    #pyspedas.omni.data(trange = trange, level = 'hro', datatype='1min')
+    
+    #IMFx_tvar = pytplot.get_data('BX_GSE')
+    #IMFy_tvar = pytplot.get_data('BY_GSM')
+    #IMFz_tvar = pytplot.get_data('BZ_GSM')
 
-    time = IMFx_tvar.times
-    IMFx = IMFx_tvar.y
-    IMFy = IMFy_tvar.y
-    IMFz = IMFz_tvar.y
+    #time = IMFx_tvar.times
+    #IMFx = IMFx_tvar.y
+    #IMFy = IMFy_tvar.y
+    #IMFz = IMFz_tvar.y
 
-    IMF_matrix = [IMFx,
-                  IMFy,
-                  IMFz]
-    IMF_matrix = np.array(IMF_matrix).T
-    pytplot.store_data('IMF', data = {'x':time, 'y':IMF_matrix})
+    #IMF_matrix = [IMFx,
+    #             IMFy,
+    #              IMFz]
+    #IMF_matrix = np.array(IMF_matrix).T
+    #pytplot.store_data('IMF', data = {'x':time, 'y':IMF_matrix})
     
     tplot_names = pytplot.tplot_names(True)
 
@@ -52,7 +59,13 @@ for k in range(len(day_list)-1):
         pytplot.store_data(tplot_names[i] +'_Pwr', data={'x': tplot_variable.times, 'y': tplot_variable_power, 'v': tplot_variable.v})
 
     #Time interpolate
-    pyspedas.tinterpol('akb_ILAT', interp_to='Emax_Pwr', newname = 'ILAT')
+    try:
+        pyspedas.tinterpol('akb_ILAT', interp_to='Emax_Pwr', newname = 'ILAT')
+    except:
+        with open('/Document/Akebono_analysis/VLF_mca/akebono_orbit_error_day_list.txt', mode="a") as f:
+                f.write(trange[0] + '\n')
+        print('orbit file is not perfect')
+        continue
     pyspedas.tinterpol('akb_MLAT', interp_to='Emax_Pwr', newname = 'MLAT')
     pyspedas.tinterpol('akb_Pass', interp_to='Emax_Pwr', newname = 'Pass', method = 'nearest')
     pyspedas.tinterpol('akb_ALT', interp_to='Emax_Pwr', newname = 'ALT')
@@ -216,7 +229,9 @@ for k in range(len(day_list)-1):
                 event_case = 'super_strong'
             elif np.nanmax(Emax_10Hz) >=1:
                 event_case = 'strong'
-            
+            print('Emax_pwr max')
+            print(np.nanmax(Emax_10Hz))
+
             tlimit([start_time, end_time])
             options(['Emax_' + surfix, 'Bmax_' + surfix], 'spec', 1)
             options(['Emax_' + surfix, 'Bmax_' + surfix], 'ylog', 1)
@@ -246,7 +261,7 @@ for k in range(len(day_list)-1):
             options('ALT', 'ytitle', 'ALT [km]')
             options('akb_MLT', 'ytitle', 'MLT [h]')
             options('ILAT', 'ytitle', 'ILAT [deg]')
-            
+            '''
             omni_data_names = ['SYM_H', 'IMF', 'flow_speed', 'proton_density', 'Pressure', 'E']
             options(omni_data_names, 'panel_size', 0.5)
             options('IMF', 'legend_names', ['IMF x', "IMF y", "IMF z"])
@@ -258,23 +273,39 @@ for k in range(len(day_list)-1):
             options('Pressure', 'ytitle', 'flow \n pressure')
             options('E', 'ytitle', 'E_sw')
             options('E', 'ysubtitle', 'mV/m')
-
+            '''
             tplot_options('title', Passname + hemisphere + '_' + year+Month+day+ ' MCA ' + surfix)
             tplot_options('var_label', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6Hz",
                                         "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
                                         "316 Hz", "562 Hz", '1000 Hz'])
             if event_case =='super_strong':
+                tplot(['Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix], 
+                var_label = ['ALT', 'akb_MLT', 'ILAT'], 
+                save_png = dir + 'super_strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
+                xsize=14, ysize=16,
+                display=False)
+                '''
                 tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'E','Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'SYM_H'], 
                 var_label = ['ALT', 'akb_MLT', 'ILAT'], 
                 save_png = dir + 'super_strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
                 xsize=14, ysize=16,
                 display=False)
+                '''
             if event_case =='strong':
+                tplot(['Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix], 
+                var_label = ['ALT', 'akb_MLT', 'ILAT'], 
+                save_png = dir + 'strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
+                xsize=14, ysize=16,
+                display=False)
+                '''
                 tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'E','Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'SYM_H'], 
                 var_label = ['ALT', 'akb_MLT', 'ILAT'], 
                 save_png = dir + 'strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
                 xsize=14, ysize=16,
                 display=False)
-    tplot_names = pytplot.tplot_names(True)
-    pytplot.store_data(tplot_names, delete=True)
-    print(pytplot.tplot_names())
+                '''
+'''
+tplot_names = pytplot.tplot_names(True)
+pytplot.store_data(tplot_names, delete=True)
+print(pytplot.tplot_names())
+'''

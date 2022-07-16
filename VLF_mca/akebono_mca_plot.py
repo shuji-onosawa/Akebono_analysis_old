@@ -263,11 +263,6 @@ for k in range(len(day_list)-1):
             tplot_options('var_label', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6Hz",
                                         "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
                                         "316 Hz", "562 Hz", '1000 Hz'])
-            tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'E','Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'SYM_H'], 
-                var_label = ['ALT', 'akb_MLT', 'ILAT'], 
-                save_png = dir + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
-                xsize=14, ysize=16,
-                display=False)
             if event_case =='super_strong':
                 tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'E','Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'SYM_H'], 
                 var_label = ['ALT', 'akb_MLT', 'ILAT'], 

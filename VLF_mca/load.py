@@ -1,4 +1,3 @@
-from cgi import test
 import pytplot
 from pyspedas.utilities.dailynames import dailynames
 from pyspedas.utilities.download import download
@@ -9,7 +8,9 @@ from pytplot import store_data, get_data
 import os
 import urllib.request
 import numpy as np
-
+import time
+from calendar import timegm
+from datetime import datetime, timedelta
 
 #mca
 def mca(trange = ['2014-01-01', '2014-01-03'],
@@ -124,9 +125,13 @@ def orb(trange = ['2014-01-01', '2014-01-03'], downloadonly = False):
             year = '19' + year_suffix
             
         for time_index in range(len(UT)):
-            time = UT[time_index]
-            month, day, hour, minute, second = time[2:4], time[4:6], time[6:8], time[8:10], time[10:12]
+            Time = UT[time_index]
+            month, day, hour, minute, second = Time[2:4], Time[4:6], Time[6:8], Time[8:10], Time[10:12]
             time_string = year + '/' + month + '/' + day + '/' + hour + ':' + minute + ':' + second
+
+            utc_time_tuple = time.strptime(time_string, "%Y/%m/%d/%H:%M:%S")
+            dt = datetime(1970, 1, 1) + timedelta(seconds=timegm(utc_time_tuple))
+            time_string = dt.strftime("%Y/%m/%d/%H:%M:%S")
             #yyyymmdd.orb has UT data in the format of 'yymmddhhmmss'.
             #To use pyspedas.time_double, change format from 'yymmddhhmmss' to 'yyyy/mm/dd/hh:mm:ss'
             time_time_double = time_double(time_string)

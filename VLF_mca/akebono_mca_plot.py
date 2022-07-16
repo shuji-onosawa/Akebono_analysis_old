@@ -5,11 +5,11 @@ import numpy as np
 from load import mca, orb
 
 ILAT_min = 55
-start_day_string = '1997-01-01'
+start_day_string = '1999-01-01'
 start_day_time_double = pyspedas.time_double(start_day_string)
 seconds_per_day = 86400
 day_list = []
-for i in range(0, 365):
+for i in range(0, 366):
     time_double = start_day_time_double + i * seconds_per_day
     day_list.append(pyspedas.time_string(time_double, fmt='%Y-%m-%d %H:%M:%S'))
 
@@ -21,9 +21,11 @@ for k in range(len(day_list)-1):
     mca(trange= trange)
     try:
         orb(trange= trange)
-    except:
-        with open('/Document/Akebono_analysis/VLF_mca/akebono_orbit_error_day_list.txt', mode="a") as f:
+    except Exception as e:
+        print(e)
+        with open('./akebono_orbit_error_day_list.txt', mode="a") as f:
                 f.write(trange[0] + '\n')
+        
         print('orbit file does not exists')
         continue
     
@@ -62,7 +64,7 @@ for k in range(len(day_list)-1):
     try:
         pyspedas.tinterpol('akb_ILAT', interp_to='Emax_Pwr', newname = 'ILAT')
     except:
-        with open('/Document/Akebono_analysis/VLF_mca/akebono_orbit_error_day_list.txt', mode="a") as f:
+        with open('./akebono_orbit_error_day_list.txt', mode="a") as f:
                 f.write(trange[0] + '\n')
         print('orbit file is not perfect')
         continue

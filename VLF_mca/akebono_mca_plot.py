@@ -306,8 +306,7 @@ for k in range(len(day_list)-1):
                 xsize=14, ysize=16,
                 display=False)
                 '''
-'''
+
 tplot_names = pytplot.tplot_names(True)
 pytplot.store_data(tplot_names, delete=True)
 print(pytplot.tplot_names())
-'''

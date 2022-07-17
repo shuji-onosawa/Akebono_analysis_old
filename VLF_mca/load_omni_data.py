@@ -13,7 +13,8 @@ start_day_string = [year + '-01-01',
                     year + '-09-01',
                     year + '-10-01',
                     year + '-11-01',
-                    year + '-12-01']
+                    year + '-12-01',
+                    str(int(year) + 1) + '-01-01']
 
 for k in range(len(start_day_string)-1):
     

@@ -5,11 +5,11 @@ import numpy as np
 from load import mca, orb
 
 ILAT_min = 55
-start_day_string = '2001-01-01'
+start_day_string = '1994-01-01'
 start_day_time_double = pyspedas.time_double(start_day_string)
 seconds_per_day = 86400
 day_list = []
-for i in range(0, 1464):
+for i in range(0, 367):
     time_double = start_day_time_double + i * seconds_per_day
     day_list.append(pyspedas.time_string(time_double, fmt='%Y-%m-%d %H:%M:%S'))
 
@@ -23,10 +23,10 @@ for k in range(len(day_list)-1):
         orb(trange= trange)
     except Exception as e:
         print(e)
-        with open('./akebono_orbit_error_day_list.txt', mode="a") as f:
-                f.write(trange[0] + '\n')
+        #with open('./akebono_orbit_error_day_list.txt', mode="a") as f:
+        #       f.write(trange[0] + '\n')
         
-        print('orbit file does not exists')
+        #print('orbit file does not exists')
         continue
     
     #pyspedas.omni.data(trange = trange, level = 'hro', datatype='1min')

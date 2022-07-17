@@ -5,11 +5,11 @@ import numpy as np
 from load import mca, orb
 
 ILAT_min = 55
-start_day_string = '1989-06-07'
+start_day_string = '1991-12-13'
 start_day_time_double = pyspedas.time_double(start_day_string)
 seconds_per_day = 86400
 day_list = []
-for i in range(0, 368):
+for i in range(0, 2):
     time_double = start_day_time_double + i * seconds_per_day
     day_list.append(pyspedas.time_string(time_double, fmt='%Y-%m-%d %H:%M:%S'))
 
@@ -29,22 +29,23 @@ for k in range(len(day_list)-1):
         #print('orbit file does not exists')
         continue
     
-    #pyspedas.omni.data(trange = trange, level = 'hro', datatype='1min')
-    
-    #IMFx_tvar = pytplot.get_data('BX_GSE')
-    #IMFy_tvar = pytplot.get_data('BY_GSM')
-    #IMFz_tvar = pytplot.get_data('BZ_GSM')
+    pyspedas.omni.data(trange = trange, level = 'hro', datatype='1min')
+    pyspedas.omni.data(trange = trange, level = 'hro', datatype='1min')
 
-    #time = IMFx_tvar.times
-    #IMFx = IMFx_tvar.y
-    #IMFy = IMFy_tvar.y
-    #IMFz = IMFz_tvar.y
+    IMFx_tvar = pytplot.get_data('BX_GSE')
+    IMFy_tvar = pytplot.get_data('BY_GSM')
+    IMFz_tvar = pytplot.get_data('BZ_GSM')
 
-    #IMF_matrix = [IMFx,
-    #             IMFy,
-    #              IMFz]
-    #IMF_matrix = np.array(IMF_matrix).T
-    #pytplot.store_data('IMF', data = {'x':time, 'y':IMF_matrix})
+    time = IMFx_tvar.times
+    IMFx = IMFx_tvar.y
+    IMFy = IMFy_tvar.y
+    IMFz = IMFz_tvar.y
+
+    IMF_matrix = [IMFx,
+                 IMFy,
+                  IMFz]
+    IMF_matrix = np.array(IMF_matrix).T
+    pytplot.store_data('IMF', data = {'x':time, 'y':IMF_matrix})
     
     tplot_names = pytplot.tplot_names(True)
 
@@ -227,12 +228,13 @@ for k in range(len(day_list)-1):
             Emax_cliped = get_data('Emax_Pwr_clip')
             Emax_10Hz = Emax_cliped.y.T[2]
             event_case=''
-            if np.nanmax(Emax_10Hz) >=10:
+            if np.nanmax(Emax_10Hz) >=0.6:
                 event_case = 'super_strong'
-            elif np.nanmax(Emax_10Hz) >=1:
+            elif np.nanmax(Emax_10Hz) >=0.3:
                 event_case = 'strong'
+            print(hemisphere)
             print('Emax_pwr max')
-            print(np.nanmax(Emax_10Hz))
+            print([start_time, end_time] ,np.nanmax(Emax_10Hz))
 
             tlimit([start_time, end_time])
             options(['Emax_' + surfix, 'Bmax_' + surfix], 'spec', 1)
@@ -263,7 +265,7 @@ for k in range(len(day_list)-1):
             options('ALT', 'ytitle', 'ALT [km]')
             options('akb_MLT', 'ytitle', 'MLT [h]')
             options('ILAT', 'ytitle', 'ILAT [deg]')
-            '''
+            
             omni_data_names = ['SYM_H', 'IMF', 'flow_speed', 'proton_density', 'Pressure', 'E']
             options(omni_data_names, 'panel_size', 0.5)
             options('IMF', 'legend_names', ['IMF x', "IMF y", "IMF z"])
@@ -275,13 +277,14 @@ for k in range(len(day_list)-1):
             options('Pressure', 'ytitle', 'flow \n pressure')
             options('E', 'ytitle', 'E_sw')
             options('E', 'ysubtitle', 'mV/m')
-            '''
+            
             tplot_options('title', Passname + hemisphere + '_' + year+Month+day+ ' MCA ' + surfix)
             tplot_options('var_label', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6Hz",
                                         "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
                                         "316 Hz", "562 Hz", '1000 Hz'])
+
             if event_case =='super_strong':
-                tplot(['Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix], 
+                tplot(['IMF', 'flow_speed', 'proton_density','Pressure', 'E','Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'SYM_H'], 
                 var_label = ['ALT', 'akb_MLT', 'ILAT'], 
                 save_png = dir + 'super_strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
                 xsize=14, ysize=16,
@@ -294,7 +297,7 @@ for k in range(len(day_list)-1):
                 display=False)
                 '''
             if event_case =='strong':
-                tplot(['Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix], 
+                tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'E','Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'SYM_H'], 
                 var_label = ['ALT', 'akb_MLT', 'ILAT'], 
                 save_png = dir + 'strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
                 xsize=14, ysize=16,

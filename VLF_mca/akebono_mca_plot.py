@@ -23,10 +23,10 @@ for k in range(len(day_list)-1):
         orb(trange= trange)
     except Exception as e:
         print(e)
-        with open('./akebono_orbit_error_day_list.txt', mode="a") as f:
-                f.write(trange[0] + '\n')
+        #with open('./akebono_orbit_error_day_list.txt', mode="a") as f:
+        #       f.write(trange[0] + '\n')
         
-        print('orbit file does not exists')
+        #print('orbit file does not exists')
         continue
     
     #pyspedas.omni.data(trange = trange, level = 'hro', datatype='1min')

@@ -5,11 +5,11 @@ import numpy as np
 from load import mca, orb
 
 ILAT_min = 55
-start_day_string = '1999-01-01'
+start_day_string = '2014-01-01'
 start_day_time_double = pyspedas.time_double(start_day_string)
 seconds_per_day = 86400
 day_list = []
-for i in range(0, 3660):
+for i in range(0, 366):
     time_double = start_day_time_double + i * seconds_per_day
     day_list.append(pyspedas.time_string(time_double, fmt='%Y-%m-%d %H:%M:%S'))
 
@@ -17,8 +17,11 @@ for k in range(len(day_list)-1):
     
     trange = [day_list[k], day_list[k+1]]
     print(trange)
-    
-    mca(trange= trange)
+    try:
+        mca(trange= trange)
+    except Exception as e:
+        print(e)
+        continue
     try:
         orb(trange= trange)
     except Exception as e:

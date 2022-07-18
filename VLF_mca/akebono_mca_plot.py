@@ -5,11 +5,11 @@ import numpy as np
 from load import mca, orb
 
 ILAT_min = 55
-start_day_string = '1991-12-13'
+start_day_string = '2001-11-9'
 start_day_time_double = pyspedas.time_double(start_day_string)
 seconds_per_day = 86400
 day_list = []
-for i in range(0, 2):
+for i in range(0, 9000):
     time_double = start_day_time_double + i * seconds_per_day
     day_list.append(pyspedas.time_string(time_double, fmt='%Y-%m-%d %H:%M:%S'))
 

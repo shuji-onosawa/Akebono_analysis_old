@@ -28,9 +28,10 @@ for k in range(len(day_list)-1):
         
         #print('orbit file does not exists')
         continue
-    
-    pyspedas.omni.data(trange = trange, level = 'hro', datatype='1min')
-    pyspedas.omni.data(trange = trange, level = 'hro', datatype='1min')
+    try:
+        pyspedas.omni.data(trange = trange, level = 'hro', datatype='1min')
+    except:
+        pyspedas.omni.data(trange = trange, level = 'hro', datatype='1min')
 
     IMFx_tvar = pytplot.get_data('BX_GSE')
     IMFy_tvar = pytplot.get_data('BY_GSM')

@@ -5,11 +5,11 @@ import numpy as np
 from load import mca, orb
 
 ILAT_min = 55
-start_day_string = '1989-03-06'
+start_day_string = '1999-01-01'
 start_day_time_double = pyspedas.time_double(start_day_string)
 seconds_per_day = 86400
 day_list = []
-for i in range(0, 9000):
+for i in range(0, 3660):
     time_double = start_day_time_double + i * seconds_per_day
     day_list.append(pyspedas.time_string(time_double, fmt='%Y-%m-%d %H:%M:%S'))
 
@@ -73,7 +73,7 @@ for k in range(len(day_list)-1):
     pyspedas.tinterpol('akb_MLAT', interp_to='Emax_Pwr', newname = 'MLAT')
     pyspedas.tinterpol('akb_Pass', interp_to='Emax_Pwr', newname = 'Pass', method = 'nearest')
     pyspedas.tinterpol('akb_ALT', interp_to='Emax_Pwr', newname = 'ALT')
-    pyspedas.tinterpol('akb_MLT', interp_to='Emax_pwr', newname = 'MLT', method = 'nearest')
+    pyspedas.tinterpol('akb_MLT', interp_to='Emax_Pwr', newname = 'MLT', method = 'nearest')
     #Limit ILAT range
     Emax = get_data('Emax_Pwr')
     time = Emax.times
@@ -90,36 +90,45 @@ for k in range(len(day_list)-1):
     north_index = north_index_tuple[0]
     south_index = south_index_tuple[0]
 
+
     #make start_time list, end_time list
-    north_start_time_index = [north_index[0]]
-    north_end_time_index = []
-    for i in range(north_index.size-1):
-        if north_index[i+1] - north_index[i] > 1:
-            north_end_time_index.append(north_index[i])
-            north_start_time_index.append(north_index[i+1])
-            
-    north_end_time_index.append(north_index[-1])
+    if len(north_index) == 0:
+        north_start_time_list = None
+        north_end_time_list = None
+    else:    
+        north_start_time_index = [north_index[0]]
+        north_end_time_index = []
+        for i in range(north_index.size-1):
+            if north_index[i+1] - north_index[i] > 1:
+                north_end_time_index.append(north_index[i])
+                north_start_time_index.append(north_index[i+1])
+                
+        north_end_time_index.append(north_index[-1])
 
-    north_start_time_index = np.array(north_start_time_index)
-    north_end_time_index = np.array(north_end_time_index)
+        north_start_time_index = np.array(north_start_time_index)
+        north_end_time_index = np.array(north_end_time_index)
 
-    north_start_time_list = pyspedas.time_string(time[north_start_time_index], fmt='%Y-%m-%d %H:%M:%S')
-    north_end_time_list = pyspedas.time_string(time[north_end_time_index], fmt='%Y-%m-%d %H:%M:%S')
+        north_start_time_list = pyspedas.time_string(time[north_start_time_index], fmt='%Y-%m-%d %H:%M:%S')
+        north_end_time_list = pyspedas.time_string(time[north_end_time_index], fmt='%Y-%m-%d %H:%M:%S')
 
-    south_start_time_index = [south_index[0]]
-    south_end_time_index = []
-    for i in range(south_index.size-1):
-        if south_index[i+1] - south_index[i] > 1:
-            south_end_time_index.append(south_index[i])
-            south_start_time_index.append(south_index[i+1])
-            
-    south_end_time_index.append(south_index[-1])
+    if len(south_index) == 0:
+        south_start_time_list = None
+        south_end_time_list = None
+    else:
+        south_start_time_index = [south_index[0]]
+        south_end_time_index = []
+        for i in range(south_index.size-1):
+            if south_index[i+1] - south_index[i] > 1:
+                south_end_time_index.append(south_index[i])
+                south_start_time_index.append(south_index[i+1])
+                
+        south_end_time_index.append(south_index[-1])
 
-    south_start_time_index = np.array(south_start_time_index)
-    south_end_time_index = np.array(south_end_time_index)
+        south_start_time_index = np.array(south_start_time_index)
+        south_end_time_index = np.array(south_end_time_index)
 
-    south_start_time_list = pyspedas.time_string(time[south_start_time_index], fmt='%Y-%m-%d %H:%M:%S')
-    south_end_time_list = pyspedas.time_string(time[south_end_time_index], fmt='%Y-%m-%d %H:%M:%S')
+        south_start_time_list = pyspedas.time_string(time[south_start_time_index], fmt='%Y-%m-%d %H:%M:%S')
+        south_end_time_list = pyspedas.time_string(time[south_end_time_index], fmt='%Y-%m-%d %H:%M:%S')
 
 
     start_time_list_list = [north_start_time_list, south_start_time_list]
@@ -190,13 +199,19 @@ for k in range(len(day_list)-1):
     #make Passname list corresponding with start(end) time list
     Passname = get_data('Pass')
     Passname = Passname.y
-    north_Passname_list = Passname[north_start_time_index]
-    south_Passname_list = Passname[south_start_time_index]
+    if len(north_index) == 0:
+        north_Passname_list = None
+    else:
+        north_Passname_list = Passname[north_start_time_index]
+    if len(south_index) == 0:
+        south_Passname_list = None
+    else:       
+        south_Passname_list = Passname[south_start_time_index]
 
     Passname_list_list = [north_Passname_list, south_Passname_list]
 
     dir_list = ['./akb_North_mca_plot/', './akb_South_mca_plot/']
-    hemisphere_list = ['N', 'S']
+    hemisphere_list = ['north', 'south']
     surfix = 'Pwr'
 
     #make color table for line plots
@@ -209,6 +224,9 @@ for k in range(len(day_list)-1):
         dir = dir_list[i]
         hemisphere = hemisphere_list[i]
         start_time_list = start_time_list_list[i]
+        if start_time_list == None:
+            print('No orbits in the ' + hemisphere + ' hemisphere satisfy the condition.')
+            continue
         end_time_list = end_time_list_list[i]
         Passname_list = Passname_list_list[i]
 
@@ -267,7 +285,7 @@ for k in range(len(day_list)-1):
                                                             "316 Hz", "562 Hz", "1000 Hz"])
             options('Emax_lines_' + surfix, 'Color', color_table)
             options('ALT', 'ytitle', 'ALT [km]')
-            options('akb_MLT', 'ytitle', 'MLT [h]')
+            options('MLT', 'ytitle', 'MLT [h]')
             options('ILAT', 'ytitle', 'ILAT [deg]')
             
             omni_data_names = ['SYM_H', 'IMF', 'flow_speed', 'proton_density', 'Pressure', 'E']
@@ -289,7 +307,7 @@ for k in range(len(day_list)-1):
 
             if event_case =='super_strong':
                 tplot(['IMF', 'flow_speed', 'proton_density','Pressure', 'E','Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'SYM_H'], 
-                var_label = ['ALT', 'akb_MLT', 'ILAT'], 
+                var_label = ['ALT', 'MLT', 'ILAT'], 
                 save_png = dir + 'super_strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
                 xsize=14, ysize=16,
                 display=False)
@@ -302,7 +320,7 @@ for k in range(len(day_list)-1):
                 '''
             if event_case =='strong':
                 tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'E','Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'SYM_H'], 
-                var_label = ['ALT', 'akb_MLT', 'ILAT'], 
+                var_label = ['ALT', 'MLT', 'ILAT'], 
                 save_png = dir + 'strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
                 xsize=14, ysize=16,
                 display=False)

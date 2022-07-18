@@ -5,7 +5,7 @@ import numpy as np
 from load import mca, orb
 
 ILAT_min = 55
-start_day_string = '2001-11-9'
+start_day_string = '2002-10-01'
 start_day_time_double = pyspedas.time_double(start_day_string)
 seconds_per_day = 86400
 day_list = []

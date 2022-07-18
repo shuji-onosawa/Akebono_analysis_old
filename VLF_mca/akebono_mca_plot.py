@@ -5,7 +5,7 @@ import numpy as np
 from load import mca, orb
 
 ILAT_min = 55
-start_day_string = '2002-10-01'
+start_day_string = '1989-03-06'
 start_day_time_double = pyspedas.time_double(start_day_string)
 seconds_per_day = 86400
 day_list = []
@@ -29,9 +29,9 @@ for k in range(len(day_list)-1):
         #print('orbit file does not exists')
         continue
     try:
-        pyspedas.omni.data(trange = trange, level = 'hro', datatype='1min')
+        pyspedas.omni.data(trange = trange, level = 'hro', datatype='1min', no_update=True)
     except:
-        pyspedas.omni.data(trange = trange, level = 'hro', datatype='1min')
+        pyspedas.omni.data(trange = trange, level = 'hro', datatype='1min', no_update=True)
 
     IMFx_tvar = pytplot.get_data('BX_GSE')
     IMFy_tvar = pytplot.get_data('BY_GSM')
@@ -73,6 +73,7 @@ for k in range(len(day_list)-1):
     pyspedas.tinterpol('akb_MLAT', interp_to='Emax_Pwr', newname = 'MLAT')
     pyspedas.tinterpol('akb_Pass', interp_to='Emax_Pwr', newname = 'Pass', method = 'nearest')
     pyspedas.tinterpol('akb_ALT', interp_to='Emax_Pwr', newname = 'ALT')
+    pyspedas.tinterpol('akb_MLT', interp_to='Emax_pwr', newname = 'MLT', method = 'nearest')
     #Limit ILAT range
     Emax = get_data('Emax_Pwr')
     time = Emax.times
@@ -80,9 +81,11 @@ for k in range(len(day_list)-1):
     ILAT = ILAT.y
     MLAT = get_data('MLAT')
     MLAT = MLAT.y
+    MLT = get_data('MLT')
+    MLT = MLT.y
 
-    north_index_tuple = np.where((MLAT>0) & (ILAT>ILAT_min)) 
-    south_index_tuple = np.where((MLAT<0) & (ILAT>ILAT_min))
+    north_index_tuple = np.where((MLAT>0) & (ILAT>ILAT_min) & (MLT>=10) & (MLT<=14)) 
+    south_index_tuple = np.where((MLAT<0) & (ILAT>ILAT_min) & (MLT>=10) & (MLT<=14))
 
     north_index = north_index_tuple[0]
     south_index = south_index_tuple[0]

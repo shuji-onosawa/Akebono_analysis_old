@@ -59,7 +59,7 @@ def mca(trange = ['2014-01-01', '2014-01-03'],
     return tvars
 
 #orbit
-def orb(trange = ['2014-01-01', '2014-01-03'], downloadonly = False):
+def orb(trange = ['2013-01-01', '2013-01-02'], downloadonly = False):
     
     remote_name_prefix = 'https://darts.isas.jaxa.jp/stp/data/exosd/orbit/daily/%Y%m/'
     pathformat = 'https://darts.isas.jaxa.jp/stp/data/exosd/orbit/daily/%Y%m/ED%y%m%d.txt'
@@ -101,6 +101,9 @@ def orb(trange = ['2014-01-01', '2014-01-03'], downloadonly = False):
     MLAT = []
     MLT = []
     ALT = []
+    Bmdl_X = []
+    Bmdl_Y = []
+    Bmdl_Z = []
 
     for out_file in out_files:
         datalines = []
@@ -141,14 +144,21 @@ def orb(trange = ['2014-01-01', '2014-01-03'], downloadonly = False):
         MLAT = MLAT + data_array[22].tolist()
         MLT = MLT + data_array[23].tolist()
         ALT = ALT + data_array[29].tolist()
-    
+        Bmdl_X = Bmdl_X + data_array[24].tolist()
+        Bmdl_Y = Bmdl_Y + data_array[25].tolist()
+        Bmdl_Z = Bmdl_Z + data_array[26].tolist()
+
     Pass = [float(n) for n in Pass]
     ILAT = [float(n) for n in ILAT]
     MLAT = [float(n) for n in MLAT]
     MLT = [float(n) for n in MLT]
     ALT = [float(n) for n in ALT]
-    
-    
+
+    Bmdl_X = [float(n) for n in Bmdl_X]
+    Bmdl_Y = [float(n) for n in Bmdl_Y]
+    Bmdl_Z = [float(n) for n in Bmdl_Z]
+
+
     '''
     datalist_header = [ 'PASS',
                         'UT', 
@@ -161,7 +171,7 @@ def orb(trange = ['2014-01-01', '2014-01-03'], downloadonly = False):
                         'FMLAT(deg)', 
                         'MLAT(deg)', 
                         'MLT(h)', 
-                        'Bmdl_X', 'Bmdl_Y', 'Bmdl_Z', 
+                        'Bmdl_X', 'Bmdl_Y', 'Bmdl_Z', :X, Y, AND Z COMPONENTS OF THE IGRF 2005 MAGNETIC FIELD (nT)   
                         'GCLON_S/C(deg)', 'GCLAT_S/C(deg)',  
                         'ALT(km)', 
                         'LSUN', 
@@ -175,5 +185,8 @@ def orb(trange = ['2014-01-01', '2014-01-03'], downloadonly = False):
     store_data(prefix+'MLAT', data={'x': UT_time_double, 'y': MLAT})
     store_data(prefix+'MLT', data={'x': UT_time_double, 'y': MLT})
     store_data(prefix+'ALT', data={'x': UT_time_double, 'y': ALT})
-    
+    store_data(prefix+'Bmdl_X', data={'x': UT_time_double, 'y': Bmdl_X})
+    store_data(prefix+'Bmdl_Y', data={'x': UT_time_double, 'y': Bmdl_Y})
+    store_data(prefix+'Bmdl_Z', data={'x': UT_time_double, 'y': Bmdl_Z})
+
     return 

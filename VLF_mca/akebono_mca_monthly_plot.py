@@ -1,22 +1,25 @@
 import pyspedas
-from pytplot import get_data, store_data, tplot_names, tplot
+from pytplot import get_data, store_data, tplot_names, tplot, options, tlimit
 from pyspedas import time_clip, time_double, time_string, tinterpol
 import numpy as np
 from load import mca, orb
 
 day = 31
-unit_time_width = 3600 #1h
+seconds_per_day = 86400
+unit_time_hour = 2
+unit_time_width = 3600 * unit_time_hour
+unit_per_day = seconds_per_day/(unit_time_width)
 lat_array = np.arange(55, 90)
 
 matrix = []
 
 start_time = time_double('1990-01-20 00:00:00')
-end_time = start_time+day*24*unit_time_width
+end_time = start_time+day*seconds_per_day
 
-days = np.arange(start_time, end_time + 24*unit_time_width, 24*unit_time_width, float)
+days = np.arange(start_time, end_time + seconds_per_day, seconds_per_day, float)
 days_string = time_string(days, fmt= '%Y-%m-%d %H:%M:%S')
 
-for i in range(days_string.size):
+for i in range(len(days_string)-1):
     trange = [days_string[i], days_string[i+1]]
     mca(trange)
     orb(trange)
@@ -37,8 +40,8 @@ for i in range(days_string.size):
     tinterpol('akb_MLT', interp_to='Emax', newname = 'MLT', method = 'nearest')
 
     start_time_hour = time_double(days_string[i])
-    hours = time_string(np.arange(start_time_hour, start_time_hour + 25*unit_time_width, unit_time_width))
-    for j in range(hours.size):
+    hours = time_string(np.arange(start_time_hour, start_time_hour + (unit_per_day + 1)*unit_time_width, unit_time_width))
+    for j in range(len(hours)-1):
         time_clip('Emax_Pwr', time_start=hours[j], time_end=hours[j+1], new_names='Emax_Pwr_cliped')
         time_clip('ILAT', time_start=hours[j], time_end=hours[j+1], new_names='ILAT_cliped')
         time_clip('MLT', time_start=hours[j], time_end=hours[j+1], new_names='MLT_cliped')
@@ -56,15 +59,28 @@ for i in range(days_string.size):
 
         pwr_list_per_hour = []
         for lat in lat_array:
-            index_tuple = np.where((MLAT>0) & (ILAT<lat+1) & (ILAT>lat)) 
+            index_tuple = np.where((MLAT>0) & (ILAT<lat+1) & (ILAT>lat) & (MLT>=10) & (MLT<=14)) 
             index = index_tuple[0]
             try:
                 ILAT_a = ILAT[index[0]]
                 ILAT_b = ILAT[index[-1]]
                 Emax_1deg = Emax_pwr[index[0]:index[-1]]
-                print('pwr:', np.nanmax(Emax_1deg))
+                
                 pwr_list_per_hour.append(np.nanmean(Emax_1deg))
             except Exception as e:
                 print(e)
-                north_pwr_list_per_hour.append(np.nan)
-    len(north_pwr_list_per_hour)
+                pwr_list_per_hour.append(np.nan)
+        matrix.append(pwr_list_per_hour)
+    
+
+times = np.arange(start_time, end_time, unit_time_width, dtype=float)
+print(np.array(matrix).shape)
+print(times.size)
+print(lat_array.size)
+print(time_string(times))
+store_data('Epwr_monthly', data={'x':times, 'y':matrix, 'v':lat_array})
+
+options('Epwr_monthly', 'zrange',[1e-4, 1] )
+options('Epwr_monthly', 'spec', 1)
+options('Epwr_monthly', 'zlog', 1)
+tplot('Epwr_monthly', xsize=16, save_png='north_mca_monthly_2h')

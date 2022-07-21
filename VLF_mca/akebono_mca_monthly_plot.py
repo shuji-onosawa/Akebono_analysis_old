@@ -4,7 +4,7 @@ from pyspedas import time_clip, time_double, time_string, tinterpol
 import numpy as np
 from load import mca, orb
 
-day = 31
+day = 15
 seconds_per_day = 86400
 unit_time_hour = 2
 unit_time_width = 3600 * unit_time_hour
@@ -13,7 +13,7 @@ lat_array = np.arange(55, 90)
 
 matrix = []
 
-start_time = time_double('1990-01-20 00:00:00')
+start_time = time_double('2003-10-20 00:00:00')
 end_time = start_time+day*seconds_per_day
 
 days = np.arange(start_time, end_time + seconds_per_day, seconds_per_day, float)
@@ -80,7 +80,10 @@ print(lat_array.size)
 print(time_string(times))
 store_data('Epwr_monthly', data={'x':times, 'y':matrix, 'v':lat_array})
 
+pyspedas.omni.data([start_time, end_time], datatype='1min', level='hro', no_update=True)
 options('Epwr_monthly', 'zrange',[1e-4, 1] )
 options('Epwr_monthly', 'spec', 1)
 options('Epwr_monthly', 'zlog', 1)
-tplot('Epwr_monthly', xsize=16, save_png='north_mca_monthly_2h')
+omni_var_name = ['BZ_GSM', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H']
+options(omni_var_name, 'panel_size', 0.5)
+tplot(omni_var_name+['Epwr_monthly'], xsize=16, save_png='north_mca_monthly_2h_omni')

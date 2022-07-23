@@ -1,22 +1,27 @@
 from cmath import nan
 import pyspedas
-from pytplot import get_data, store_data, tplot_names, tplot, options, tlimit
+from pytplot import get_data, store_data, tplot_names, tplot, options, tplot_options
 from pyspedas import time_clip, time_double, time_string, tinterpol
 import numpy as np
 from load import mca, orb
 
-day = 1
+day = 30
+freq_channel_index = 2
+channels = ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6 Hz",
+            "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
+            "316 Hz", "562 Hz", "1 kHz", '1.76 kHz']
+unit_time_hour = 2
+hemisphere = 'south'
+
+
 seconds_per_day = 86400
-unit_time_hour = 1
 unit_time_width = 3600 * unit_time_hour
 unit_per_day = seconds_per_day/(unit_time_width)
 lat_array = np.arange(55, 90)
 
-freq_channel_index = 0
-
 matrix = []
-
-start_time = time_double('1989-03-10 00:00:00')
+start_time_string = '1989-03-6 00:00:00'
+start_time = time_double(start_time_string)
 end_time = start_time+day*seconds_per_day
 
 days = np.arange(start_time, end_time + seconds_per_day, seconds_per_day, float)
@@ -38,7 +43,7 @@ for i in range(len(days_string)-1):
             store_data(tplot_name[k] +'_amp', data={'x': tplot_variable.times, 'y': tplot_variable_amplitude, 'v': tplot_variable.v})
             store_data(tplot_name[k] +'_pwr', data={'x': tplot_variable.times, 'y': tplot_variable_power, 'v': tplot_variable.v})
             
-    tinterpol('akb_ILAT', interp_to='Emax', newname = 'ILAT')
+    tinterpol('akb_ILAT', interp_to='Emax', newname = 'ILAT', )
     tinterpol('akb_MLAT', interp_to='Emax', newname = 'MLAT')
     tinterpol('akb_MLT', interp_to='Emax', newname = 'MLT', method = 'nearest')
 
@@ -51,64 +56,45 @@ for i in range(len(days_string)-1):
     MLT = get_data('MLT')
     
     #in north hemisphere
-    for j in range(2):
+    for j in range(hours.size-1):
         pwr_list_per_hour = []
         for lat in lat_array:
-            index_tuple = np.where((hours[j] <= Emax_pwr.times) & (Emax_pwr.times < hours[j+1]) & (ILAT.y > lat) & (ILAT.y < lat+1) & (MLAT.y<0))
+            if hemisphere == 'north':
+                index_tuple = np.where((hours[j] <= Emax_pwr.times) & (Emax_pwr.times < hours[j+1]) 
+                                       & (ILAT.y > lat) & (ILAT.y < lat+1) 
+                                       #& (10 <= MLT.y) & (MLT.y <= 14)
+                                       & (MLAT.y>0))
+                                       
+            elif hemisphere == 'south':
+                index_tuple = np.where((hours[j] <= Emax_pwr.times) & (Emax_pwr.times < hours[j+1]) 
+                                       & (ILAT.y > lat) & (ILAT.y < lat+1) 
+                                       #& (10 <= MLT.y) & (MLT.y <= 14)
+                                       & (MLAT.y<0))
             index = index_tuple[0] 
-            ilat = ILAT.y[index]
-            mlat = MLAT.y[index]
-            mlt = MLT.y[index]
             if len(index) == 0:
                 pwr_list_per_hour.append(np.nan)
             else:
-                Emax_pwr_1deg = Emax_pwr.y.T[0][index]
+                Emax_pwr_1deg = Emax_pwr.y.T[freq_channel_index][index]
             
                 pwr_list_per_hour.append(np.nanmax(Emax_pwr_1deg))
-                print(np.nanmax(Emax_pwr_1deg))
-            
-        matrix.append(pwr_list_per_hour)
-    print(matrix)
-    
-            
-
-
-
-
-'''
-    for j in range(len(hours)-1):
-        pwr_list_per_hour = []
-        for lat in lat_array:
-            index_tuple = np.where((hours[j] <= Emax_pwr.times) & (hours[j+1] > Emax_pwr.times))
-            index = index_tuple[0] 
-            print(index)
-            Emax_pwr_1h = Emax_pwr.y.T[0][index]
-            ilat = ILAT.y[index]
-            mlat = MLAT.y[index]
-            mlt = MLT.y[index]
-            
-            try:
-                Emax_1deg = Emax_pwr.y.T[freq_channel_index][index]               
-                pwr_list_per_hour.append(np.nanmax(Emax_1deg))
-            except Exception as e:
-                print(e)
-                pwr_list_per_hour.append(np.nan)
+           
         matrix.append(pwr_list_per_hour)
     
-
 times = np.arange(start_time, end_time, unit_time_width, dtype=float)
-print(np.array(matrix).shape)
-print(times.size)
-print(lat_array.size)
 
 store_data('Epwr_monthly', data={'x':times, 'y':matrix, 'v':lat_array})
 
 pyspedas.omni.data([start_time, end_time], datatype='1min', level='hro', no_update=True)
-#options('Epwr_monthly', 'zrange',[1e-4, 1] )
 options('Epwr_monthly', 'spec', 1)
 options('Epwr_monthly', 'zlog', 1)
-options('MLAT', 'yrange', [-90, 0])
-#omni_var_name = ['BZ_GSM', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H']
-#options(omni_var_name, 'panel_size', 0.5)
-tplot(['Epwr_monthly', 'MLAT'], xsize=16, ysize = 18, save_png='north_mca_monthly_2h_omni_max_test2')
-'''
+options('Epwr_monthly', 'ztitle', 'PSD \n [(mV/m)^2/Hz]')
+options('Epwr_monthly', 'ytitle', 'ILAT \n [deg]')
+
+omni_var_name = ['BZ_GSM', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H']
+options(omni_var_name, 'panel_size', 0.5)
+
+tplot_options('title','AKEBONO/MCA Ew Power Spectral Density @' + hemisphere + channels[freq_channel_index]
+              + '\n' + start_time_string)
+tplot(['SYM_H', 'Epwr_monthly'], save_png=hemisphere + '_mca_monthly_2h_omni_test')
+
+

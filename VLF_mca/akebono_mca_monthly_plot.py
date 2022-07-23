@@ -87,6 +87,7 @@ store_data('Epwr_monthly', data={'x':times, 'y':matrix, 'v':lat_array})
 pyspedas.omni.data([start_time, end_time], datatype='1min', level='hro', no_update=True)
 options('Epwr_monthly', 'spec', 1)
 options('Epwr_monthly', 'zlog', 1)
+options('Epwr_monthly', 'zrange', [1e-10, 1])
 options('Epwr_monthly', 'ztitle', 'PSD \n [(mV/m)^2/Hz]')
 options('Epwr_monthly', 'ytitle', 'ILAT \n [deg]')
 

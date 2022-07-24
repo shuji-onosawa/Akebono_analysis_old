@@ -4,13 +4,22 @@ from pytplot import options, tplot, tlimit, tplot_options, get_data, store_data
 import numpy as np
 from load import mca, orb
 
+freq_channel_index = 2
+channels = ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6 Hz",
+            "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
+            "316 Hz", "562 Hz", "1 kHz", '1.76 kHz']
+
+surfix = 'Pwr'
+
 gyro_plot = True
+
 ILAT_min = 55
-start_day_string = '1990-01-23'
+start_day_string = '1989-05-23'
 start_day_time_double = pyspedas.time_double(start_day_string)
+
 seconds_per_day = 86400
 day_list = []
-for i in range(0, 2):
+for i in range(0, 9000):
     time_double = start_day_time_double + i * seconds_per_day
     day_list.append(pyspedas.time_string(time_double, fmt='%Y-%m-%d %H:%M:%S'))
 
@@ -67,19 +76,20 @@ for k in range(len(day_list)-1):
         pytplot.store_data(tplot_names[i] +'_Pwr', data={'x': tplot_variable.times, 'y': tplot_variable_power, 'v': tplot_variable.v})
 
     #ion gyro freq 
-    Bx = pytplot.get_data('akb_Bmdl_X')
-    By = pytplot.get_data('akb_Bmdl_Y')
-    Bz = pytplot.get_data('akb_Bmdl_Z')
-    B = np.sqrt(Bx.y**2 + By.y**2 + Bz.y**2) * 1e-9
+    if gyro_plot == True:
+        Bx = pytplot.get_data('akb_Bmdl_X')
+        By = pytplot.get_data('akb_Bmdl_Y')
+        Bz = pytplot.get_data('akb_Bmdl_Z')
+        B = np.sqrt(Bx.y**2 + By.y**2 + Bz.y**2) * 1e-9
 
-    mass_o = 2.656e-26
-    mass_h = 1.67e-27
-    q = 1.60217663e-19
+        mass_o = 2.656e-26
+        mass_h = 1.67e-27
+        q = 1.60217663e-19
 
-    O_gyro = q*B/mass_o/(2*np.pi)
-    H_gyro = q*B/mass_h/(2*np.pi)
-    gyro_matrix = np.array([O_gyro, H_gyro]).T
-    store_data('gyro_freq', data = {'x': Bx.times, 'y':gyro_matrix})
+        O_gyro = q*B/mass_o/(2*np.pi)
+        H_gyro = q*B/mass_h/(2*np.pi)
+        gyro_matrix = np.array([O_gyro, H_gyro]).T
+        store_data('gyro_freq', data = {'x': Bx.times, 'y':gyro_matrix})
     
     #Time interpolate
     try:
@@ -103,8 +113,8 @@ for k in range(len(day_list)-1):
     MLT = get_data('MLT')
     MLT = MLT.y
 
-    north_index_tuple = np.where((MLAT>0) & (ILAT>ILAT_min) & (MLT>=10) & (MLT<=14)) 
-    south_index_tuple = np.where((MLAT<0) & (ILAT>ILAT_min) & (MLT>=10) & (MLT<=14))
+    north_index_tuple = np.where((MLAT>0) & (ILAT>ILAT_min) ) 
+    south_index_tuple = np.where((MLAT<0) & (ILAT>ILAT_min) )
 
     north_index = north_index_tuple[0]
     south_index = south_index_tuple[0]
@@ -232,7 +242,7 @@ for k in range(len(day_list)-1):
     #dir_list = ['./akb_North_mca_plot/', './akb_South_mca_plot/']
     dir_list = ['./akb_North_mca_w_gyro_plot/', './akb_South_mca_w_gyro_plot/']
     hemisphere_list = ['north', 'south']
-    surfix = 'Pwr'
+    
 
     #make color table for line plots
     color_table = ['red', 'yellow', 'blue', 'green',
@@ -250,6 +260,9 @@ for k in range(len(day_list)-1):
         end_time_list = end_time_list_list[i]
         Passname_list = Passname_list_list[i]
 
+        print(hemisphere)
+        print(start_time_list)
+        print(end_time_list)
         for j in range(len(start_time_list)):
             start_time = start_time_list[j]
             end_time = end_time_list[j]
@@ -266,17 +279,20 @@ for k in range(len(day_list)-1):
             Passname = Passname[-4:]
             
             #dict event case
-            pyspedas.time_clip('Emax_Pwr', time_start=start_time, time_end = end_time, new_names='Emax_Pwr_clip')
-            Emax_cliped = get_data('Emax_Pwr_clip')
-            Emax_10Hz = Emax_cliped.y.T[2]
+            Emax_pwr = get_data('Emax_Pwr')
+            index_tuple = np.where((pyspedas.time_double(start_time_list[j]) < Emax_pwr.times) 
+                                 & (Emax_pwr.times < pyspedas.time_double(end_time_list[j]))
+                                 & (MLT>=10) & (MLT<=14))
+            Emax_10Hz = Emax_pwr.y.T[freq_channel_index][index_tuple[0]]
             event_case=''
-            if np.nanmax(Emax_10Hz) >=0.6:
+            
+            if Emax_10Hz.size == 0:
+                continue
+            if np.nanmax(Emax_10Hz) >=0.5:
                 event_case = 'super_strong'
-            elif np.nanmax(Emax_10Hz) >=0.3:
-                event_case = 'strong'
-            print(hemisphere)
-            print('Emax_pwr max')
-            print([start_time, end_time] ,np.nanmax(Emax_10Hz))
+            #elif np.nanmax(Emax_10Hz) >=0.3:
+            #    event_case = 'strong'
+            
 
             tlimit([start_time, end_time])
             options(['Emax_' + surfix, 'Bmax_' + surfix], 'spec', 1)
@@ -329,34 +345,19 @@ for k in range(len(day_list)-1):
                                         "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
                                         "316 Hz", "562 Hz", '1000 Hz'])
 
-            if event_case =='super_strong':
-                if gyro_plot:
-                    tplot(['Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq'], 
-                    var_label = ['ALT', 'akb_MLT', 'ILAT'], 
-                    save_png = dir + 'super_strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
-                    xsize=14, ysize=16,
-                    display=False)
-                else:
-                    tplot(['IMF', 'flow_speed', 'proton_density','Pressure', 'E','Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'SYM_H'], 
-                    var_label = ['ALT', 'MLT', 'ILAT'], 
-                    save_png = dir + 'super_strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
-                    xsize=14, ysize=16,
-                    display=False)
+            if event_case =='super_strong':  
+                tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq'], 
+                var_label = ['ALT', 'MLT', 'ILAT'], 
+                save_png = dir + 'super_strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
+                xsize=14, ysize=16,
+                display=False)
             if event_case =='strong':
-                if gyro_plot:
-                    tplot(['Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq'], 
-                    var_label = ['ALT', 'akb_MLT', 'ILAT'], 
-                    save_png = dir + 'strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
-                    xsize=14, ysize=16,
-                    display=False)
-                else:
-                    tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'E','Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'SYM_H'], 
-                    var_label = ['ALT', 'MLT', 'ILAT'], 
-                    save_png = dir + 'strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
-                    xsize=14, ysize=16,
-                    display=False)
+                tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq'], 
+                var_label = ['ALT', 'MLT', 'ILAT'], 
+                save_png = dir + 'strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
+                xsize=14, ysize=16,
+                display=False)
                 
-
 
 tplot_names = pytplot.tplot_names(True)
 pytplot.store_data(tplot_names, delete=True)

@@ -86,7 +86,7 @@ for k in range(len(day_list)-1):
     Emax_amp = get_data('Emax_Amp')
     Bmax_amp = get_data('Bmax_Amp')
     
-    E_to_B = Emax_amp.y/Bmax_amp.y
+    E_to_B = Emax_amp.y/Bmax_amp.y *1e9
     
     index_tuple = np.where((ILAT > 55)&(10 < MLT)&(MLT < 14))
     Emax_in_cusp = Emax_pwr.y[index_tuple[0]]

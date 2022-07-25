@@ -6,13 +6,16 @@ from load import mca, orb
 
 gyro_plot = True
 ILAT_min = 55
-start_day_string = '1990-01-04'
+start_day_string = '1990-01-05'
 start_day_time_double = pyspedas.time_double(start_day_string)
 seconds_per_day = 86400
 day_list = []
 for i in range(0, 2):
     time_double = start_day_time_double + i * seconds_per_day
     day_list.append(pyspedas.time_string(time_double, fmt='%Y-%m-%d %H:%M:%S'))
+
+Emax_pwr_10Hz_array = np.empty((0,0), float)
+Emax_pwr_mean_fcH_fLH_array = np.empty((0,0), float)
 
 for k in range(len(day_list)-1):
     
@@ -85,8 +88,8 @@ for k in range(len(day_list)-1):
     try:
         pyspedas.tinterpol('akb_ILAT', interp_to='Emax_Pwr', newname = 'ILAT')
     except:
-        with open('./akebono_orbit_error_day_list.txt', mode="a") as f:
-                f.write(trange[0] + '\n')
+        #with open('./akebono_orbit_error_day_list.txt', mode="a") as f:
+        #       f.write(trange[0] + '\n')
         print('orbit file is not perfect')
         continue
     pyspedas.tinterpol('akb_MLAT', interp_to='Emax_Pwr', newname = 'MLAT')
@@ -197,15 +200,23 @@ for k in range(len(day_list)-1):
             second = start_time[17:19]
 
             #get the indices of the maximum Emax at 10 Hz  
+            
             Emax_pwr = get_data('Emax_Pwr')
-            index_tuple = np.where((pyspedas.time_double(start_time_list[j]) < Emax_pwr.times) 
-                                 & (Emax_pwr.times < pyspedas.time_double(end_time_list[j])))
-                                #& (MLT>=10) & (MLT<=14))
-            Emax_10Hz = Emax_pwr.y.T[2][index_tuple[0]]
-            print(np.nanmax(Emax_10Hz))
-            maxIndex = [i for i, Emax_10Hz_var in enumerate(Emax_10Hz) if Emax_10Hz_var == np.nanmax(Emax_10Hz)]
-            print(maxIndex)
+            index_tuple = np.where((pyspedas.time_double(start_time) < Emax_pwr.times) 
+                                 & (Emax_pwr.times < pyspedas.time_double(end_time)))
+                                 #& (MLT>=10) & (MLT<=14))
+            Emax_in_pass = Emax_pwr.y[index_tuple[0]]
+            print(start_time, end_time)
+            Emax_10Hz = Emax_in_pass.T[2]
+            Emax_176Hz_562Hz = Emax_in_pass.T[7:10]
+            
+            Index_over_th = [i for i, Emax_10Hz_var in enumerate(Emax_10Hz) if Emax_10Hz_var > 0.1]
+            Emax_10Hz_over_th = Emax_10Hz[Index_over_th]
+            Emax_mean_fch_fLH = np.nanmean(Emax_176Hz_562Hz[Index_over_th], axis = 0)
 
+            Emax_pwr_10Hz_array = np.append(Emax_pwr_10Hz_array, Emax_10Hz_over_th)
+            Emax_pwr_mean_fcH_fLH_array = np.append(Emax_pwr_mean_fcH_fLH_array, Emax_mean_fch_fLH)
+            
             '''
             tlimit([start_time, end_time])
             options(['Emax_' + surfix, 'Bmax_' + surfix], 'spec', 1)

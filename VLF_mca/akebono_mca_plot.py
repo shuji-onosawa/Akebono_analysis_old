@@ -14,12 +14,12 @@ surfix = 'Pwr'
 gyro_plot = True
 
 ILAT_min = 55
-start_day_string = '1989-05-23'
+start_day_string = '1992-08-04'
 start_day_time_double = pyspedas.time_double(start_day_string)
 
 seconds_per_day = 86400
 day_list = []
-for i in range(0, 9000):
+for i in range(0, 9500):
     time_double = start_day_time_double + i * seconds_per_day
     day_list.append(pyspedas.time_string(time_double, fmt='%Y-%m-%d %H:%M:%S'))
 
@@ -164,7 +164,7 @@ for k in range(len(day_list)-1):
     end_time_list_list = [north_end_time_list, south_end_time_list]
 
 
-    #make tplot vars of Electric field Amplitude at 3.16 - 100 Hz
+    #make tplot vars of Electric field Amplitude at 3.16 - 1000 Hz
     Emax = get_data('Emax_Amp')
     Emax_channel1 = Emax.y.T[0] #3.16 Hz
     Emax_channel2 = Emax.y.T[1] #5.62 Hz
@@ -194,7 +194,7 @@ for k in range(len(day_list)-1):
             data={'x': time,
                     'y': np.array(Amp_data).T})
 
-    #make tplot vars of Electric field Amplitude at 3.16 - 100 Hz
+    #make tplot vars of Electric field Amplitude at 3.16 - 1000 Hz
     Emax = get_data('Emax_Pwr')
     Emax_channel1 = Emax.y.T[0] #3.16 Hz
     Emax_channel2 = Emax.y.T[1] #5.62 Hz
@@ -238,16 +238,49 @@ for k in range(len(day_list)-1):
         south_Passname_list = Passname[south_start_time_index]
 
     Passname_list_list = [north_Passname_list, south_Passname_list]
+    
+
+    #calc power law alpha 
+    def reg1dim(x, y):
+        n = x.size
+        a = ((np.dot(x, y)- np.sum(y) * np.sum(x)/n)/
+            (np.sum(x ** 2) - np.sum(x)**2 / n))
+        b = (np.sum(y) - a * np.sum(x))/n
+        return a, b
+
+    Emax_tvar = pytplot.get_data('Emax_Pwr')
+    freq = Emax_tvar.v
+    Emax = Emax_tvar.y
+    times = Emax_tvar.times
+
+    alpha_list = []
+    Emax_res_list = []
+
+    fit_frange = np.log10(freq[2:9])
+
+    for j in range(times.size):
+        fit_Emax = np.log10(Emax[j][2:9])
+        a, b = reg1dim(fit_frange, fit_Emax)
+        alpha_list.append(a)
+        
+        p0 = 10**b
+        Emax_lsm = p0*freq**a
+        Emax_res = (np.log10(Emax[j]) - np.log10(Emax_lsm)).tolist()
+        Emax_res_list.append(Emax_res)
+
+    pytplot.store_data('Emax_pwr_law_alpha', data={'x':times, 'y':alpha_list})
+    pytplot.store_data('Emax_pwr_res', data={'x':times, 'y':Emax_res_list, 'v':freq})
+    pytplot.options('Emax_pwr_res', 'spec', 1)
+    pytplot.options('Emax_pwr_res', 'ylog', 1)
+    pytplot.options('Emax_pwr_res', 'zrange', [-2, 2])
+    pytplot.options('Emax_pwr_res', 'Colormap', 'coolwarm')
+    pytplot.options(['Emax_pwr_res', 'Emax_pwr_law_alpha'], 'panel_size', 0.5)
+
 
     #dir_list = ['./akb_North_mca_plot/', './akb_South_mca_plot/']
     dir_list = ['./akb_North_mca_w_gyro_plot/', './akb_South_mca_w_gyro_plot/']
     hemisphere_list = ['north', 'south']
-    
 
-    #make color table for line plots
-    color_table = ['red', 'yellow', 'blue', 'green',
-                'crimson', 'y', 'dodgerblue', 'lime',
-                'deeppink', 'orange', 'c']
 
     #plot
     for i in range(2):
@@ -290,9 +323,10 @@ for k in range(len(day_list)-1):
                 continue
             if np.nanmax(Emax_10Hz) >=0.5:
                 event_case = 'super_strong'
-            #elif np.nanmax(Emax_10Hz) >=0.3:
-            #    event_case = 'strong'
-            
+            elif np.nanmax(Emax_10Hz) >=0.3:
+                event_case = 'strong'
+            elif np.nanmax(Emax_10Hz) >=0.1:
+                event_case = 'normal'            
 
             tlimit([start_time, end_time])
             options(['Emax_' + surfix, 'Bmax_' + surfix], 'spec', 1)
@@ -319,7 +353,6 @@ for k in range(len(day_list)-1):
             options('Emax_lines_' + surfix, 'legend_names', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6 Hz",
                                                             "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
                                                             "316 Hz", "562 Hz", "1000 Hz"])
-            options('Emax_lines_' + surfix, 'Color', color_table)
             options('ALT', 'ytitle', 'ALT [km]')
             options('MLT', 'ytitle', 'MLT [h]')
             options('ILAT', 'ytitle', 'ILAT [deg]')
@@ -346,19 +379,24 @@ for k in range(len(day_list)-1):
                                         "316 Hz", "562 Hz", '1000 Hz'])
 
             if event_case =='super_strong':  
-                tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq'], 
+                tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq', 'Emax_pwr_res', 'Emax_pwr_law_alpha'], 
                 var_label = ['ALT', 'MLT', 'ILAT'], 
                 save_png = dir + 'super_strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
-                xsize=14, ysize=16,
+                xsize=14, ysize=18,
                 display=False)
             if event_case =='strong':
-                tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq'], 
+                tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq', 'Emax_pwr_res', 'Emax_pwr_law_alpha'], 
                 var_label = ['ALT', 'MLT', 'ILAT'], 
                 save_png = dir + 'strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
-                xsize=14, ysize=16,
+                xsize=14, ysize=18,
+                display=False)
+            if event_case =='normal':
+                tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq', 'Emax_pwr_res', 'Emax_pwr_law_alpha'], 
+                var_label = ['ALT', 'MLT', 'ILAT'], 
+                save_png = dir + 'normal_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
+                xsize=14, ysize=18,
                 display=False)
                 
-
-tplot_names = pytplot.tplot_names(True)
-pytplot.store_data(tplot_names, delete=True)
-print(pytplot.tplot_names())
+    tplot_names = pytplot.tplot_names(True)
+    pytplot.store_data(tplot_names, delete=True)
+    print(pytplot.tplot_names())

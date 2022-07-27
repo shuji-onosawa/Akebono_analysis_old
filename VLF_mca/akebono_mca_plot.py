@@ -14,12 +14,12 @@ surfix = 'Pwr'
 gyro_plot = True
 
 ILAT_min = 55
-start_day_string = '1992-08-04'
+start_day_string = '1990-01-01'
 start_day_time_double = pyspedas.time_double(start_day_string)
 
 seconds_per_day = 86400
 day_list = []
-for i in range(0, 9500):
+for i in range(0, 185):
     time_double = start_day_time_double + i * seconds_per_day
     day_list.append(pyspedas.time_string(time_double, fmt='%Y-%m-%d %H:%M:%S'))
 

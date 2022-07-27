@@ -5,8 +5,8 @@ from pyspedas import time_clip, time_double, time_string, tinterpol
 import numpy as np
 from load import mca, orb
 
-start_year_day = '1990-06-04'
-day = 30
+start_year_day = '1990-04-04'
+day = 90
 unit_time_hour = 2
 
 freq_channel_index = 2
@@ -14,7 +14,7 @@ channels = ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6 Hz",
             "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
             "316 Hz", "562 Hz", "1 kHz", '1.76 kHz']
 
-field = 'B' #Electric field, E or Magnetic field, B
+field = 'E' #Electric field, E or Magnetic field, B
 spec_type = 'amp' #amplitude, amp or power, pwr
 
 
@@ -98,10 +98,18 @@ store_data(field +spec_type+'_S_monthly', data={'x':times, 'y':south_matrix, 'v'
 pyspedas.omni.data([start_time, end_time], datatype='1min', level='hro', no_update=True)
 options([field +spec_type+'_N_monthly',field +spec_type+'_S_monthly'] , 'spec', 1)
 options([field +spec_type+'_N_monthly',field +spec_type+'_S_monthly'], 'zlog', 1)
-if spec_type == 'amp':
+options([field +spec_type+'_N_monthly',field +spec_type+'_S_monthly'], 'Colormap', 'viridis')
+
+if field+spec_type == 'Eamp':
     options([field +spec_type+'_N_monthly',field +spec_type+'_S_monthly'], 'ztitle', 'SD \n [mV/m/Hz^1/2]')
-if spec_type == 'pwr':
+    options([field +spec_type+'_N_monthly',field +spec_type+'_S_monthly'], 'zrange', [1e-2, 1])
+if field+spec_type == 'Bamp':
+    options([field +spec_type+'_N_monthly',field +spec_type+'_S_monthly'], 'ztitle', 'SD \n [pT/Hz^1/2]')
+    options([field +spec_type+'_N_monthly',field +spec_type+'_S_monthly'], 'zrange', [1e-2, 1])
+if field+spec_type == 'Epwr':
     options([field +spec_type+'_N_monthly',field +spec_type+'_S_monthly'], 'ztitle', 'PSD \n [(mV/m)^2/Hz]')
+if field+spec_type == 'Bpwr':
+    options([field +spec_type+'_N_monthly',field +spec_type+'_S_monthly'], 'ztitle', 'PSD \n [(pT)^2/Hz]')
 options(field +spec_type+'_N_monthly', 'ytitle', 'North Cusp \n ILAT [deg]')
 options(field +spec_type+'_S_monthly', 'ytitle', 'South Cusp \n ILAT [deg]')
 
@@ -110,7 +118,7 @@ options(omni_var_name, 'panel_size', 0.5)
 
 tplot_options('title','AKEBONO/MCA' + field + spec_type + '@' + channels[freq_channel_index]
               + '\n' + start_time_string)
-tplot(['SYM_H', field +spec_type+'_N_monthly',field +spec_type+'_S_monthly'], save_png='mca_monthly_2h_omni_' + field + spec_type +start_year_day)
+tplot(['SYM_H', field +spec_type+'_N_monthly',field +spec_type+'_S_monthly'], xsize = 16, save_png='mca_monthly_2h_omni_' + field + spec_type +channels[freq_channel_index]+start_year_day)
 #tplot(['SYM_H', field +spec_type+'_N_monthly'], save_png='mca_monthly_2h_omni_' + field + spec_type +start_year_day)
 
 

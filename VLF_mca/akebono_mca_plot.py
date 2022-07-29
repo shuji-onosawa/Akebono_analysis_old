@@ -381,19 +381,19 @@ for k in range(len(day_list)-1):
             if event_case =='super_strong':  
                 tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq', 'Emax_pwr_res', 'Emax_pwr_law_alpha'], 
                 var_label = ['ALT', 'MLT', 'ILAT'], 
-                save_png = dir + 'super_strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
+                save_png = dir + 'super_strong_event/' + 'akb-mca-'+ hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
                 xsize=14, ysize=18,
                 display=False)
             if event_case =='strong':
                 tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq', 'Emax_pwr_res', 'Emax_pwr_law_alpha'], 
                 var_label = ['ALT', 'MLT', 'ILAT'], 
-                save_png = dir + 'strong_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
+                save_png = dir + 'strong_event/' + 'akb-mca-'+ hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
                 xsize=14, ysize=18,
                 display=False)
             if event_case =='normal':
                 tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq', 'Emax_pwr_res', 'Emax_pwr_law_alpha'], 
                 var_label = ['ALT', 'MLT', 'ILAT'], 
-                save_png = dir + 'normal_event/' + 'akb-orbit0'+Passname + hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
+                save_png = dir + 'normal_event/' + 'akb-mca-'+ hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
                 xsize=14, ysize=18,
                 display=False)
                 

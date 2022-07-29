@@ -5,11 +5,11 @@ from pyspedas import time_clip, time_double, time_string, tinterpol
 import numpy as np
 from load import mca, orb
 
-start_year_day = '1990-05-04'
+start_year_day = '1990-01-04'
 day = 60
 unit_time_hour = 2
 
-freq_channel_index = 9
+freq_channel_index = 0
 channels = ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6 Hz",
             "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
             "316 Hz", "562 Hz", "1 kHz", '1.76 kHz']
@@ -113,9 +113,9 @@ options(['E'+spec_type+'_N_monthly','B' +spec_type+'_N_monthly'], 'spec', 1)
 options(['E'+spec_type+'_N_monthly','B' +spec_type+'_N_monthly'], 'zlog', 1)
 
 options('E'+spec_type+'_N_monthly', 'ztitle', 'SD \n [mV/m/Hz^1/2]')
-options('E'+spec_type+'_N_monthly', 'zrange', [1e-4, 1e-1])
+options('E'+spec_type+'_N_monthly', 'zrange', [1e-3, 1e1])
 options('B'+spec_type+'_N_monthly', 'ztitle', 'SD \n [pT/Hz^1/2]')
-options('B'+spec_type+'_N_monthly', 'zrange', [1e-3, 1])
+options('B'+spec_type+'_N_monthly', 'zrange', [1e-1, 1e2])
 
 options('E' +spec_type+'_N_monthly', 'ytitle', 'North Cusp \n ILAT [deg]')
 options('B' +spec_type+'_N_monthly', 'ytitle', 'North Cusp \n ILAT [deg]')
@@ -125,7 +125,7 @@ options(omni_var_name, 'panel_size', 0.5)
 
 tplot_options('title','AKEBONO/MCA ' + spec_type + '@' + channels[freq_channel_index]
               + '\n' + start_time_string)
-tplot(['SYM_H', 'E'+spec_type+'_N_monthly','B'+spec_type+'_N_monthly'], xsize = 16, save_png='mca_monthly_'+ spec_type +channels[freq_channel_index]+start_year_day)
+tplot(['SYM_H', 'E'+spec_type+'_N_monthly','B'+spec_type+'_N_monthly'], xsize = 16, save_png='mca_monthly_'+ spec_type +channels[freq_channel_index]+start_year_day+'_2month')
 #tplot(['SYM_H', field +spec_type+'_N_monthly'], save_png='mca_monthly_2h_omni_' + field + spec_type +start_year_day)
 
 

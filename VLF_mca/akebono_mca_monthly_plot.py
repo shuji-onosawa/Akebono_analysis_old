@@ -5,16 +5,11 @@ from pyspedas import time_clip, time_double, time_string, tinterpol
 import numpy as np
 from load import mca, orb
 
-<<<<<<< HEAD
 start_year_day = '1990-01-01'
 end_year_day   = '1990-02-01'
 
 unit_time_hour = 2
-=======
-start_year_day = '1990-01-04'
-day = 60
-unit_time_hour = 0.5
->>>>>>> 4de6c43e350ce6efb164b9cd8ee9df54ec7af773
+
 
 freq_channel_index = 0
 channels = ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6 Hz",

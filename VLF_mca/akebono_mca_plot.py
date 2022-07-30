@@ -272,6 +272,7 @@ for k in range(len(day_list)-1):
     pytplot.store_data('Emax_pwr_res', data={'x':times, 'y':Emax_res_list, 'v':freq})
     pytplot.options('Emax_pwr_res', 'spec', 1)
     pytplot.options('Emax_pwr_res', 'ylog', 1)
+    pytplot.options('Emax_pwr_res', 'ztitle', 'log10((mV/m)^2/Hz)')
     pytplot.options('Emax_pwr_res', 'zrange', [-2, 2])
     pytplot.options('Emax_pwr_res', 'Colormap', 'coolwarm')
     pytplot.options(['Emax_pwr_res', 'Emax_pwr_law_alpha'], 'panel_size', 0.5)

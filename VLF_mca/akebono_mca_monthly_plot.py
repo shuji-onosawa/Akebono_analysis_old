@@ -7,7 +7,7 @@ from load import mca, orb
 
 start_year_day = '1990-01-04'
 day = 60
-unit_time_hour = 2
+unit_time_hour = 0.5
 
 freq_channel_index = 0
 channels = ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6 Hz",
@@ -125,7 +125,7 @@ options(omni_var_name, 'panel_size', 0.5)
 
 tplot_options('title','AKEBONO/MCA ' + spec_type + '@' + channels[freq_channel_index]
               + '\n' + start_time_string)
-tplot(['SYM_H', 'E'+spec_type+'_N_monthly','B'+spec_type+'_N_monthly'], xsize = 16, save_png='mca_monthly_'+ spec_type +channels[freq_channel_index]+start_year_day+'_2month')
+tplot(['SYM_H', 'E'+spec_type+'_N_monthly','B'+spec_type+'_N_monthly'], xsize = 16, save_png='mca_monthly_30min'+ spec_type +channels[freq_channel_index]+start_year_day+'_2month')
 #tplot(['SYM_H', field +spec_type+'_N_monthly'], save_png='mca_monthly_2h_omni_' + field + spec_type +start_year_day)
 
 

@@ -5,8 +5,9 @@ from pyspedas import time_clip, time_double, time_string, tinterpol
 import numpy as np
 from load import mca, orb
 
-start_year_day = '1990-05-04'
-day = 60
+start_year_day = '1990-01-01'
+end_year_day   = '1990-02-01'
+
 unit_time_hour = 2
 
 freq_channel_index = 9
@@ -30,10 +31,11 @@ south_E_matrix = []
 south_B_matrix = []
 
 start_time_string = start_year_day + ' 00:00:00'
+end_time_string = end_year_day + ' 00:00:00'
 start_time = time_double(start_time_string)
-end_time = start_time+day*seconds_per_day
+end_time = time_double(end_time_string)
 
-days = np.arange(start_time, end_time + seconds_per_day, seconds_per_day, float)
+days = np.arange(start_time, end_time, seconds_per_day, float)
 days_string = time_string(days, fmt= '%Y-%m-%d %H:%M:%S')
 
 for i in range(len(days_string)-1):

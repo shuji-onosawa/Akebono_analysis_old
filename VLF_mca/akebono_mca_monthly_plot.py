@@ -5,8 +5,8 @@ from pyspedas import time_clip, time_double, time_string, tinterpol
 import numpy as np
 from load import mca, orb
 
-start_year_day = '1990-01-01'
-end_year_day   = '1990-02-01'
+start_year_day = '1989-03-10'
+end_year_day   = '1989-03-21'
 
 unit_time_hour = 2
 
@@ -107,16 +107,19 @@ for i in range(len(days_string)-1):
                 south_B_matrix.append(B_list_per_hour)
 
 store_data('E'+spec_type+'_N_monthly', data={'x':times, 'y':north_E_matrix, 'v':lat_array})
-#store_data('E'+spec_type+'_S_monthly', data={'x':times, 'y':south_E_matrix, 'v':lat_array})
-store_data('B'+spec_type+'_N_monthly', data={'x':times, 'y':north_B_matrix, 'v':lat_array})
+store_data('E'+spec_type+'_S_monthly', data={'x':times, 'y':south_E_matrix, 'v':lat_array})
+#store_data('B'+spec_type+'_N_monthly', data={'x':times, 'y':north_B_matrix, 'v':lat_array})
 #store_data('B'+spec_type+'_S_monthly', data={'x':times, 'y':south_B_matrix, 'v':lat_array})
 
 pyspedas.omni.data([start_time, end_time], datatype='1min', level='hro', no_update=True)
-options(['E'+spec_type+'_N_monthly','B' +spec_type+'_N_monthly'], 'spec', 1)
-options(['E'+spec_type+'_N_monthly','B' +spec_type+'_N_monthly'], 'zlog', 1)
+options(['E'+spec_type+'_N_monthly','E' +spec_type+'_S_monthly'], 'spec', 1)
+options(['E'+spec_type+'_N_monthly','E' +spec_type+'_S_monthly'], 'zlog', 1)
 
 options('E'+spec_type+'_N_monthly', 'ztitle', 'SD \n [mV/m/Hz^1/2]')
 options('E'+spec_type+'_N_monthly', 'zrange', [1e-3, 1e1])
+options('E'+spec_type+'_S_monthly', 'ztitle', 'SD \n [mV/m/Hz^1/2]')
+options('E'+spec_type+'_S_monthly', 'zrange', [1e-3, 1e1])
+
 options('B'+spec_type+'_N_monthly', 'ztitle', 'SD \n [pT/Hz^1/2]')
 options('B'+spec_type+'_N_monthly', 'zrange', [1e-1, 1e2])
 

@@ -6,7 +6,7 @@ from load import mca, orb
 
 gyro_plot = True
 ILAT_min = 55
-start_day_string = '1989-03-13'
+start_day_string = '1990-02-25'
 start_day_time_double = pyspedas.time_double(start_day_string)
 seconds_per_day = 86400
 day_list = []
@@ -200,14 +200,14 @@ for k in range(len(day_list)-1):
             if surfix == 'Amp':
                 options('Emax_' + surfix, 'zrange', [1e-5, 10])
                 options('Bmax_' + surfix, 'zrange', [1e-5, 10])
-                options('Emax_lines_' + surfix, 'yrange', [1e-3, 10])
+                #options('Emax_lines_' + surfix, 'yrange', [1e-3, 10])
                 options('Emax_' + surfix, 'ztitle', '$[mV/m/Hz^(1/2)]$')
                 options('Bmax_' + surfix, 'ztitle', '$[pT/Hz^(1/2)]$')
                 options('Emax_lines_' + surfix, 'ysubtitle', '$[mV/m/Hz^(1/2)]$')
             elif surfix == 'Pwr':
                 options('Emax_' + surfix, 'zrange', [1e-10, 100])
                 options('Bmax_' + surfix, 'zrange', [1e-8, 1e6])
-                options('Emax_lines_' + surfix, 'yrange', [1e-6, 100])
+                #options('Emax_lines_' + surfix, 'yrange', [1e-6, 100])
                 options('Emax_' + surfix, 'ztitle', '$[(mV/m)^2/Hz]$')
                 options('Bmax_' + surfix, 'ztitle', '$[pT^2/Hz]$')
                 options('Emax_lines_' + surfix, 'ysubtitle', '$[(mV/m)^2/Hz]$')

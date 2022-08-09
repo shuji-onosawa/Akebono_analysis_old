@@ -14,12 +14,12 @@ surfix = 'Pwr'
 gyro_plot = True
 
 ILAT_min = 55
-start_day_string = '1990-01-01'
+start_day_string = '1991-01-01'
 start_day_time_double = pyspedas.time_double(start_day_string)
 
 seconds_per_day = 86400
 day_list = []
-for i in range(0, 185):
+for i in range(0, 740):
     time_double = start_day_time_double + i * seconds_per_day
     day_list.append(pyspedas.time_string(time_double, fmt='%Y-%m-%d %H:%M:%S'))
 
@@ -258,26 +258,30 @@ for k in range(len(day_list)-1):
     Emax_res_list = []
 
     fit_frange_low = np.log10(freq[2:7]) #10-100 Hz
-    fit_frange_high = np.log10(freq[6:11])
+    fit_frange_high = np.log10(freq[6:11]) #100-1000 Hz
 
     for j in range(times.size):
         fit_Emax_low = np.log10(Emax[j][2:7])
         a, b = reg1dim(fit_frange_low, fit_Emax_low)
-        alpha_list_low_freq.append(a)
-        
+        alpha_list_low_freq.append(a)       
         p0 = 10**b
         Emax_lsm = p0*freq**a
         Emax_res = (np.log10(Emax[j]) - np.log10(Emax_lsm)).tolist()
         Emax_res_list.append(Emax_res)
 
-    pytplot.store_data('Emax_pwr_law_alpha', data={'x':times, 'y':alpha_list})
-    pytplot.store_data('Emax_pwr_res', data={'x':times, 'y':Emax_res_list, 'v':freq})
-    pytplot.options('Emax_pwr_res', 'spec', 1)
-    pytplot.options('Emax_pwr_res', 'ylog', 1)
-    pytplot.options('Emax_pwr_res', 'ztitle', 'log10((mV/m)^2/Hz)')
-    pytplot.options('Emax_pwr_res', 'zrange', [-2, 2])
-    pytplot.options('Emax_pwr_res', 'Colormap', 'coolwarm')
-    pytplot.options(['Emax_pwr_res', 'Emax_pwr_law_alpha'], 'panel_size', 0.5)
+        fit_Emax_high = np.log10(Emax[j][6:11])
+        a, b = reg1dim(fit_frange_high, fit_Emax_high)
+        alpha_list_high_freq.append(a)
+
+    store_data('Emax_alpha', data={'x':times, 'y':np.array([alpha_list_low_freq, alpha_list_high_freq]).T})
+    options('Emax_alpha', 'legend_names', ['α_low','α_high'])
+    store_data('Emax_pwr_res', data={'x':times, 'y':Emax_res_list, 'v':freq})
+    options('Emax_pwr_res', 'spec', 1)
+    options('Emax_pwr_res', 'ylog', 1)
+    options('Emax_pwr_res', 'ztitle', 'log10((mV/m)^2/Hz)')
+    options('Emax_pwr_res', 'zrange', [-2, 2])
+    options('Emax_pwr_res', 'Colormap', 'coolwarm')
+    options(['Emax_pwr_res', 'Emax_alpha'], 'panel_size', 0.5)
 
 
     #dir_list = ['./akb_North_mca_plot/', './akb_South_mca_plot/']
@@ -382,19 +386,19 @@ for k in range(len(day_list)-1):
                                         "316 Hz", "562 Hz", '1000 Hz'])
 
             if event_case =='super_strong':  
-                tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq', 'Emax_pwr_res', 'Emax_pwr_law_alpha'], 
+                tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq', 'Emax_pwr_res', 'Emax_alpha'], 
                 var_label = ['ALT', 'MLT', 'ILAT'], 
                 save_png = dir + 'super_strong_event/' + 'akb-mca-'+ hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
                 xsize=14, ysize=18,
                 display=False)
             if event_case =='strong':
-                tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq', 'Emax_pwr_res', 'Emax_pwr_law_alpha'], 
+                tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq', 'Emax_pwr_res', 'Emax_alpha'], 
                 var_label = ['ALT', 'MLT', 'ILAT'], 
                 save_png = dir + 'strong_event/' + 'akb-mca-'+ hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
                 xsize=14, ysize=18,
                 display=False)
             if event_case =='normal':
-                tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq', 'Emax_pwr_res', 'Emax_pwr_law_alpha'], 
+                tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq', 'Emax_pwr_res', 'Emax_alpha'], 
                 var_label = ['ALT', 'MLT', 'ILAT'], 
                 save_png = dir + 'normal_event/' + 'akb-mca-'+ hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
                 xsize=14, ysize=18,

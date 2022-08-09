@@ -253,15 +253,17 @@ for k in range(len(day_list)-1):
     Emax = Emax_tvar.y
     times = Emax_tvar.times
 
-    alpha_list = []
+    alpha_list_low_freq = []
+    alpha_list_high_freq = []
     Emax_res_list = []
 
-    fit_frange = np.log10(freq[2:9])
+    fit_frange_low = np.log10(freq[2:7]) #10-100 Hz
+    fit_frange_high = np.log10(freq[6:11])
 
     for j in range(times.size):
-        fit_Emax = np.log10(Emax[j][2:9])
-        a, b = reg1dim(fit_frange, fit_Emax)
-        alpha_list.append(a)
+        fit_Emax_low = np.log10(Emax[j][2:7])
+        a, b = reg1dim(fit_frange_low, fit_Emax_low)
+        alpha_list_low_freq.append(a)
         
         p0 = 10**b
         Emax_lsm = p0*freq**a

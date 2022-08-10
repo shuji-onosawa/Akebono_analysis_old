@@ -14,12 +14,12 @@ surfix = 'Pwr'
 gyro_plot = True
 
 ILAT_min = 55
-start_day_string = '1991-01-01'
+start_day_string = '1993-01-01'
 start_day_time_double = pyspedas.time_double(start_day_string)
 
 seconds_per_day = 86400
 day_list = []
-for i in range(0, 740):
+for i in range(0, 3660):
     time_double = start_day_time_double + i * seconds_per_day
     day_list.append(pyspedas.time_string(time_double, fmt='%Y-%m-%d %H:%M:%S'))
 
@@ -274,7 +274,8 @@ for k in range(len(day_list)-1):
         alpha_list_high_freq.append(a)
 
     store_data('Emax_alpha', data={'x':times, 'y':np.array([alpha_list_low_freq, alpha_list_high_freq]).T})
-    options('Emax_alpha', 'legend_names', ['α_low','α_high'])
+    options('Emax_alpha', 'legend_names', ['$\alpha _low$','$\alpha _high$'])
+    options('Emax_alpha', 'yrange', [-4, 0])
     store_data('Emax_pwr_res', data={'x':times, 'y':Emax_res_list, 'v':freq})
     options('Emax_pwr_res', 'spec', 1)
     options('Emax_pwr_res', 'ylog', 1)

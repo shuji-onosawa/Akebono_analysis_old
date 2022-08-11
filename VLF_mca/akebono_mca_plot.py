@@ -14,12 +14,12 @@ surfix = 'Pwr'
 gyro_plot = True
 
 ILAT_min = 55
-start_day_string = '1993-01-01'
+start_day_string = '1993-10-25'
 start_day_time_double = pyspedas.time_double(start_day_string)
 
 seconds_per_day = 86400
 day_list = []
-for i in range(0, 3660):
+for i in range(0, 2):
     time_double = start_day_time_double + i * seconds_per_day
     day_list.append(pyspedas.time_string(time_double, fmt='%Y-%m-%d %H:%M:%S'))
 
@@ -274,15 +274,14 @@ for k in range(len(day_list)-1):
         alpha_list_high_freq.append(a)
 
     store_data('Emax_alpha', data={'x':times, 'y':np.array([alpha_list_low_freq, alpha_list_high_freq]).T})
-    options('Emax_alpha', 'legend_names', ['$\alpha _low$','$\alpha _high$'])
-    options('Emax_alpha', 'yrange', [-4, 0])
+    options('Emax_alpha', 'legend_names', [r'$\alpha_low$',r'$\alpha_high$'])
+    options('Emax_alpha', 'yrange', [-5, 0])
     store_data('Emax_pwr_res', data={'x':times, 'y':Emax_res_list, 'v':freq})
     options('Emax_pwr_res', 'spec', 1)
     options('Emax_pwr_res', 'ylog', 1)
     options('Emax_pwr_res', 'ztitle', 'log10((mV/m)^2/Hz)')
     options('Emax_pwr_res', 'zrange', [-2, 2])
     options('Emax_pwr_res', 'Colormap', 'coolwarm')
-    options(['Emax_pwr_res', 'Emax_alpha'], 'panel_size', 0.5)
 
 
     #dir_list = ['./akb_North_mca_plot/', './akb_South_mca_plot/']
@@ -325,16 +324,16 @@ for k in range(len(day_list)-1):
                                  & (Emax_pwr.times < pyspedas.time_double(end_time_list[j]))
                                  & (MLT>=10) & (MLT<=14))
             Emax_10Hz = Emax_pwr.y.T[freq_channel_index][index_tuple[0]]
-            event_case=''
             
+            save_name = ''
             if Emax_10Hz.size == 0:
                 continue
             if np.nanmax(Emax_10Hz) >=0.5:
-                event_case = 'super_strong'
+                save_name = dir + 'super_strong_event/' + 'akb-mca-'+ hemisphere +'_'+ year + Month + day + '_' + hour + minute + second
             elif np.nanmax(Emax_10Hz) >=0.3:
-                event_case = 'strong'
+                save_name = dir + 'strong_event/' + 'akb-mca-'+ hemisphere +'_'+ year + Month + day + '_' + hour + minute + second
             elif np.nanmax(Emax_10Hz) >=0.1:
-                event_case = 'normal'            
+                save_name = dir + 'normal_event/' + 'akb-mca-'+ hemisphere +'_'+ year + Month + day + '_' + hour + minute + second 
 
             tlimit([start_time, end_time])
             options(['Emax_' + surfix, 'Bmax_' + surfix], 'spec', 1)
@@ -358,6 +357,7 @@ for k in range(len(day_list)-1):
             options(['Emax_' + surfix, 'Bmax_' + surfix], 'yrange', [1, 2e4])
             options(['Emax_' + surfix, 'Bmax_' + surfix], 'ysubtitle', 'freq [Hz]')
             options('Emax_lines_' + surfix, 'ylog', 1)
+            options('Emax_lines_' + surfix, 'legend_location', 'spedas')
             options('Emax_lines_' + surfix, 'legend_names', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6 Hz",
                                                             "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
                                                             "316 Hz", "562 Hz", "1000 Hz"])
@@ -378,32 +378,23 @@ for k in range(len(day_list)-1):
             options('E', 'ysubtitle', 'mV/m')
             
             options('gyro_freq', 'ylog', 1)
+            options('gyro_freq', 'yrange', [1, 1e3])
             options('gyro_freq', 'legend_names', ['fco','fcH'])
-            options('gyro_freq', 'panel_size', 0.5)
-
+            options('gyro_freq', 'panel_size', 0.7)
+            options('gyro_freq', 'legend_location', 'spedas')
+            
             tplot_options('title', Passname + hemisphere + '_' + year+Month+day+ ' MCA ' + surfix)
             tplot_options('var_label', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6Hz",
                                         "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
                                         "316 Hz", "562 Hz", '1000 Hz'])
+            
 
-            if event_case =='super_strong':  
-                tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq', 'Emax_pwr_res', 'Emax_alpha'], 
-                var_label = ['ALT', 'MLT', 'ILAT'], 
-                save_png = dir + 'super_strong_event/' + 'akb-mca-'+ hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
-                xsize=14, ysize=18,
-                display=False)
-            if event_case =='strong':
-                tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq', 'Emax_pwr_res', 'Emax_alpha'], 
-                var_label = ['ALT', 'MLT', 'ILAT'], 
-                save_png = dir + 'strong_event/' + 'akb-mca-'+ hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
-                xsize=14, ysize=18,
-                display=False)
-            if event_case =='normal':
-                tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_lines_' + surfix, 'gyro_freq', 'Emax_pwr_res', 'Emax_alpha'], 
-                var_label = ['ALT', 'MLT', 'ILAT'], 
-                save_png = dir + 'normal_event/' + 'akb-mca-'+ hemisphere +'_'+ year + Month + day + '_' + hour + minute + second,
-                xsize=14, ysize=18,
-                display=False)
+            tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'gyro_freq', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_pwr_res', 'Emax_alpha', 'Emax_lines_' + surfix], 
+                  var_label = ['ALT', 'MLT', 'ILAT'], 
+                  save_png = save_name + 'test',
+                  xsize=14, ysize=18,
+                  display=False)
+            
                 
     tplot_names = pytplot.tplot_names(True)
     pytplot.store_data(tplot_names, delete=True)

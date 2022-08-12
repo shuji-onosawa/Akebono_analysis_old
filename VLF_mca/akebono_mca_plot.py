@@ -76,20 +76,24 @@ for k in range(len(day_list)-1):
         pytplot.store_data(tplot_names[i] +'_Pwr', data={'x': tplot_variable.times, 'y': tplot_variable_power, 'v': tplot_variable.v})
 
     #ion gyro freq 
-    if gyro_plot == True:
-        Bx = pytplot.get_data('akb_Bmdl_X')
-        By = pytplot.get_data('akb_Bmdl_Y')
-        Bz = pytplot.get_data('akb_Bmdl_Z')
-        B = np.sqrt(Bx.y**2 + By.y**2 + Bz.y**2) * 1e-9
+    Bx = pytplot.get_data('akb_Bmdl_X')
+    By = pytplot.get_data('akb_Bmdl_Y')
+    Bz = pytplot.get_data('akb_Bmdl_Z')
+    B = np.sqrt(Bx.y**2 + By.y**2 + Bz.y**2) * 1e-9
 
-        mass_o = 2.656e-26
-        mass_h = 1.67e-27
-        q = 1.60217663e-19
+    mass_o = 2.656e-26
+    mass_h = 1.67e-27
+    q = 1.60217663e-19
 
-        O_gyro = q*B/mass_o/(2*np.pi)
-        H_gyro = q*B/mass_h/(2*np.pi)
-        gyro_matrix = np.array([O_gyro, H_gyro]).T
-        store_data('gyro_freq', data = {'x': Bx.times, 'y':gyro_matrix})
+    O_gyro = q*B/mass_o/(2*np.pi)
+    H_gyro = q*B/mass_h/(2*np.pi)
+    gyro_matrix = np.array([O_gyro, H_gyro]).T
+    store_data('gyro_freq', data = {'x': Bx.times, 'y':gyro_matrix})
+    options('gyro_freq', 'ylog', 1)
+    options('gyro_freq', 'yrange', [1, 1e3])
+    options('gyro_freq', 'legend_names', ['fco','fcH'])
+    options('gyro_freq', 'panel_size', 0.7)
+    options('gyro_freq', 'legend_location', 'spedas')
     
     #Time interpolate
     try:
@@ -276,6 +280,8 @@ for k in range(len(day_list)-1):
     store_data('Emax_alpha', data={'x':times, 'y':np.array([alpha_list_low_freq, alpha_list_high_freq]).T})
     options('Emax_alpha', 'legend_names', [r'$\alpha_low$',r'$\alpha_high$'])
     options('Emax_alpha', 'yrange', [-5, 0])
+    options('Emax_alpha', 'legend_location', 'spedas')
+    
     store_data('Emax_pwr_res', data={'x':times, 'y':Emax_res_list, 'v':freq})
     options('Emax_pwr_res', 'spec', 1)
     options('Emax_pwr_res', 'ylog', 1)
@@ -361,6 +367,7 @@ for k in range(len(day_list)-1):
             options('Emax_lines_' + surfix, 'legend_names', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6 Hz",
                                                             "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
                                                             "316 Hz", "562 Hz", "1000 Hz"])
+            
             options('ALT', 'ytitle', 'ALT [km]')
             options('MLT', 'ytitle', 'MLT [h]')
             options('ILAT', 'ytitle', 'ILAT [deg]')
@@ -376,12 +383,6 @@ for k in range(len(day_list)-1):
             options('Pressure', 'ytitle', 'flow \n pressure')
             options('E', 'ytitle', 'E_sw')
             options('E', 'ysubtitle', 'mV/m')
-            
-            options('gyro_freq', 'ylog', 1)
-            options('gyro_freq', 'yrange', [1, 1e3])
-            options('gyro_freq', 'legend_names', ['fco','fcH'])
-            options('gyro_freq', 'panel_size', 0.7)
-            options('gyro_freq', 'legend_location', 'spedas')
             
             tplot_options('title', Passname + hemisphere + '_' + year+Month+day+ ' MCA ' + surfix)
             tplot_options('var_label', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6Hz",

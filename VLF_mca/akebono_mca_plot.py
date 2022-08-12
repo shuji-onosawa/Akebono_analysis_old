@@ -11,8 +11,6 @@ channels = ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6 Hz",
 
 surfix = 'Pwr'
 
-gyro_plot = True
-
 ILAT_min = 55
 start_day_string = '1993-10-25'
 start_day_time_double = pyspedas.time_double(start_day_string)
@@ -61,7 +59,7 @@ for k in range(len(day_list)-1):
     IMF_matrix = np.array(IMF_matrix).T
     pytplot.store_data('IMF', data = {'x':time, 'y':IMF_matrix})
     
-    tplot_names = pytplot.tplot_names(True)
+    tplot_names = ['Emax', 'Eave', 'Bmax', 'Bave']
 
     #dB to amplitude
     for i in range(4):
@@ -74,26 +72,7 @@ for k in range(len(day_list)-1):
         tplot_variable_power = (10**(tplot_variable_float/10)) * ((tplot_variable_0dB)**2)  / bandwidth
         pytplot.store_data(tplot_names[i] +'_Amp', data={'x': tplot_variable.times, 'y': tplot_variable_amplitude, 'v': tplot_variable.v})
         pytplot.store_data(tplot_names[i] +'_Pwr', data={'x': tplot_variable.times, 'y': tplot_variable_power, 'v': tplot_variable.v})
-
-    #ion gyro freq 
-    Bx = pytplot.get_data('akb_Bmdl_X')
-    By = pytplot.get_data('akb_Bmdl_Y')
-    Bz = pytplot.get_data('akb_Bmdl_Z')
-    B = np.sqrt(Bx.y**2 + By.y**2 + Bz.y**2) * 1e-9
-
-    mass_o = 2.656e-26
-    mass_h = 1.67e-27
-    q = 1.60217663e-19
-
-    O_gyro = q*B/mass_o/(2*np.pi)
-    H_gyro = q*B/mass_h/(2*np.pi)
-    gyro_matrix = np.array([O_gyro, H_gyro]).T
-    store_data('gyro_freq', data = {'x': Bx.times, 'y':gyro_matrix})
-    options('gyro_freq', 'ylog', 1)
-    options('gyro_freq', 'yrange', [1, 1e3])
-    options('gyro_freq', 'legend_names', ['fco','fcH'])
-    options('gyro_freq', 'panel_size', 0.7)
-    options('gyro_freq', 'legend_location', 'spedas')
+    
     
     #Time interpolate
     try:
@@ -107,6 +86,10 @@ for k in range(len(day_list)-1):
     pyspedas.tinterpol('akb_Pass', interp_to='Emax_Pwr', newname = 'Pass', method = 'nearest')
     pyspedas.tinterpol('akb_ALT', interp_to='Emax_Pwr', newname = 'ALT')
     pyspedas.tinterpol('akb_MLT', interp_to='Emax_Pwr', newname = 'MLT', method = 'nearest')
+    pyspedas.tinterpol('akb_Bmdl_X', interp_to='Emax_Pwr', newname = 'Bmdl_X')
+    pyspedas.tinterpol('akb_Bmdl_Y', interp_to='Emax_Pwr', newname = 'Bmdl_Y')
+    pyspedas.tinterpol('akb_Bmdl_Z', interp_to='Emax_Pwr', newname = 'Bmdl_Z')
+    
     #Limit ILAT range
     Emax = get_data('Emax_Pwr')
     time = Emax.times
@@ -168,66 +151,7 @@ for k in range(len(day_list)-1):
     end_time_list_list = [north_end_time_list, south_end_time_list]
 
 
-    #make tplot vars of Electric field Amplitude at 3.16 - 1000 Hz
-    Emax = get_data('Emax_Amp')
-    Emax_channel1 = Emax.y.T[0] #3.16 Hz
-    Emax_channel2 = Emax.y.T[1] #5.62 Hz
-    Emax_channel3 = Emax.y.T[2] #10 Hz
-    Emax_channel4 = Emax.y.T[3] #17.8 Hz
-    Emax_channel5 = Emax.y.T[4] #31.6 Hz
-    Emax_channel6 = Emax.y.T[5] #56.2 Hz
-    Emax_channel7 = Emax.y.T[6] #100 Hz
-    Emax_channel8 = Emax.y.T[7] #178 Hz
-    Emax_channel9 = Emax.y.T[8] #316 Hz
-    Emax_channel10 = Emax.y.T[9] #562 Hz
-    Emax_channel11 = Emax.y.T[10] #1000 Hz
-
-    Amp_data = [Emax_channel1, 
-                Emax_channel2, 
-                Emax_channel3, 
-                Emax_channel4, 
-                Emax_channel5,
-                Emax_channel6,
-                Emax_channel7,
-                Emax_channel8,
-                Emax_channel9,
-                Emax_channel10,
-                Emax_channel11]
-
-    store_data(name = 'Emax_lines_Amp', 
-            data={'x': time,
-                    'y': np.array(Amp_data).T})
-
-    #make tplot vars of Electric field Amplitude at 3.16 - 1000 Hz
-    Emax = get_data('Emax_Pwr')
-    Emax_channel1 = Emax.y.T[0] #3.16 Hz
-    Emax_channel2 = Emax.y.T[1] #5.62 Hz
-    Emax_channel3 = Emax.y.T[2] #10 Hz
-    Emax_channel4 = Emax.y.T[3] #17.8 Hz
-    Emax_channel5 = Emax.y.T[4] #31.6 Hz
-    Emax_channel6 = Emax.y.T[5] #56.2 Hz
-    Emax_channel7 = Emax.y.T[6] #100 Hz
-    Emax_channel8 = Emax.y.T[7] #178 Hz
-    Emax_channel9 = Emax.y.T[8] #316 Hz
-    Emax_channel10 = Emax.y.T[9] #562 Hz
-    Emax_channel11 = Emax.y.T[10] #1000 Hz
-
-    Pwr_data = [Emax_channel1, 
-                Emax_channel2, 
-                Emax_channel3, 
-                Emax_channel4, 
-                Emax_channel5,
-                Emax_channel6,
-                Emax_channel7,
-                Emax_channel8,
-                Emax_channel9,
-                Emax_channel10,
-                Emax_channel11]
-
-    store_data(name = 'Emax_lines_Pwr', 
-            data={'x': time,
-                    'y': np.array(Pwr_data).T})
-
+    
 
     #make Passname list corresponding with start(end) time list
     Passname = get_data('Pass')
@@ -243,6 +167,25 @@ for k in range(len(day_list)-1):
 
     Passname_list_list = [north_Passname_list, south_Passname_list]
     
+
+    #ion gyro freq 
+    Bx = pytplot.get_data('Bmdl_X')
+    By = pytplot.get_data('Bmdl_Y')
+    Bz = pytplot.get_data('Bmdl_Z')
+    B = np.sqrt(Bx.y**2 + By.y**2 + Bz.y**2) * 1e-9
+
+    mass_o = 2.656e-26
+    mass_h = 1.67e-27
+    q = 1.60217663e-19
+
+    O_gyro = q*B/mass_o/(2*np.pi)
+    H_gyro = q*B/mass_h/(2*np.pi)
+    gyro_matrix = np.array([O_gyro, H_gyro]).T
+    store_data('gyro_freq', data = {'x': Bx.times, 'y':gyro_matrix})
+    options('gyro_freq', 'ylog', 1)
+    options('gyro_freq', 'yrange', [1, 2e4])
+    options('gyro_freq', 'ytitle', 'Frequency [Hz]')
+
 
     #calc power law alpha 
     def reg1dim(x, y):
@@ -280,7 +223,6 @@ for k in range(len(day_list)-1):
     store_data('Emax_alpha', data={'x':times, 'y':np.array([alpha_list_low_freq, alpha_list_high_freq]).T})
     options('Emax_alpha', 'legend_names', [r'$\alpha_low$',r'$\alpha_high$'])
     options('Emax_alpha', 'yrange', [-5, 0])
-    options('Emax_alpha', 'legend_location', 'spedas')
     
     store_data('Emax_pwr_res', data={'x':times, 'y':Emax_res_list, 'v':freq})
     options('Emax_pwr_res', 'spec', 1)
@@ -289,6 +231,21 @@ for k in range(len(day_list)-1):
     options('Emax_pwr_res', 'zrange', [-2, 2])
     options('Emax_pwr_res', 'Colormap', 'coolwarm')
 
+
+    #make tplot vars of Electric field Amplitude at 3.16 - 1000 Hz
+    Eamp = get_data('Emax_Amp')
+    Eamp_0_1000Hz = Eamp.y.T[0:11]
+    
+    store_data(name = 'Emax_lines_Amp', 
+               data={'x': time,'y': Eamp_0_1000Hz.T})
+
+    #make tplot vars of Electric field Amplitude at 3.16 - 1000 Hz
+    Epwr = get_data('Emax_Pwr')
+    Epwr_0_1000Hz = Epwr.y.T[0:11]
+    
+    store_data(name = 'Emax_lines_Pwr', 
+               data={'x': time,'y': Epwr_0_1000Hz.T})
+ 
 
     #dir_list = ['./akb_North_mca_plot/', './akb_South_mca_plot/']
     dir_list = ['./akb_North_mca_w_gyro_plot/', './akb_South_mca_w_gyro_plot/']
@@ -345,6 +302,13 @@ for k in range(len(day_list)-1):
             options(['Emax_' + surfix, 'Bmax_' + surfix], 'spec', 1)
             options(['Emax_' + surfix, 'Bmax_' + surfix], 'ylog', 1)
             options(['Emax_' + surfix, 'Bmax_' + surfix], 'zlog', 1)
+            options(['Emax_' + surfix, 'Bmax_' + surfix], 'yrange', [1, 2e4])
+            options(['Emax_' + surfix, 'Bmax_' + surfix], 'ysubtitle', 'freq [Hz]')
+            options('Emax_lines_' + surfix, 'ylog', 1)
+            options('Emax_lines_' + surfix, 'legend_location', 'spedas')
+            options('Emax_lines_' + surfix, 'legend_names', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6 Hz",
+                                                            "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
+                                                            "316 Hz", "562 Hz", "1000 Hz"])
             #options(['Emax_' + surfix, 'Bmax_' + surfix], 'Colormap', 'viridis')
             if surfix == 'Amp':
                 options('Emax_' + surfix, 'zrange', [1e-5, 10])
@@ -360,13 +324,8 @@ for k in range(len(day_list)-1):
                 options('Emax_' + surfix, 'ztitle', '$[(mV/m)^2/Hz]$')
                 options('Bmax_' + surfix, 'ztitle', '$[pT^2/Hz]$')
                 options('Emax_lines_' + surfix, 'ysubtitle', '$[(mV/m)^2/Hz]$')
-            options(['Emax_' + surfix, 'Bmax_' + surfix], 'yrange', [1, 2e4])
-            options(['Emax_' + surfix, 'Bmax_' + surfix], 'ysubtitle', 'freq [Hz]')
-            options('Emax_lines_' + surfix, 'ylog', 1)
-            options('Emax_lines_' + surfix, 'legend_location', 'spedas')
-            options('Emax_lines_' + surfix, 'legend_names', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6 Hz",
-                                                            "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
-                                                            "316 Hz", "562 Hz", "1000 Hz"])
+
+            
             
             options('ALT', 'ytitle', 'ALT [km]')
             options('MLT', 'ytitle', 'MLT [h]')
@@ -375,6 +334,7 @@ for k in range(len(day_list)-1):
             omni_data_names = ['SYM_H', 'IMF', 'flow_speed', 'proton_density', 'Pressure', 'E']
             options(omni_data_names, 'panel_size', 0.5)
             options('IMF', 'legend_names', ['IMF x', "IMF y", "IMF z"])
+            options('IMF', 'legend_location', 'spedas')
             options('SYM_H', 'ytitle', 'SYM-H')
             options('SYM_H', 'ysubtitle', '[nT]')
             options('flow_speed', 'ytitle', 'flow \n speed')

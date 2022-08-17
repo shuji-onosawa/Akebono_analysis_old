@@ -221,7 +221,7 @@ for k in range(len(day_list)-1):
         alpha_list_high_freq.append(a)
 
     store_data('Emax_alpha', data={'x':times, 'y':np.array([alpha_list_low_freq, alpha_list_high_freq]).T})
-    options('Emax_alpha', 'legend_names', [r'$\alpha_low$',r'$\alpha_high$'])
+    options('Emax_alpha', 'legend_names', [r'$\alpha -low$',r'$\alpha -high$'])
     options('Emax_alpha', 'yrange', [-5, 0])
     
     store_data('Emax_pwr_res', data={'x':times, 'y':Emax_res_list, 'v':freq})
@@ -289,7 +289,10 @@ for k in range(len(day_list)-1):
             Emax_10Hz = Emax_pwr.y.T[freq_channel_index][index_tuple[0]]
             
             save_name = ''
+            
             if Emax_10Hz.size == 0:
+                continue
+            if np.isnan(np.nanmax(Emax_10Hz)):
                 continue
             if np.nanmax(Emax_10Hz) >=0.5:
                 save_name = dir + 'super_strong_event/' + 'akb-mca-'+ hemisphere +'_'+ year + Month + day + '_' + hour + minute + second
@@ -307,8 +310,8 @@ for k in range(len(day_list)-1):
             options('Emax_lines_' + surfix, 'ylog', 1)
             options('Emax_lines_' + surfix, 'legend_location', 'spedas')
             options('Emax_lines_' + surfix, 'legend_names', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6 Hz",
-                                                            "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
-                                                            "316 Hz", "562 Hz", "1000 Hz"])
+                                                             "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
+                                                             "316 Hz", "562 Hz", "1000 Hz"])
             #options(['Emax_' + surfix, 'Bmax_' + surfix], 'Colormap', 'viridis')
             if surfix == 'Amp':
                 options('Emax_' + surfix, 'zrange', [1e-5, 10])
@@ -330,6 +333,7 @@ for k in range(len(day_list)-1):
             options('ALT', 'ytitle', 'ALT [km]')
             options('MLT', 'ytitle', 'MLT [h]')
             options('ILAT', 'ytitle', 'ILAT [deg]')
+            options(['ALT', 'MLT', 'ILAT'], 'panel_size', 0.3)
             
             omni_data_names = ['SYM_H', 'IMF', 'flow_speed', 'proton_density', 'Pressure', 'E']
             options(omni_data_names, 'panel_size', 0.5)
@@ -345,15 +349,12 @@ for k in range(len(day_list)-1):
             options('E', 'ysubtitle', 'mV/m')
             
             tplot_options('title', Passname + hemisphere + '_' + year+Month+day+ ' MCA ' + surfix)
-            tplot_options('var_label', ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6Hz",
-                                        "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
-                                        "316 Hz", "562 Hz", '1000 Hz'])
-            
+            tplot_options('wsize', [1000,500])
 
-            tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H', 'gyro_freq', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_pwr_res', 'Emax_alpha', 'Emax_lines_' + surfix], 
+            tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'gyro_freq', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_pwr_res', 'Emax_alpha', 'Emax_lines_' + surfix, 'SYM_H'], 
                   var_label = ['ALT', 'MLT', 'ILAT'], 
-                  save_png = save_name + 'test',
-                  xsize=14, ysize=18,
+                  save_png = save_name + 'test_14-16',
+                  xsize=14, ysize=16,
                   display=False)
             
                 

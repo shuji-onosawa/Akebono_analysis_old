@@ -182,6 +182,8 @@ for k in range(len(day_list)-1):
     H_gyro = q*B/mass_h/(2*np.pi)
     gyro_matrix = np.array([O_gyro, H_gyro]).T
     store_data('gyro_freq', data = {'x': Bx.times, 'y':gyro_matrix})
+    options('gyro_freq', 'legend_names', ['fcO', 'fcH'])
+    options('gyro_freq', 'legend_location', 'spedas')
     options('gyro_freq', 'ylog', 1)
     options('gyro_freq', 'yrange', [1, 2e4])
     options('gyro_freq', 'ytitle', 'Frequency [Hz]')
@@ -349,12 +351,12 @@ for k in range(len(day_list)-1):
             options('E', 'ysubtitle', 'mV/m')
             
             tplot_options('title', Passname + hemisphere + '_' + year+Month+day+ ' MCA ' + surfix)
-            tplot_options('wsize', [1000,500])
 
+        
             tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'gyro_freq', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_pwr_res', 'Emax_alpha', 'Emax_lines_' + surfix, 'SYM_H'], 
                   var_label = ['ALT', 'MLT', 'ILAT'], 
-                  save_png = save_name + 'test_14-16',
-                  xsize=14, ysize=16,
+                  save_png = save_name + 'test_26-22',
+                  xsize=26, ysize=22,
                   display=False)
             
                 

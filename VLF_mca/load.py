@@ -49,8 +49,14 @@ def mca(trange = ['2014-01-01', '2014-01-03'],
         return 
     
     out_files = sorted(out_files)
-
-    tvars = cdf_to_tplot(out_files)
+    
+    try:
+        tvars = cdf_to_tplot(out_files)
+    except Exception as e:
+        print('///////////////////////////ERROR/////////////////////////')
+        print(e)
+        os.remove(save_name)
+        return
     '''
     if time_clip:
         for new_var in tvars:
@@ -81,7 +87,12 @@ def orb(trange = ['2013-01-01', '2013-01-02'], downloadonly = False):
         
         if(os.path.isfile(save_name)==False):
             
-            get_data = urllib.request.urlopen(remote_name).read()
+            try:
+                get_data = urllib.request.urlopen(remote_name).read()
+            except:
+                print('///////////////////////////ERROR/////////////////////////')
+                print("You can not get orbit file or you can not open orbit file \n")
+                continue
             
             with open(save_name, mode="wb") as f:
                 f.write(get_data)

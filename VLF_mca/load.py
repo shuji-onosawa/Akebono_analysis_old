@@ -52,9 +52,8 @@ def mca(trange = ['2014-01-01', '2014-01-03'],
     
     try:
         tvars = cdf_to_tplot(out_files)
-    except Exception as e:
+    except:
         print('///////////////////////////ERROR/////////////////////////')
-        print(e)
         os.remove(save_name)
         return
     '''

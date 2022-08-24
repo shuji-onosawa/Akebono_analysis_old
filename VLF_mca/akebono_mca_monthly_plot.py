@@ -5,19 +5,19 @@ from pyspedas import time_clip, time_double, time_string, tinterpol
 import numpy as np
 from load import mca, orb
 
-start_year_day = '1989-03-10'
-end_year_day   = '1989-03-21'
+start_year_day = '1989-05-01'
+end_year_day   = '1989-05-30'
 
 unit_time_hour = 2
 
 
-freq_channel_index = 0
+freq_channel_index = 2
 channels = ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6 Hz",
             "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
             "316 Hz", "562 Hz", "1 kHz", '1.76 kHz']
 
 field = 'E' #Electric field, E or Magnetic field, B
-spec_type = 'amp' #amplitude, amp or power, pwr
+spec_type = 'pwr' #amplitude, amp or power, pwr
 
 
 seconds_per_day = 86400
@@ -28,8 +28,15 @@ lat_array = np.arange(55, 90)
 hemispheres = ['north','south']
 north_E_matrix = []
 north_B_matrix = []
+north_alpha_low_freq_matrix = []
+north_alpha_high_freq_matrix = []
+north_alt_matrix = []
+
 south_E_matrix = []
 south_B_matrix = []
+south_alpha_low_freq_matrix = []
+south_alpha_high_freq_matrix = []
+south_alt_matrix = []
 
 start_time_string = start_year_day + ' 00:00:00'
 end_time_string = end_year_day + ' 00:00:00'
@@ -38,6 +45,7 @@ end_time = time_double(end_time_string)
 
 days = np.arange(start_time, end_time, seconds_per_day, float)
 days_string = time_string(days, fmt= '%Y-%m-%d %H:%M:%S')
+
 
 for i in range(len(days_string)-1):
     trange = [days_string[i], days_string[i+1]]
@@ -55,9 +63,10 @@ for i in range(len(days_string)-1):
             store_data(tplot_name[k] +'_amp', data={'x': tplot_variable.times, 'y': tplot_variable_amplitude, 'v': tplot_variable.v})
             store_data(tplot_name[k] +'_pwr', data={'x': tplot_variable.times, 'y': tplot_variable_power, 'v': tplot_variable.v})
             
-    tinterpol('akb_ILAT', interp_to='Emax', newname = 'ILAT', )
-    tinterpol('akb_MLAT', interp_to='Emax', newname = 'MLAT')
-    tinterpol('akb_MLT', interp_to='Emax', newname = 'MLT', method = 'nearest')
+    tinterpol('akb_ILAT', interp_to = 'Emax', newname = 'ILAT', )
+    tinterpol('akb_MLAT', interp_to = 'Emax', newname = 'MLAT')
+    tinterpol('akb_MLT', interp_to = 'Emax', newname = 'MLT', method = 'nearest')
+    tinterpol('akb_ALT', interp_to = 'Emax', newname = 'ALT')
 
     start_time_hour = time_double(days_string[i])
     hours = np.arange(start_time_hour, start_time_hour + (unit_per_day + 1)*unit_time_width, unit_time_width)
@@ -66,16 +75,52 @@ for i in range(len(days_string)-1):
     Emax_tvar = get_data('Emax_'+spec_type)
     Bmax_tvar = get_data('Bmax_'+spec_type)
     
+    #calc power law alpha 
+    def reg1dim(x, y):
+        n = x.size
+        a = ((np.dot(x, y)- np.sum(y) * np.sum(x)/n)/
+            (np.sum(x ** 2) - np.sum(x)**2 / n))
+        b = (np.sum(y) - a * np.sum(x))/n
+        return a, b
+
+    freq = Emax_tvar.v
+    Emax = Emax_tvar.y
+    times = Emax_tvar.times
+
+    alpha_low_freq_list = []
+    alpha_high_freq_list = []
+    Emax_res_list = []
+
+    fit_frange_low = np.log10(freq[2:7]) #10-100 Hz
+    fit_frange_high = np.log10(freq[6:11]) #100-1000 Hz
+
+    for j in range(times.size):
+        fit_Emax_low = np.log10(Emax[j][2:7])
+        a, b = reg1dim(fit_frange_low, fit_Emax_low)
+        alpha_low_freq_list.append(a)       
+
+        fit_Emax_high = np.log10(Emax[j][6:11])
+        a, b = reg1dim(fit_frange_high, fit_Emax_high)
+        alpha_high_freq_list.append(a)
+    alpha_low_freq_array = np.array(alpha_low_freq_list)
+    alpha_high_freq_array = np.array(alpha_high_freq_list)
+
+
     ILAT = get_data('ILAT')
     MLAT = get_data('MLAT')
     MLT = get_data('MLT')
     
-    times = np.arange(start_time, end_time, unit_time_width, dtype=float)
+    alt_array = get_data('ALT')
+    alt_array = alt_array.y
 
     for hemisphere in hemispheres:
         for j in range(hours.size-1):
             E_list_per_hour = []    
-            B_list_per_hour = []    
+            B_list_per_hour = []
+            alpha_low_freq_per_hour = []
+            alpha_high_freq_per_hour = []
+            alt_per_hour = []
+
             for lat in lat_array:            
                 if hemisphere == 'north':
                     index_tuple = np.where((hours[j] <= field_var.times) & (field_var.times < hours[j+1]) 
@@ -92,46 +137,81 @@ for i in range(len(days_string)-1):
                 if len(index) == 0:
                     E_list_per_hour.append(np.nan)
                     B_list_per_hour.append(np.nan)
+                    alpha_low_freq_per_hour.append(np.nan)
+                    alpha_high_freq_per_hour.append(np.nan)
+                    alt_per_hour.append(np.nan)
+
                 else:
                     E_var_1deg = Emax_tvar.y.T[freq_channel_index][index]
                     E_list_per_hour.append(np.nanmax(E_var_1deg))
                     
                     B_var_1deg = Bmax_tvar.y.T[freq_channel_index][index]
                     B_list_per_hour.append(np.nanmax(B_var_1deg))
+
+                    alt_1deg = alt_array[index]
+                    alt_per_hour.append(np.average(alt_1deg[np.where(E_var_1deg == np.nanmax(E_var_1deg))[0]]))
+
+                    if np.nanmax(E_var_1deg) >= 0.1:
+                        alpha_low_freq_1deg = alpha_low_freq_array[index]
+                        alpha_high_freq_1deg = alpha_high_freq_array[index]
+                        alpha_low_freq_per_hour.append(np.average(alpha_low_freq_1deg[np.where(E_var_1deg == np.nanmax(E_var_1deg))[0]]))
+                        alpha_high_freq_per_hour.append(np.average(alpha_high_freq_1deg[np.where(E_var_1deg == np.nanmax(E_var_1deg))[0]]))
+                    else:
+                        alpha_low_freq_per_hour.append(np.nan)
+                        alpha_high_freq_per_hour.append(np.nan)
                     
             if hemisphere == 'north':
                 north_E_matrix.append(E_list_per_hour)
                 north_B_matrix.append(B_list_per_hour)
+                north_alpha_low_freq_matrix.append(alpha_low_freq_per_hour)
+                north_alpha_high_freq_matrix.append(alpha_high_freq_per_hour)
+                north_alt_matrix.append(alt_per_hour)
+
             if hemisphere == 'south':
                 south_E_matrix.append(E_list_per_hour)
                 south_B_matrix.append(B_list_per_hour)
+                south_alpha_low_freq_matrix.append(alpha_low_freq_per_hour)
+                south_alpha_high_freq_matrix.append(alpha_high_freq_per_hour)
+                south_alt_matrix.append(alt_per_hour)
+
+times = np.arange(start_time, end_time-seconds_per_day, unit_time_width, dtype=float)    #2時間刻み
 
 store_data('E'+spec_type+'_N_monthly', data={'x':times, 'y':north_E_matrix, 'v':lat_array})
 store_data('E'+spec_type+'_S_monthly', data={'x':times, 'y':south_E_matrix, 'v':lat_array})
-#store_data('B'+spec_type+'_N_monthly', data={'x':times, 'y':north_B_matrix, 'v':lat_array})
-#store_data('B'+spec_type+'_S_monthly', data={'x':times, 'y':south_B_matrix, 'v':lat_array})
+store_data('B'+spec_type+'_N_monthly', data={'x':times, 'y':north_B_matrix, 'v':lat_array})
+store_data('B'+spec_type+'_S_monthly', data={'x':times, 'y':south_B_matrix, 'v':lat_array})
+options(['E'+spec_type+'_N_monthly','E'+spec_type+'_S_monthly', 'B'+spec_type+'_N_monthly', 'B'+spec_type+'_S_monthly'], 'spec', 1)
+options(['E'+spec_type+'_N_monthly','E'+spec_type+'_S_monthly', 'B'+spec_type+'_N_monthly', 'B'+spec_type+'_S_monthly'], 'zlog', 1)
+options(['E'+spec_type+'_N_monthly','E'+spec_type+'_S_monthly', 'B'+spec_type+'_N_monthly', 'B'+spec_type+'_S_monthly'], 'ysubtitle', 'ILAT [deg]')
+options(['E'+spec_type+'_N_monthly', 'E'+spec_type+'_S_monthly'], 'ytitle', 'Electric field ')
+options(['B'+spec_type+'_N_monthly', 'B'+spec_type+'_S_monthly'], 'ytitle', 'Magnetic field ')
+options(['E'+spec_type+'_N_monthly', 'E'+spec_type+'_S_monthly'], 'ztitle', 'PSD \n [mV/m/Hz^1/2]')
+options(['E'+spec_type+'_N_monthly', 'E'+spec_type+'_S_monthly'], 'zrange', [1e-6, 1e1])
+options(['B'+spec_type+'_N_monthly', 'B'+spec_type+'_S_monthly'], 'ztitle', 'SD \n [pT/Hz^1/2]')
+options(['B'+spec_type+'_N_monthly', 'B'+spec_type+'_S_monthly'], 'zrange', [1e-2, 1e4])
+
+store_data('alpha_low_N', data={'x':times, 'y':north_alpha_low_freq_matrix, 'v':lat_array})
+store_data('alpha_low_S', data={'x':times, 'y':south_alpha_low_freq_matrix, 'v':lat_array})
+store_data('alpha_diff_N', data={'x':times, 'y':np.array(north_alpha_high_freq_matrix)-np.array(north_alpha_low_freq_matrix), 'v':lat_array})
+store_data('alpha_diff_S', data={'x':times, 'y':np.array(south_alpha_high_freq_matrix)-np.array(south_alpha_low_freq_matrix), 'v':lat_array})
+options(['alpha_low_N', 'alpha_low_S', 'alpha_diff_N', 'alpha_diff_S'], 'spec', 1)
+options(['alpha_low_N', 'alpha_low_S', 'alpha_diff_N', 'alpha_diff_S'], 'ysubtitle', 'ILAT [deg]')
+options(['alpha_low_N','alpha_low_S'], 'ytitle', 'Alpha')
+options(['alpha_diff_N','alpha_diff_S'], 'ytitle', 'Alpha_diff')
+
+store_data('ALT_N', data={'x':times, 'y':north_alt_matrix, 'v':lat_array})
+store_data('ALT_S', data={'x':times, 'y':south_alt_matrix, 'v':lat_array})
+options(['ALT_N', 'ALT_S'], 'spec', 1)
+options('ALT_N', 'ytitle', 'North Cusp \n ILAT [deg]')
+options('ALT_S', 'ytitle', 'South Cusp \n ILAT [deg]')
 
 pyspedas.omni.data([start_time, end_time], datatype='1min', level='hro', no_update=True)
-options(['E'+spec_type+'_N_monthly','E' +spec_type+'_S_monthly'], 'spec', 1)
-options(['E'+spec_type+'_N_monthly','E' +spec_type+'_S_monthly'], 'zlog', 1)
-
-options('E'+spec_type+'_N_monthly', 'ztitle', 'SD \n [mV/m/Hz^1/2]')
-options('E'+spec_type+'_N_monthly', 'zrange', [1e-3, 1e1])
-options('E'+spec_type+'_S_monthly', 'ztitle', 'SD \n [mV/m/Hz^1/2]')
-options('E'+spec_type+'_S_monthly', 'zrange', [1e-3, 1e1])
-
-options('B'+spec_type+'_N_monthly', 'ztitle', 'SD \n [pT/Hz^1/2]')
-options('B'+spec_type+'_N_monthly', 'zrange', [1e-1, 1e2])
-
-options('E' +spec_type+'_N_monthly', 'ytitle', 'North Cusp \n ILAT [deg]')
-options('B' +spec_type+'_N_monthly', 'ytitle', 'North Cusp \n ILAT [deg]')
-
 omni_var_name = ['BZ_GSM', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H']
 options(omni_var_name, 'panel_size', 0.5)
 
-tplot_options('title','AKEBONO/MCA ' + spec_type + '@' + channels[freq_channel_index]
-              + '\n' + start_time_string)
-tplot(['SYM_H', 'E'+spec_type+'_N_monthly','B'+spec_type+'_N_monthly'], xsize = 16, save_png='mca_monthly_30min'+ spec_type +channels[freq_channel_index]+start_year_day+'_2month')
+tplot_options('title','AKEBONO/MCA South Cusp ' + spec_type + ' @' + channels[freq_channel_index])
+tplot_options('title_size', 30)
+tplot(['SYM_H', 'B'+spec_type+'_S_monthly','E'+spec_type+'_S_monthly', 'alpha_low_S', 'alpha_diff_S', 'ALT_S'], xsize = 16, ysize=20,  save_png='mca_monthly_2h_'+ spec_type +channels[freq_channel_index]+start_year_day+'+test')
 #tplot(['SYM_H', field +spec_type+'_N_monthly'], save_png='mca_monthly_2h_omni_' + field + spec_type +start_year_day)
 
 

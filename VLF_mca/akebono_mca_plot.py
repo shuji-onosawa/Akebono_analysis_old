@@ -12,12 +12,12 @@ channels = ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6 Hz",
 surfix = 'Pwr'
 
 ILAT_min = 55
-start_day_string = '2014-10-15'
+start_day_string = '1991-06-09'
 start_day_time_double = pyspedas.time_double(start_day_string)
 
 seconds_per_day = 86400
 day_list = []
-for i in range(0, 4):
+for i in range(0, 2):
     time_double = start_day_time_double + i * seconds_per_day
     day_list.append(pyspedas.time_string(time_double, fmt='%Y-%m-%d %H:%M:%S'))
 
@@ -300,7 +300,7 @@ for k in range(len(day_list)-1):
                 save_name = dir + 'super_strong_event/' + 'akb-mca-'+ hemisphere +'_'+ year + Month + day + '_' + hour + minute + second
             elif np.nanmax(Emax_10Hz) >=0.3:
                 save_name = dir + 'strong_event/' + 'akb-mca-'+ hemisphere +'_'+ year + Month + day + '_' + hour + minute + second
-            elif np.nanmax(Emax_10Hz) >=0.1:
+            elif np.nanmax(Emax_10Hz) >=0.01:
                 save_name = dir + 'normal_event/' + 'akb-mca-'+ hemisphere +'_'+ year + Month + day + '_' + hour + minute + second 
 
             tlimit([start_time, end_time])
@@ -355,7 +355,7 @@ for k in range(len(day_list)-1):
         
             tplot(['IMF', 'flow_speed', 'proton_density', 'Pressure', 'gyro_freq', 'Bmax_' + surfix, 'Emax_' + surfix, 'Emax_pwr_res', 'Emax_alpha', 'Emax_lines_' + surfix, 'SYM_H'], 
                   var_label = ['ALT', 'MLT', 'ILAT'], 
-                  save_png = save_name,
+                  save_png = save_name+'test',
                   xsize=26, ysize=22,
                   display=False)
             

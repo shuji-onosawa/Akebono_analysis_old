@@ -288,7 +288,7 @@ for k in range(len(day_list)-1):
             index_tuple = np.where((pyspedas.time_double(start_time_list[j]) < Emax_pwr.times) 
                                  & (Emax_pwr.times < pyspedas.time_double(end_time_list[j]))
                                  & (MLT>=10) & (MLT<=14))
-            Emax_10Hz = Emax_pwr.y.T[freq_channel_index][index_tuple[0]]
+            Emax_10Hz = Emax_pwr.y.T[2][index_tuple[0]]
             
             save_name = ''
             

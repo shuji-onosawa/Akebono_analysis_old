@@ -200,7 +200,7 @@ def akebono_mca_monthly_plot(start_date = '1989-03-01', end_date = '1989-04-01',
     options(['E'+spec_type+'_N_monthly', 'E'+spec_type+'_S_monthly'], 'zsubtitle', 'PSD \n [(mV/m)^2/Hz]')
     options(['E'+spec_type+'_N_monthly', 'E'+spec_type+'_S_monthly'], 'zrange', [1e-6, 1])
     options(['B'+spec_type+'_N_monthly', 'B'+spec_type+'_S_monthly'], 'zsubtitle', 'PSD \n [pT^2/Hz]')
-    options(['B'+spec_type+'_N_monthly', 'B'+spec_type+'_S_monthly'], 'zrange', [1e-2, 1e4])
+    options(['B'+spec_type+'_N_monthly', 'B'+spec_type+'_S_monthly'], 'zrange', [1e-1, 1e5])
 
     store_data('alpha_low_N', data={'x':times, 'y':north_alpha_low_freq_matrix, 'v':lat_array})
     store_data('alpha_low_S', data={'x':times, 'y':south_alpha_low_freq_matrix, 'v':lat_array})

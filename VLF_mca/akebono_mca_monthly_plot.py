@@ -243,7 +243,7 @@ from datetime import datetime
 import pandas as pd
 
 # 連続した日付のリストを作成
-date_list = pd.date_range(start='1989-03-01', end='2014-09-01', freq='MS')
+date_list = pd.date_range(start='1994-03-01', end='1994-04-01', freq='MS')
 date_list = np.datetime_as_string(date_list, unit='D')
 date_list = date_list.astype(object)
 

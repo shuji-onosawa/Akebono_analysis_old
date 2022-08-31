@@ -13,7 +13,7 @@ from calendar import timegm
 from datetime import datetime, timedelta
 
 #mca
-def mca(trange = ['2014-01-01', '2014-01-03'],
+def mca(trange = ['2014-01-01', '2014-01-02'],
         downloadonly = False):
 
     remote_name_prefix = 'https://akebono-vlf.db.kanazawa-u.ac.jp/permalink.php?keyword='
@@ -189,6 +189,9 @@ def orb(trange = ['2013-01-01', '2013-01-02'], downloadonly = False):
                         's/c_pos_x', 's/c_pos_y', 's/c_pos_z', 
                         's/c_vel(km/s)_x', 's/c_vel(km/s)_y','s/c_vel(km/s)_z' ]
     '''
+    if int((time_double(trange[1])-time_double(trange[0]))/30) > len(UT_time_double):
+        UT_time_double = np.arange(time_double(trange[0]), time_double(trange[1]), 30)
+        
     prefix = 'akb_'
     store_data(prefix+'Pass', data={'x': UT_time_double, 'y': Pass})
     store_data(prefix+'ILAT', data={'x': UT_time_double, 'y': ILAT})

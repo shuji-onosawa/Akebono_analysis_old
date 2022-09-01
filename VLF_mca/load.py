@@ -190,7 +190,29 @@ def orb(trange = ['2013-01-01', '2013-01-02'], downloadonly = False):
                         's/c_vel(km/s)_x', 's/c_vel(km/s)_y','s/c_vel(km/s)_z' ]
     '''
     if int((time_double(trange[1])-time_double(trange[0]))/30) > len(UT_time_double):
-        UT_time_double = np.arange(time_double(trange[0]), time_double(trange[1]), 30)
+        start_to_end_time_double = np.arange(time_double(trange[0]), time_double(trange[1]), 30)
+        Pass_array = ILAT_array = MLAT_array = MLT_array = ALT_array = Bmdl_X_array = Bmdl_Y_array = Bmdl_Z_array = np.empty(start_to_end_time_double.size)*np.nan
+
+        for i in range(len(UT_time_double)):
+            time_index = np.where(start_to_end_time_double == UT_time_double[i])
+            Pass_array[time_index] = Pass[i]
+            ILAT_array[time_index] = ILAT[i]
+            MLAT_array[time_index] = MLAT[i]
+            MLT_array[time_index] = MLT[i]
+            ALT_array[time_index] = ALT[i]
+            Bmdl_X_array[time_index] = Bmdl_X[i]
+            Bmdl_Y_array[time_index] = Bmdl_Y[i]
+            Bmdl_Z_array[time_index] = Bmdl_Z[i]
+
+        UT_time_double = start_to_end_time_double
+        Pass = Pass_array
+        ILAT = ILAT_array
+        MLAT = MLAT_array
+        MLT = MLT_array
+        ALT = ALT_array
+        Bmdl_X = Bmdl_X_array
+        Bmdl_Y = Bmdl_Y_array
+        Bmdl_Z = Bmdl_Z_array
         
     prefix = 'akb_'
     store_data(prefix+'Pass', data={'x': UT_time_double, 'y': Pass})

@@ -234,9 +234,9 @@ def akebono_mca_monthly_plot(start_date = '1989-03-01', end_date = '1989-04-01',
     except:
         pass
     tplot_options('title','Akebono/MCA South Cusp ' + spec_type + ' @' + channels[freq_channel_index])
-    tplot(['SYM_H', 'B'+spec_type+'_S_monthly','E'+spec_type+'_S_monthly', 'alpha_low_S', 'alpha_diff_S', 'ALT_S'], xsize = 12, ysize=14,  save_png='./akb_mca_monthly_plot/Epwr_10Hz/'+'mca_monthly_2h_south_'+ spec_type +channels[freq_channel_index]+start_date)
+    tplot(['SYM_H', 'B'+spec_type+'_S_monthly','E'+spec_type+'_S_monthly', 'alpha_low_S', 'alpha_diff_S', 'ALT_S'], xsize = 12, ysize=14,  save_png='./akb_mca_monthly_plot/Epwr_10Hz/'+'mca_monthly_2h_south_'+ spec_type +channels[freq_channel_index]+start_date+'_test1')
     tplot_options('title','Akebono/MCA North Cusp ' + spec_type + ' @' + channels[freq_channel_index])
-    tplot(['SYM_H', 'B'+spec_type+'_N_monthly','E'+spec_type+'_N_monthly', 'alpha_low_N', 'alpha_diff_N', 'ALT_N'], xsize = 12, ysize=14,  save_png='./akb_mca_monthly_plot/Epwr_10Hz/'+'mca_monthly_2h_north_'+ spec_type +channels[freq_channel_index]+start_date)
+    tplot(['SYM_H', 'B'+spec_type+'_N_monthly','E'+spec_type+'_N_monthly', 'alpha_low_N', 'alpha_diff_N', 'ALT_N'], xsize = 12, ysize=14,  save_png='./akb_mca_monthly_plot/Epwr_10Hz/'+'mca_monthly_2h_north_'+ spec_type +channels[freq_channel_index]+start_date+'_test1')
 
 
 from datetime import datetime

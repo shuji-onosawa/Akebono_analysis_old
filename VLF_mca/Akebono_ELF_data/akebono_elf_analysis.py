@@ -1,4 +1,4 @@
-from pytplot import cdf_to_tplot, get_data, store_data, options, tplot, tplot_names
+from pytplot import cdf_to_tplot, get_data, store_data, options, tplot, tlimit
 import numpy as np
 
 cdf_to_tplot('ak_h1_elf_19900211_v03.cdf')
@@ -22,8 +22,9 @@ for i in range(time_array.size-1):
         saturation_rate[i] = (maxE_index[0].size + minE_index[0].size)/time_index[0].size
     except:
         saturation_rate[i] = np.nan
-        
+
 store_data('saturation_rate', data={'x':time_array, 'y':saturation_rate})
 
 options('dE_wav_narrow', 'yrange', [-1500, 1500])
+tlimit(['1990-02-11 18:00:00', '1990-02-11 18:15:00'])
 tplot(['dE_wav_narrow','saturation_rate'])

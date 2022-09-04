@@ -25,6 +25,8 @@ for i in range(time_array.size-1):
 
 store_data('saturation_rate', data={'x':time_array, 'y':saturation_rate})
 
-options('dE_wav_narrow', 'yrange', [-1500, 1500])
+Efield = E/(30*-2.15*20)
+store_data('dE_waveform_narrow', data={'x':E.times, 'y':Efield})
+options('dE_wav_narrow', 'yrange', [-1.5, 1.5])
 tlimit(['1990-02-11 18:00:00', '1990-02-11 18:15:00'])
 tplot(['dE_wav_narrow','saturation_rate'])

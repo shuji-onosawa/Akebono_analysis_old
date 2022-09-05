@@ -194,12 +194,12 @@ def akebono_mca_monthly_plot(start_date = '1989-03-01', end_date = '1989-04-01',
     store_data('B'+spec_type+'_S_monthly', data={'x':times, 'y':south_B_matrix, 'v':lat_array})
     options(['E'+spec_type+'_N_monthly','E'+spec_type+'_S_monthly', 'B'+spec_type+'_N_monthly', 'B'+spec_type+'_S_monthly'], 'spec', 1)
     options(['E'+spec_type+'_N_monthly','E'+spec_type+'_S_monthly', 'B'+spec_type+'_N_monthly', 'B'+spec_type+'_S_monthly'], 'zlog', 1)
-    options(['E'+spec_type+'_N_monthly','E'+spec_type+'_S_monthly', 'B'+spec_type+'_N_monthly', 'B'+spec_type+'_S_monthly'], 'ytitle', 'ILAT [deg]')
+    options(['E'+spec_type+'_N_monthly','E'+spec_type+'_S_monthly', 'B'+spec_type+'_N_monthly', 'B'+spec_type+'_S_monthly'], 'ytitle', 'ILAT \n[deg]')
     options(['E'+spec_type+'_N_monthly', 'E'+spec_type+'_S_monthly'], 'ztitle', 'Electric field ')
     options(['B'+spec_type+'_N_monthly', 'B'+spec_type+'_S_monthly'], 'ztitle', 'Magnetic field ')
-    options(['E'+spec_type+'_N_monthly', 'E'+spec_type+'_S_monthly'], 'zsubtitle', 'PSD \n [(mV/m)^2/Hz]')
+    options(['E'+spec_type+'_N_monthly', 'E'+spec_type+'_S_monthly'], 'zsubtitle', 'PSD  [(mV/m)^2/Hz]')
     options(['E'+spec_type+'_N_monthly', 'E'+spec_type+'_S_monthly'], 'zrange', [1e-6, 1])
-    options(['B'+spec_type+'_N_monthly', 'B'+spec_type+'_S_monthly'], 'zsubtitle', 'PSD \n [pT^2/Hz]')
+    options(['B'+spec_type+'_N_monthly', 'B'+spec_type+'_S_monthly'], 'zsubtitle', 'PSD  [pT^2/Hz]')
     options(['B'+spec_type+'_N_monthly', 'B'+spec_type+'_S_monthly'], 'zrange', [1e-1, 1e5])
 
     store_data('alpha_low_N', data={'x':times, 'y':north_alpha_low_freq_matrix, 'v':lat_array})
@@ -207,7 +207,7 @@ def akebono_mca_monthly_plot(start_date = '1989-03-01', end_date = '1989-04-01',
     store_data('alpha_diff_N', data={'x':times, 'y':np.array(north_alpha_high_freq_matrix)-np.array(north_alpha_low_freq_matrix), 'v':lat_array})
     store_data('alpha_diff_S', data={'x':times, 'y':np.array(south_alpha_high_freq_matrix)-np.array(south_alpha_low_freq_matrix), 'v':lat_array})
     options(['alpha_low_N', 'alpha_low_S', 'alpha_diff_N', 'alpha_diff_S'], 'spec', 1)
-    options(['alpha_low_N', 'alpha_low_S', 'alpha_diff_N', 'alpha_diff_S'], 'ytitle', 'ILAT [deg]')
+    options(['alpha_low_N', 'alpha_low_S', 'alpha_diff_N', 'alpha_diff_S'], 'ytitle', 'ILAT \n[deg]')
     options(['alpha_low_N', 'alpha_low_S'], 'zrange', [-4, -1])
     options(['alpha_low_N', 'alpha_low_S'], 'ztitle', 'Alpha')
     options(['alpha_diff_N', 'alpha_diff_S'], 'zrange', [-3, 3])
@@ -218,8 +218,8 @@ def akebono_mca_monthly_plot(start_date = '1989-03-01', end_date = '1989-04-01',
     options(['ALT_N', 'ALT_S'], 'spec', 1)
     options(['ALT_N', 'ALT_S'], 'zrange', [0, 10500])
     options(['ALT_N', 'ALT_S'], 'ztitle', 'ALT [km]')
-    options('ALT_N', 'ytitle', 'ILAT [deg]')
-    options('ALT_S', 'ytitle', 'ILAT [deg]')
+    options('ALT_N', 'ytitle', 'ILAT \n[deg]')
+    options('ALT_S', 'ytitle', 'ILAT \n[deg]')
 
     pyspedas.omni.data([start_time, end_time], datatype='1min', level='hro', no_update=True)
     omni_var_name = ['BZ_GSM', 'flow_speed', 'proton_density', 'Pressure', 'SYM_H']
@@ -233,7 +233,10 @@ def akebono_mca_monthly_plot(start_date = '1989-03-01', end_date = '1989-04-01',
         os.mkdir('./akb_mca_monthly_plot/north_10Hz/'+start_date[:4]+'/')
     except:
         pass
+    tplot_options('axis_font_size', 14)
     tplot_options('title','Akebono/MCA South Cusp ' + spec_type + ' @' + channels[freq_channel_index])
+    options(['SYM_H', 'B'+spec_type+'_S_monthly','E'+spec_type+'_S_monthly', 'alpha_low_S', 'alpha_diff_S', 'ALT_S'], 'char_size', 16)
+    options(['SYM_H', 'B'+spec_type+'_N_monthly','E'+spec_type+'_N_monthly', 'alpha_low_N', 'alpha_diff_N', 'ALT_N'], 'char_size', 16)
     tplot(['SYM_H', 'B'+spec_type+'_S_monthly','E'+spec_type+'_S_monthly', 'alpha_low_S', 'alpha_diff_S', 'ALT_S'], xsize = 12, ysize=14,  save_png='./akb_mca_monthly_plot/Epwr_10Hz/'+'mca_monthly_2h_south_'+ spec_type +channels[freq_channel_index]+start_date+'_test1')
     tplot_options('title','Akebono/MCA North Cusp ' + spec_type + ' @' + channels[freq_channel_index])
     tplot(['SYM_H', 'B'+spec_type+'_N_monthly','E'+spec_type+'_N_monthly', 'alpha_low_N', 'alpha_diff_N', 'ALT_N'], xsize = 12, ysize=14,  save_png='./akb_mca_monthly_plot/Epwr_10Hz/'+'mca_monthly_2h_north_'+ spec_type +channels[freq_channel_index]+start_date+'_test1')
@@ -243,7 +246,7 @@ from datetime import datetime
 import pandas as pd
 
 # 連続した日付のリストを作成
-date_list = pd.date_range(start='1995-12-01', end='1996-01-01', freq='MS')
+date_list = pd.date_range(start='1991-09-01', end='1991-10-01', freq='MS')
 date_list = np.datetime_as_string(date_list, unit='D')
 date_list = date_list.astype(object)
 

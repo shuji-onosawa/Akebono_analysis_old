@@ -2,8 +2,8 @@ from pyspedas.utilities.dailynames import dailynames
 from pyspedas.utilities.download import download
 from pyspedas.analysis.time_clip import time_clip as tclip
 from pyspedas import time_double
-from pytplot import cdf_to_tplot
-from pytplot import store_data, get_data
+from pytplot import cdf_to_tplot, store_data, get_data
+
 import os
 import urllib.request
 import numpy as np
@@ -60,6 +60,7 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
         for new_var in tvars:
             tclip(new_var, trange[0], trange[1], suffix='')
     '''
+
     return tvars
 
 #orbit
@@ -122,7 +123,7 @@ def orb(trange = ['2013-01-01', '2013-01-02'], downloadonly = False):
                 datalines[i] = datalines[i].split()
 
         del datalines[0]
-
+        
         data_array = np.array(datalines, dtype=str).T
         
         #decide %Y from %y in file name, 'ED%y%m%d.txt'
@@ -224,3 +225,4 @@ def orb(trange = ['2013-01-01', '2013-01-02'], downloadonly = False):
     store_data(prefix+'Bmdl_Z', data={'x': UT_time_double, 'y': Bmdl_Z})
 
     return 
+

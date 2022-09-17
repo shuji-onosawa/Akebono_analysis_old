@@ -13,7 +13,8 @@ from datetime import datetime, timedelta
 
 #mca
 def mca(trange = ['2014-01-01', '2014-01-02'],
-        downloadonly = False):
+        downloadonly = False,
+        del_invalid_data = False):
 
     remote_name_prefix = 'https://akebono-vlf.db.kanazawa-u.ac.jp/permalink.php?keyword='
     pathformat = 'https://akebono-vlf.db.kanazawa-u.ac.jp/permalink.php?keyword=ak_h1_mca_%Y%m%d_v02.cdf'
@@ -37,10 +38,10 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
 
         if(os.path.isfile(save_name)==False):
             
-            get_data = urllib.request.urlopen(remote_name).read()
+            data = urllib.request.urlopen(remote_name).read()
         
             with open(save_name, mode="wb") as f:
-                f.write(get_data)
+                f.write(data)
         
         out_files.append(save_name)
 
@@ -60,8 +61,37 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
         for new_var in tvars:
             tclip(new_var, trange[0], trange[1], suffix='')
     '''
-
-    return tvars
+    if del_invalid_data == True:
+        Emax, Bmax, Eave, Bave = get_data('Emax'), get_data('Bmax'), get_data('Eave'), get_data('Bave')
+        Emax_array, Bmax_array, Eave_array, Bave_array = Emax.y.astype(float), Bmax.y.astype(float), Eave.y.astype(float), Bave.y.astype(float)
+        postgap = get_data('PostGap')
+        postgap_array = np.empty([postgap.y.size, 8])
+        for i in range(postgap.y.size):
+            postgap_str = format(postgap.y[i], '08b')
+            #"off"               "noisy",             "BDR",               "SMS",               "Bit rate",          "PWS",               "3bit",              "4bit"
+            postgap_array[i][0], postgap_array[i][1], postgap_array[i][2], postgap_array[i][3], postgap_array[i][4], postgap_array[i][5], postgap_array[i][6], postgap_array[i][7] = \
+            int(postgap_str[7]), int(postgap_str[6]), int(postgap_str[3]), int(postgap_str[2]), int(postgap_str[1]), int(postgap_str[0]), int(postgap_str[4]), int(postgap_str[5]), 
+        postgap_array = postgap_array.T
+        
+        off_index = np.where(postgap_array[0] == 1)
+        noisy_index = np.where(postgap_array[1] == 1)
+        BDR_index = np.where(postgap_array[2] == 1)
+        SMS_index = np.where(postgap_array[3] == 1)
+        Bitrate_index = np.where(postgap_array[4] == 1)
+        PWS_index = np.where(postgap_array[5] == 1)
+        
+        invalid_data_index = np.append(off_index[0], np.array([noisy_index[0], BDR_index[0], SMS_index[0], Bitrate_index[0], PWS_index[0]]))
+        print(invalid_data_index)
+        Emax_array[invalid_data_index] = np.nan
+        Bmax_array[invalid_data_index] = np.nan
+        Eave_array[invalid_data_index] = np.nan
+        Bave_array[invalid_data_index] = np.nan
+        
+        store_data('Emax', data={'x':Emax.times, 'y':Emax_array, 'v':Emax.v})
+        store_data('Bmax', data={'x':Bmax.times, 'y':Bmax_array, 'v':Bmax.v})
+        store_data('Eave', data={'x':Eave.times, 'y':Eave_array, 'v':Eave.v})
+        store_data('Bave', data={'x':Bave.times, 'y':Bave_array, 'v':Bave.v})
+    return 
 
 #orbit
 def orb(trange = ['2013-01-01', '2013-01-02'], downloadonly = False):

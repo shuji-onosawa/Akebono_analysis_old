@@ -1,16 +1,15 @@
-from tkinter import E
-import pyspedas
-from pytplot import get_data, store_data, tplot_names, tplot, options, tplot_options
-from pyspedas import time_clip, time_double, time_string, tinterpol
+from pytplot import get_data, store_data, tplot, options, tplot_options
+from pyspedas import time_double, time_string, tinterpol
 import numpy as np
 from load import mca, orb
-import os
+import os, pyspedas
+
 
 def mca_monthly_plot(start_date = '1989-03-01', end_date = '1989-04-01', unit_time_hour = 2, spec_type = 'pwr'):
     channels = ["3.16 Hz", "5.62 Hz", "10 Hz", "17.6 Hz",
                 "31.6 Hz", "56.2 Hz", "100 Hz", "176 Hz",
                 "316 Hz", "562 Hz", "1 kHz", '1.76 kHz']
-
+    
     seconds_per_day = 86400
     unit_time_width = 3600 * unit_time_hour
     unit_per_day = seconds_per_day/(unit_time_width)
@@ -33,6 +32,10 @@ def mca_monthly_plot(start_date = '1989-03-01', end_date = '1989-04-01', unit_ti
     end_time_string = end_date + ' 00:00:00'
     start_time = time_double(start_time_string)
     end_time = time_double(end_time_string)
+
+    if end_time - start_time <= 0:
+        print('end date must be after start date')
+        return
 
     days = np.arange(start_time, end_time, seconds_per_day, float)
     days_string = time_string(days, fmt= '%Y-%m-%d %H:%M:%S')
@@ -244,23 +247,27 @@ def mca_monthly_plot(start_date = '1989-03-01', end_date = '1989-04-01', unit_ti
         pass
     
     tplot_options('axis_font_size', 14)
+    tplot_options('wsize', [1800, 2000])
     
     tplot_options('title','Akebono/MCA South Cusp ' + start_date[:7]) 
     options(['SYM_H', 'E10Hz'+spec_type+'_S_monthly','E100Hz'+spec_type+'_S_monthly', 'alpha_low_S', 'alpha_high_S', 'alpha_diff_S', 'ALT_S'], 'char_size', 16)
-    tplot(['SYM_H', 'E10Hz'+spec_type+'_S_monthly', 'alpha_low_S', 'alpha_diff_S', 'alpha_high_S', 'E100Hz'+spec_type+'_S_monthly', 'ALT_S'], xsize = 12, ysize=14,
-          display = False, save_png=south_save_dir + '/south_monthly_plot_' + start_date[:7] + '_test')
+    tplot(['SYM_H', 'E10Hz'+spec_type+'_S_monthly', 'alpha_low_S', 'alpha_diff_S', 'alpha_high_S', 'E100Hz'+spec_type+'_S_monthly', 'ALT_S'],
+          display = False, save_png=south_save_dir + '/south_monthly_plot_' + start_date[:7] + '_test.png')
     
     tplot_options('title','Akebono/MCA North Cusp ' + start_date[:7])
     options(['SYM_H', 'E10Hz'+spec_type+'_N_monthly','E100Hz'+spec_type+'_N_monthly', 'alpha_low_N', 'alpha_high_N', 'alpha_diff_N', 'ALT_N'], 'char_size', 16)
-    tplot(['SYM_H', 'E10Hz'+spec_type+'_N_monthly', 'alpha_low_N', 'alpha_diff_N', 'alpha_high_N', 'E100Hz'+spec_type+'_N_monthly', 'ALT_N'], xsize = 12, ysize=14, 
-          display = False, save_png=north_save_dir + '/north_monthly_plot_' + start_date[:7] + '_test')
+    tplot(['SYM_H', 'E10Hz'+spec_type+'_N_monthly', 'alpha_low_N', 'alpha_diff_N', 'alpha_high_N', 'E100Hz'+spec_type+'_N_monthly', 'ALT_N'], 
+          display = False, save_png=north_save_dir + '/north_monthly_plot_' + start_date[:7] + '_test.png')
 
 
 import pandas as pd
 
-date_list = pd.date_range(start='1991-09-01', end='1991-10-01', freq='MS')
+date_list = pd.date_range(start='1990-09-01', end='1990-10-01', freq='MS')
 date_list = np.datetime_as_string(date_list, unit='D')
 date_list = date_list.astype(object)
 
+print(date_list)
+
 for i in range(date_list.size-1):
+    print(date_list[i], date_list[i+1])
     mca_monthly_plot(start_date = date_list[i], end_date = date_list[i+1], unit_time_hour = 2, spec_type = 'pwr')

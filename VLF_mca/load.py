@@ -73,14 +73,27 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
             int(postgap_str[7]), int(postgap_str[6]), int(postgap_str[3]), int(postgap_str[2]), int(postgap_str[1]), int(postgap_str[0]), int(postgap_str[4]), int(postgap_str[5]), 
         postgap_array = postgap_array.T
         
-        off_index = np.where(postgap_array[0] == 1)
-        noisy_index = np.where(postgap_array[1] == 1)
-        BDR_index = np.where(postgap_array[2] == 1)
-        SMS_index = np.where(postgap_array[3] == 1)
-        Bitrate_index = np.where(postgap_array[4] == 1)
-        PWS_index = np.where(postgap_array[5] == 1)
+        off_index_tuple = np.where(postgap_array[0] == 1)
+        off_index = off_index_tuple[0]
+        noisy_index_tuple = np.where(postgap_array[1] == 1)
+        noisy_index = noisy_index_tuple[0]
+        BDR_index_tuple = np.where(postgap_array[2] == 1)
+        BDR_index = BDR_index_tuple[0]
+        SMS_index_tuple = np.where(postgap_array[3] == 1)
+        SMS_index = SMS_index_tuple[0]
+        Bitrate_index_tuple = np.where(postgap_array[4] == 1)
+        Bitrate_index = Bitrate_index_tuple[0]
+        PWS_index_tuple = np.where(postgap_array[5] == 1)
+        PWS_index = PWS_index_tuple[0]
+
+        invalid_data_index = np.array([], dtype=int)
+        np.append(invalid_data_index, off_index)
+        np.append(invalid_data_index, noisy_index)
+        np.append(invalid_data_index, BDR_index)
+        np.append(invalid_data_index, SMS_index)
+        np.append(invalid_data_index, Bitrate_index)
+        np.append(invalid_data_index, PWS_index)
         
-        invalid_data_index = np.append(off_index[0], np.array([noisy_index[0], BDR_index[0], SMS_index[0], Bitrate_index[0], PWS_index[0]]))
         print(invalid_data_index)
         Emax_array[invalid_data_index] = np.nan
         Bmax_array[invalid_data_index] = np.nan

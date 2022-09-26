@@ -90,7 +90,6 @@ def mca_monthly_plot(start_date = '1989-03-01', end_date = '1989-04-01', unit_ti
         hours = np.arange(start_time_hour, start_time_hour + (unit_per_day + 1)*unit_time_width, unit_time_width)
         
         Emax_tvar = get_data('Emax_'+spec_type)
-        Bmax_tvar = get_data('Bmax_'+spec_type)
         
         #calc power law alpha 
         def reg1dim(x, y):
@@ -161,7 +160,7 @@ def mca_monthly_plot(start_date = '1989-03-01', end_date = '1989-04-01', unit_ti
                         E10Hz_var_1deg = Emax_tvar.y.T[2][index]
                         E10Hz_list_per_hour.append(np.nanmax(E10Hz_var_1deg))
                         
-                        E100Hz_var_1deg = Bmax_tvar.y.T[6][index]
+                        E100Hz_var_1deg = Emax_tvar.y.T[6][index]
                         E100Hz_list_per_hour.append(np.nanmax(E100Hz_var_1deg))
 
                         alt_1deg = alt_array[index]
@@ -204,7 +203,7 @@ def mca_monthly_plot(start_date = '1989-03-01', end_date = '1989-04-01', unit_ti
     options(['E10Hz'+spec_type+'_N_monthly', 'E10Hz'+spec_type+'_S_monthly'], 'zsubtitle', '[(mV/m)^2/Hz]')
     options(['E10Hz'+spec_type+'_N_monthly', 'E10Hz'+spec_type+'_S_monthly'], 'zrange', [1e-2, 1])
     options(['E100Hz'+spec_type+'_N_monthly', 'E100Hz'+spec_type+'_S_monthly'], 'zsubtitle', '[(mV/m)^2/Hz]')
-    options(['E100Hz'+spec_type+'_N_monthly', 'E100Hz'+spec_type+'_S_monthly'], 'zrange', [1e-5, 1e-3])
+    options(['E100Hz'+spec_type+'_N_monthly', 'E100Hz'+spec_type+'_S_monthly'], 'zrange', [1e-4, 1e-2])
 
     store_data('alpha_low_N', data={'x':times, 'y':north_alpha_low_freq_matrix, 'v':lat_array})
     store_data('alpha_low_S', data={'x':times, 'y':south_alpha_low_freq_matrix, 'v':lat_array})
@@ -215,11 +214,11 @@ def mca_monthly_plot(start_date = '1989-03-01', end_date = '1989-04-01', unit_ti
     options(['alpha_low_N', 'alpha_low_S', 'alpha_high_N', 'alpha_high_S', 'alpha_diff_N', 'alpha_diff_S'], 'spec', 1)
     options(['alpha_low_N', 'alpha_low_S', 'alpha_high_N', 'alpha_high_S', 'alpha_diff_N', 'alpha_diff_S'], 'ytitle', 'ILAT \n[deg]')
     options(['alpha_low_N', 'alpha_low_S'], 'zrange', [-4, -1])
-    options(['alpha_low_N', 'alpha_low_S'], 'ztitle', r'$\alpha_{\ low}$')
+    options(['alpha_low_N', 'alpha_low_S'], 'ztitle', 'alpha_low')
     options(['alpha_high_N', 'alpha_high_S'], 'zrange', [-4, -1])
-    options(['alpha_high_N', 'alpha_high_S'], 'ztitle', r'$\alpha_{\ high}$')
+    options(['alpha_high_N', 'alpha_high_S'], 'ztitle', 'alpha_high')
     options(['alpha_diff_N', 'alpha_diff_S'], 'zrange', [-3, 3])
-    options(['alpha_diff_N','alpha_diff_S'], 'ztitle', r'$\alpha_{\ high} - \alpha_{\ low}$')
+    options(['alpha_diff_N','alpha_diff_S'], 'ztitle', 'alpha_diff') 
 
     store_data('ALT_N', data={'x':times, 'y':north_alt_matrix, 'v':lat_array})
     store_data('ALT_S', data={'x':times, 'y':south_alt_matrix, 'v':lat_array})
@@ -246,23 +245,24 @@ def mca_monthly_plot(start_date = '1989-03-01', end_date = '1989-04-01', unit_ti
         print(e)
         pass
     
-    tplot_options('axis_font_size', 14)
-    tplot_options('wsize', [1800, 2000])
+    #tplot_options('axis_font_size', 20)
+    #tplot_options('title_size', 24)
+    tplot_options('wsize', [1200, 1200])
     
     tplot_options('title','Akebono/MCA South Cusp ' + start_date[:7]) 
-    options(['SYM_H', 'E10Hz'+spec_type+'_S_monthly','E100Hz'+spec_type+'_S_monthly', 'alpha_low_S', 'alpha_high_S', 'alpha_diff_S', 'ALT_S'], 'char_size', 16)
+    #options(['SYM_H', 'E10Hz'+spec_type+'_S_monthly','E100Hz'+spec_type+'_S_monthly', 'alpha_low_S', 'alpha_high_S', 'alpha_diff_S', 'ALT_S'], 'char_size', 12)
     tplot(['SYM_H', 'E10Hz'+spec_type+'_S_monthly', 'alpha_low_S', 'alpha_diff_S', 'alpha_high_S', 'E100Hz'+spec_type+'_S_monthly', 'ALT_S'],
           display = False, save_png=south_save_dir + '/south_monthly_plot_' + start_date[:7] + '_test.png')
     
     tplot_options('title','Akebono/MCA North Cusp ' + start_date[:7])
-    options(['SYM_H', 'E10Hz'+spec_type+'_N_monthly','E100Hz'+spec_type+'_N_monthly', 'alpha_low_N', 'alpha_high_N', 'alpha_diff_N', 'ALT_N'], 'char_size', 16)
+    #options(['SYM_H', 'E10Hz'+spec_type+'_N_monthly','E100Hz'+spec_type+'_N_monthly', 'alpha_low_N', 'alpha_high_N', 'alpha_diff_N', 'ALT_N'], 'char_size', 12)
     tplot(['SYM_H', 'E10Hz'+spec_type+'_N_monthly', 'alpha_low_N', 'alpha_diff_N', 'alpha_high_N', 'E100Hz'+spec_type+'_N_monthly', 'ALT_N'], 
           display = False, save_png=north_save_dir + '/north_monthly_plot_' + start_date[:7] + '_test.png')
 
 
 import pandas as pd
 
-date_list = pd.date_range(start='1990-09-01', end='1990-10-01', freq='MS')
+date_list = pd.date_range(start='1989-03-01', end='1989-04-01', freq='MS')
 date_list = np.datetime_as_string(date_list, unit='D')
 date_list = date_list.astype(object)
 

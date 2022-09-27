@@ -94,7 +94,6 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
         np.append(invalid_data_index, Bitrate_index)
         np.append(invalid_data_index, PWS_index)
         
-        print(invalid_data_index)
         Emax_array[invalid_data_index] = np.nan
         Bmax_array[invalid_data_index] = np.nan
         Eave_array[invalid_data_index] = np.nan
@@ -109,7 +108,6 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
 #orbit
 def orb(trange = ['2013-01-01', '2013-01-02'], downloadonly = False):
     
-    remote_name_prefix = 'https://darts.isas.jaxa.jp/stp/data/exosd/orbit/daily/%Y%m/'
     pathformat = 'https://darts.isas.jaxa.jp/stp/data/exosd/orbit/daily/%Y%m/ED%y%m%d.txt'
     remote_names = dailynames(file_format=pathformat, trange=trange)
 
@@ -231,6 +229,7 @@ def orb(trange = ['2013-01-01', '2013-01-02'], downloadonly = False):
                         's_Direc_x','s_Direc_y', 's_Direc_z', 
                         's/c_pos_x', 's/c_pos_y', 's/c_pos_z', 
                         's/c_vel(km/s)_x', 's/c_vel(km/s)_y','s/c_vel(km/s)_z' ]
+    header information (https://github.com/spedas-j/member_contrib/blob/master/akb_lib/Akebono_orbit_Header.txt)
     '''
     if int((time_double(trange[1])-time_double(trange[0]))/30) > len(UT_time_double):
         start_to_end_time_double = np.arange(time_double(trange[0]), time_double(trange[1]), 30)

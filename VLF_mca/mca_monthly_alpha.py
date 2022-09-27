@@ -249,22 +249,22 @@ def mca_monthly_plot(start_date = '1989-03-01', end_date = '1989-04-01', unit_ti
     
     #tplot_options('axis_font_size', 20)
     #tplot_options('title_size', 24)
-    tplot_options('wsize', [1200, 1200])
+    tplot_options('wsize', [1200, 1000])
     
     tplot_options('title','Akebono/MCA South Cusp ' + start_date[:7]) 
     #options(['SYM_H', 'E10Hz'+spec_type+'_S_monthly','E100Hz'+spec_type+'_S_monthly', 'alpha_low_S', 'alpha_high_S', 'alpha_diff_S', 'ALT_S'], 'char_size', 12)
     tplot(['SYM_H', 'E10Hz'+spec_type+'_S_monthly', 'alpha_low_S', 'alpha_diff_S', 'alpha_high_S', 'E100Hz'+spec_type+'_S_monthly', 'ALT_S'],
-          display = False, save_png=south_save_dir + '/south_monthly_plot_' + start_date[:7] + '_del_test.png')
+          display = True, save_png=south_save_dir + '/south_monthly_plot_' + start_date[:7] + '_test2.png')
     
     tplot_options('title','Akebono/MCA North Cusp ' + start_date[:7])
     #options(['SYM_H', 'E10Hz'+spec_type+'_N_monthly','E100Hz'+spec_type+'_N_monthly', 'alpha_low_N', 'alpha_high_N', 'alpha_diff_N', 'ALT_N'], 'char_size', 12)
     tplot(['SYM_H', 'E10Hz'+spec_type+'_N_monthly', 'alpha_low_N', 'alpha_diff_N', 'alpha_high_N', 'E100Hz'+spec_type+'_N_monthly', 'ALT_N'], 
-          display = False, save_png=north_save_dir + '/north_monthly_plot_' + start_date[:7] + '_del_test.png')
+          display = True, save_png=north_save_dir + '/north_monthly_plot_' + start_date[:7] + '_test2.png')
 
 
 import pandas as pd
 
-date_list = pd.date_range(start='1990-09-01', end='1990-11-01', freq='MS')
+date_list = pd.date_range(start='1990-09-01', end='1990-10-01', freq='MS')
 date_list = np.datetime_as_string(date_list, unit='D')
 date_list = date_list.astype(object)
 

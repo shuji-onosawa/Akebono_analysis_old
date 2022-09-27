@@ -250,7 +250,7 @@ for k in range(len(day_list)-1):
  
 
     #dir_list = ['./akb_North_mca_plot/', './akb_South_mca_plot/']
-    dir_list = ['./akb_North_mca_w_gyro_plot/', './akb_South_mca_w_gyro_plot/']
+    dir_list = ['./plots/akb_North_mca_w_gyro_plot/', './plots/akb_South_mca_w_gyro_plot/']
     hemisphere_list = ['north', 'south']
 
 

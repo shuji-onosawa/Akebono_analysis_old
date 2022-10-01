@@ -2,7 +2,7 @@ from pyspedas.utilities.dailynames import dailynames
 from pyspedas.utilities.download import download
 from pyspedas.analysis.time_clip import time_clip as tclip
 from pyspedas import time_double
-from pytplot import cdf_to_tplot, store_data, get_data
+from pytplot import cdf_to_tplot, store_data, get_data, options
 
 import os
 import urllib.request
@@ -14,8 +14,26 @@ from datetime import datetime, timedelta
 #mca
 def mca(trange = ['2014-01-01', '2014-01-02'],
         downloadonly = False,
-        del_invalid_data = False):
+        spec_type = 'pwr',
+        del_invalid_data = ['off']):
 
+    '''
+    spec_type: dB : decibel, 0[dB]=10^-6[mV/m] for E-field and 0[dB] = 10^-6[pT] for B-field
+               amp: mV/m/Hz^1/2 or nT/Hz^1/2
+               pwr: (mV/m)^2/Hz or nT^2/Hz
+        
+    del_invalid_data: list of string. 
+                      mca cdf contain data from which the interference by BDR or SMS is *not* yet removed.
+                      You can remove data contaminated by interference by passing a list containing the following words. 
+                      off: mca is off
+                      noisy: data is noisy
+                      SMS: SMS on
+                      BDR: BDR on
+                      Bit rate M: Bit rate is medium
+                      PWS: PWS sounder on
+    
+    explanation of VLF/MCA data is here(https://www.stp.isas.jaxa.jp/akebono/readme/readme.vlf.txt).
+    '''
     remote_name_prefix = 'https://akebono-vlf.db.kanazawa-u.ac.jp/permalink.php?keyword='
     pathformat = 'https://akebono-vlf.db.kanazawa-u.ac.jp/permalink.php?keyword=ak_h1_mca_%Y%m%d_v02.cdf'
 
@@ -61,38 +79,42 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
         for new_var in tvars:
             tclip(new_var, trange[0], trange[1], suffix='')
     '''
-    if del_invalid_data == True:
+
+    if del_invalid_data == False:
+        return
+    else:
         Emax, Bmax, Eave, Bave = get_data('Emax'), get_data('Bmax'), get_data('Eave'), get_data('Bave')
         Emax_array, Bmax_array, Eave_array, Bave_array = Emax.y.astype(float), Bmax.y.astype(float), Eave.y.astype(float), Bave.y.astype(float)
         postgap = get_data('PostGap')
-        postgap_array = np.empty([postgap.y.size, 8])
+        postgap_array = np.empty([postgap.y.size, 6])
         for i in range(postgap.y.size):
-            postgap_str = format(postgap.y[i], '08b')
-            #"off"               "noisy",             "BDR",               "SMS",               "Bit rate",          "PWS",               "3bit",              "4bit"
-            postgap_array[i][0], postgap_array[i][1], postgap_array[i][2], postgap_array[i][3], postgap_array[i][4], postgap_array[i][5], postgap_array[i][6], postgap_array[i][7] = \
-            int(postgap_str[7]), int(postgap_str[6]), int(postgap_str[3]), int(postgap_str[2]), int(postgap_str[1]), int(postgap_str[0]), int(postgap_str[4]), int(postgap_str[5]), 
+            postgap_str = format(postgap.y[i], '08b')        
+            #"off"               "noisy",             "BDR",               "SMS",               "Bit rate",          "PWS",    
+            postgap_array[i][0], postgap_array[i][1], postgap_array[i][2], postgap_array[i][3], postgap_array[i][4], postgap_array[i][5] = \
+            int(postgap_str[7]), int(postgap_str[6]), int(postgap_str[3]), int(postgap_str[2]), int(postgap_str[1]), int(postgap_str[0]) 
         postgap_array = postgap_array.T
         
-        off_index_tuple = np.where(postgap_array[0] == 1)
-        off_index = off_index_tuple[0]
-        noisy_index_tuple = np.where(postgap_array[1] == 1)
-        noisy_index = noisy_index_tuple[0]
-        BDR_index_tuple = np.where(postgap_array[2] == 1)
-        BDR_index = BDR_index_tuple[0]
-        SMS_index_tuple = np.where(postgap_array[3] == 1)
-        SMS_index = SMS_index_tuple[0]
-        Bitrate_index_tuple = np.where(postgap_array[4] == 1)
-        Bitrate_index = Bitrate_index_tuple[0]
-        PWS_index_tuple = np.where(postgap_array[5] == 1)
-        PWS_index = PWS_index_tuple[0]
-
-        invalid_data_index = np.array([], dtype=int)
-        np.append(invalid_data_index, off_index)
-        np.append(invalid_data_index, noisy_index)
-        np.append(invalid_data_index, BDR_index)
-        np.append(invalid_data_index, SMS_index)
-        np.append(invalid_data_index, Bitrate_index)
-        np.append(invalid_data_index, PWS_index)
+        invalid_data_index = np.array([])
+        if 'off' in del_invalid_data:
+            off_index_tuple = np.where(postgap_array[0] == 1)
+            invalid_data_index = np.append(invalid_data_index, off_index_tuple[0])
+        if 'noisy' in del_invalid_data:
+            noisy_index_tuple = np.where(postgap_array[1] == 1)
+            invalid_data_index = np.append(invalid_data_index, noisy_index_tuple[0])     
+        if 'BDR' in del_invalid_data:
+            bdr_index_tuple = np.where(postgap_array[2] == 1)
+            invalid_data_index = np.append(invalid_data_index, bdr_index_tuple[0])
+        if 'SMS' in del_invalid_data:
+            sms_index_tuple = np.where(postgap_array[3] == 1)
+            invalid_data_index = np.append(invalid_data_index, sms_index_tuple[0])
+        if 'Bit rate M' in del_invalid_data:
+            bitrate_index_tuple = np.where(postgap_array[4] == 1)
+            invalid_data_index = np.append(invalid_data_index, bitrate_index_tuple[0])
+        if 'PWS' in del_invalid_data:
+            pws_index_tuple = np.where(postgap_array[5] == 1)
+            invalid_data_index = np.append(invalid_data_index, pws_index_tuple[0])
+        
+        invalid_data_index = invalid_data_index.astype(int)
         
         Emax_array[invalid_data_index] = np.nan
         Bmax_array[invalid_data_index] = np.nan
@@ -103,6 +125,28 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
         store_data('Bmax', data={'x':Bmax.times, 'y':Bmax_array, 'v':Bmax.v})
         store_data('Eave', data={'x':Eave.times, 'y':Eave_array, 'v':Eave.v})
         store_data('Bave', data={'x':Bave.times, 'y':Bave_array, 'v':Bave.v})
+        
+    if spec_type == 'dB':
+        return
+    if spec_type == 'amp':
+        tplot_names = ['Emax', 'Eave', 'Bmax', 'Bave']
+        for i in range(4):
+            tplot_variable = get_data(tplot_names[i])
+            tplot_variable_float = (tplot_variable.y).astype(float)
+            tplot_variable_0dB = 1e-6 #mV or pT
+            bandwidth = tplot_variable.v * 0.3
+            tplot_variable_amplitude = (10**(tplot_variable_float/20)) * (tplot_variable_0dB)  / np.sqrt(bandwidth)
+            store_data(tplot_names[i] +'_amp', data={'x': tplot_variable.times, 'y': tplot_variable_amplitude, 'v': tplot_variable.v})
+    if spec_type == 'pwr':
+        tplot_names = ['Emax', 'Eave', 'Bmax', 'Bave']
+        for i in range(4):
+            tplot_variable = get_data(tplot_names[i])
+            tplot_variable_float = (tplot_variable.y).astype(float)
+            tplot_variable_0dB = 1e-6 #mV or pT
+            bandwidth = tplot_variable.v * 0.3
+            tplot_variable_power = (10**(tplot_variable_float/10)) * ((tplot_variable_0dB)**2) / bandwidth
+            store_data(tplot_names[i] +'_pwr', data={'x': tplot_variable.times, 'y': tplot_variable_power, 'v': tplot_variable.v})
+    
     return 
 
 #orbit
@@ -267,4 +311,3 @@ def orb(trange = ['2013-01-01', '2013-01-02'], downloadonly = False):
     store_data(prefix+'Bmdl_Z', data={'x': UT_time_double, 'y': Bmdl_Z})
 
     return 
-

@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 start_date = '1989-03-05'
-end_date = '1989-04-06'
+end_date = '1989-03-10'
 
 date_list = pd.date_range(start=start_date, end=end_date, freq='D')
 date_list = np.datetime_as_string(date_list, unit='D')
@@ -14,7 +14,7 @@ date_list = date_list.astype(object)
 
 matrix = np.zeros((16, 254))
 for i in range(date_list.size-1):
-    load.mca([date_list[i], date_list[i+1]], del_invalid_data=True)
+    load.mca([date_list[i], date_list[i+1]], del_invalid_data=False)
     
     #load.orb([date_list[i], date_list[i+1]])
     #tinterpol('akb_ILAT', interp_to = 'Emax', newname = 'ILAT')
@@ -41,16 +41,14 @@ for i in range(date_list.size-1):
 
     matrix = matrix + matrix_per_day
 
-percent_matrix = np.empty((16,254))
-for ch in range(freq_array.size):
-    percent_matrix[ch] = matrix[ch]/np.sum(matrix[ch])
-    print(np.sum(percent_matrix[ch]))
-    
-plt.pcolormesh(freq_array, intensity_array, percent_matrix.T)
-plt.xlabel('Frequency [Hz]')
-plt.ylabel('Intensity [dB]')
-cbar = plt.colorbar() 
-cbar.ax.set_ylabel("Count") 
-plt.set_cmap(cmap = 'magma')
-plt.savefig('./plots/mca_intensity_distribution/corrected_data'+start_date+'_'+end_date)
+fig = plt.figure(figsize=(15, 6))
+ax = fig.add_subplot(1,1,1)
+for i in range(16):
+    ax.plot(intensity_array, matrix[i], label = 'ch'+str(i+1))
+
+ax.set_xlabel('Intensity [dB]')
+ax.set_ylabel('Count')    
+plt.legend(loc='center left', bbox_to_anchor=(1, 0.2, 0.5, 0.5))
+plt.savefig('./plots/mca_intensity_distribution/test')
 plt.show()
+

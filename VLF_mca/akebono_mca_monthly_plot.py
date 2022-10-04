@@ -1,5 +1,6 @@
 import pyspedas
-from pytplot import get_data, store_data, tplot_names, tplot, options, tplot_options
+from pytplot import get_data, store_data, tplot_names, options, tplot_options
+from pytplot.MPLPlotter.tplot import tplot
 from pyspedas import time_clip, time_double, time_string, tinterpol
 import numpy as np
 from load import mca, orb
@@ -245,7 +246,7 @@ def akebono_mca_monthly_plot(start_date = '1989-03-01', end_date = '1989-04-01',
 from datetime import datetime
 import pandas as pd
 
-# 連続した日付のリストを作成
+
 date_list = pd.date_range(start='1991-09-01', end='1991-10-01', freq='MS')
 date_list = np.datetime_as_string(date_list, unit='D')
 date_list = date_list.astype(object)

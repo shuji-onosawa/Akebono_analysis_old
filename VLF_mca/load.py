@@ -81,7 +81,7 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
     '''
 
     if del_invalid_data == False:
-        return
+        pass
     else:
         Emax, Bmax, Eave, Bave = get_data('Emax'), get_data('Bmax'), get_data('Eave'), get_data('Bave')
         Emax_array, Bmax_array, Eave_array, Bave_array = Emax.y.astype(float), Bmax.y.astype(float), Eave.y.astype(float), Bave.y.astype(float)
@@ -125,7 +125,8 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
         store_data('Bmax', data={'x':Bmax.times, 'y':Bmax_array, 'v':Bmax.v})
         store_data('Eave', data={'x':Eave.times, 'y':Eave_array, 'v':Eave.v})
         store_data('Bave', data={'x':Bave.times, 'y':Bave_array, 'v':Bave.v})
-        
+    
+    
     if spec_type == 'dB':
         return
     if spec_type == 'amp':

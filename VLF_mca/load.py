@@ -27,10 +27,10 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
                       You can remove data contaminated by interference by passing a list containing the following words. 
                       off: mca is off
                       noisy: data is noisy
-                      SMS: SMS on
-                      BDR: BDR on
-                      Bit rate M: Bit rate is medium
-                      PWS: PWS sounder on
+                      sms: SMS on
+                      bdr: BDR on
+                      bit rate m: Bit rate is medium
+                      pws: PWS sounder on
     
     explanation of VLF/MCA data is here(https://www.stp.isas.jaxa.jp/akebono/readme/readme.vlf.txt).
     '''
@@ -72,6 +72,7 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
         tvars = cdf_to_tplot(out_files)
     except:
         print('///////////////////////////ERROR/////////////////////////')
+        print("You can not get orbit file or you can not open orbit file \n")
         os.remove(save_name)
         return
     '''
@@ -95,25 +96,27 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
         postgap_array = postgap_array.T
         
         invalid_data_index = np.array([])
-        if 'off' in del_invalid_data:
-            off_index_tuple = np.where(postgap_array[0] == 1)
-            invalid_data_index = np.append(invalid_data_index, off_index_tuple[0])
-        if 'noisy' in del_invalid_data:
-            noisy_index_tuple = np.where(postgap_array[1] == 1)
-            invalid_data_index = np.append(invalid_data_index, noisy_index_tuple[0])     
-        if 'BDR' in del_invalid_data:
-            bdr_index_tuple = np.where(postgap_array[2] == 1)
-            invalid_data_index = np.append(invalid_data_index, bdr_index_tuple[0])
-        if 'SMS' in del_invalid_data:
-            sms_index_tuple = np.where(postgap_array[3] == 1)
-            invalid_data_index = np.append(invalid_data_index, sms_index_tuple[0])
-        if 'Bit rate M' in del_invalid_data:
-            bitrate_index_tuple = np.where(postgap_array[4] == 1)
-            invalid_data_index = np.append(invalid_data_index, bitrate_index_tuple[0])
-        if 'PWS' in del_invalid_data:
-            pws_index_tuple = np.where(postgap_array[5] == 1)
-            invalid_data_index = np.append(invalid_data_index, pws_index_tuple[0])
-        
+        for inst_name in del_invalid_data:
+            inst_name.lower()
+            if inst_name == 'off':
+                off_index_tuple = np.where(postgap_array[0] == 1)
+                invalid_data_index = np.append(invalid_data_index, off_index_tuple[0])
+            if inst_name == 'noisy':
+                noisy_index_tuple = np.where(postgap_array[1] == 1)
+                invalid_data_index = np.append(invalid_data_index, noisy_index_tuple[0])     
+            if inst_name == 'bdr':
+                bdr_index_tuple = np.where(postgap_array[2] == 1)
+                invalid_data_index = np.append(invalid_data_index, bdr_index_tuple[0])
+            if inst_name == 'sms':
+                sms_index_tuple = np.where(postgap_array[3] == 1)
+                invalid_data_index = np.append(invalid_data_index, sms_index_tuple[0])
+            if inst_name == 'bit rate m':
+                bitrate_index_tuple = np.where(postgap_array[4] == 1)
+                invalid_data_index = np.append(invalid_data_index, bitrate_index_tuple[0])
+            if inst_name == 'pws':
+                pws_index_tuple = np.where(postgap_array[5] == 1)
+                invalid_data_index = np.append(invalid_data_index, pws_index_tuple[0])
+            
         invalid_data_index = invalid_data_index.astype(int)
         
         Emax_array[invalid_data_index] = np.nan

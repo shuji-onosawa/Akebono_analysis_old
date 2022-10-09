@@ -3,9 +3,9 @@ import numpy as np
 #when angler freq is given, returns wave number
 
 def dispersion(theta, w, ne, nh, nhe, no, B0):
-    q = 1.6e-19
-    eps = 8.9e-12
-    myu = 1.3e-6
+    q = 1.602176634e-19
+    eps = 8.8541878128e-12
+    myu = 1.25663706212e-6
     c= (eps*myu)**-0.5
     
     me = 9.1e-31

@@ -20,7 +20,7 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference)
     intensity_array = np.arange(1,255)
     
     for i in range(date_list.size-1):
-        
+        print(date_list[i])
         load.mca([date_list[i], date_list[i+1]], del_invalid_data=del_invalid_data)
         
         #load.orb([date_list[i], date_list[i+1]])
@@ -59,7 +59,10 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference)
         ax1.plot(intensity_array, E_matrix[i], label = str(freq_array[i])+' Hz')
     ax1.set_ylabel('Count')
     ax1.legend()
-    ax1.set_title('Akebono VLF/MCA ' + 'Efield '+start_date + ' ' + end_date)
+    subtitle = ''
+    for i in range(len(del_invalid_data)):
+        subtitle = subtitle + ' ' + del_invalid_data[i]
+    ax1.set_title('Akebono VLF/MCA ' + 'Efield '+start_date + ' ' + end_date + '\n' + subtitle)
     
     ax2 = fig.add_subplot(3,1,2)
     for i in range(5):
@@ -87,7 +90,7 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference)
     subtitle = ''
     for i in range(len(del_invalid_data)):
         subtitle = subtitle + ' ' + del_invalid_data[i]
-    ax1.set_title('Akebono VLF/MCA ' + 'Bfield '+start_date + ' ' + end_date)
+    ax1.set_title('Akebono VLF/MCA ' + 'Bfield '+start_date + ' ' + end_date + '\n' + subtitle)
     
     ax2 = fig.add_subplot(3,1,2)
     for i in range(5):
@@ -107,4 +110,4 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference)
     plt.close()
 
 
-mca_intensity_distribution_plot(start_date='1989-03-05', end_date='2015-04-22', del_inst_interference=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'])    
+mca_intensity_distribution_plot(start_date='1989-03-05', end_date='2014-10-01', del_inst_interference=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'])

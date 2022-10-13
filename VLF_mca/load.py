@@ -42,8 +42,8 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
     out_files = []
 
     pathname = './Akebono_MCA_data/'
-
-
+    
+    
     try:
         os.mkdir(pathname)
     except:
@@ -72,9 +72,9 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
         tvars = cdf_to_tplot(out_files)
     except:
         print('///////////////////////////ERROR/////////////////////////')
-        print("You can not get orbit file or you can not open orbit file \n")
+        print("You cannot get orbit file or you can not open orbit file \n")
         os.remove(save_name)
-        return
+        return 
     '''
     if time_clip:
         for new_var in tvars:
@@ -97,7 +97,12 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
         
         invalid_data_index = np.array([])
         for inst_name in del_invalid_data:
-            inst_name.lower()
+            inst_name = inst_name.lower()
+            if inst_name in ['off', 'noisy', 'bdr', 'sms', 'bit rate m', 'pws']:
+                pass
+            else:
+                raise Exception('del_invalid_data list must consist of either off, noisy, bdr, sms, bit rate m or pws')
+                
             if inst_name == 'off':
                 off_index_tuple = np.where(postgap_array[0] == 1)
                 invalid_data_index = np.append(invalid_data_index, off_index_tuple[0])

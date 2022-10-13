@@ -35,6 +35,8 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
 
         sms_on_tuple = np.where(sms_flag_array==1)
         sms_on_index = sms_on_tuple[0]
+        if sms_on_index.size == 0:
+            continue
         sms_start_index = [sms_on_index[0]]
         sms_end_index = []
         
@@ -45,20 +47,16 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
         sms_end_index.append(sms_on_index[-1])
         
         E_tvar = get_data('Emax')
-        if E_tvar is None:
-            print('cdf of ' + date_list[i] + ' has no data')
-            continue
         E_array = E_tvar.y
-        E_sms_array = np.copy(E_array)
+        E_sms_array = np.copy(E_tvar.y)
         B_tvar = get_data('Bmax')
         B_array = B_tvar.y
         B_sms_array = np.copy(B_tvar.y)
         
-        '''
         for i in range(len(sms_start_index)):
             E_array[sms_start_index[i]:sms_end_index[i] + 1] = np.nan
             B_array[sms_start_index[i]:sms_end_index[i] + 1] = np.nan
-        '''
+        
         
         E_array_T = E_array.T
         E_list = E_array_T.tolist()
@@ -74,6 +72,7 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
         E_sms_matrix_per_day = np.empty((freq_array.size, intensity_array.size), dtype = int)
         B_sms_matrix_per_day = np.empty((freq_array.size, intensity_array.size), dtype = int)
         
+
         for ch in range(freq_array.size):
             for intensity in range(intensity_array.size):
                 E_matrix_per_day[ch][intensity] = E_list[ch].count(intensity)
@@ -129,7 +128,7 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     ax3.legend()
     
 
-    plt.savefig('./plots/mca_intensity_distribution/mca_' + 'Efield_' + start_date+'_'+end_date+'_sms-off')
+    plt.savefig('./plots/mca_intensity_distribution/mca_' + 'Efield_' + start_date+'_'+end_date+'_sms-off'+suffix)
     plt.clf()
     plt.close()
     
@@ -172,12 +171,12 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     ax3.set_xlabel('PSD [(mV/m)^2/Hz]')
     ax3.legend()
     
-    plt.savefig('./plots/mca_intensity_distribution/mca_' + 'Efield_' + start_date+'_'+end_date+'_sms-only')
+    plt.savefig('./plots/mca_intensity_distribution/mca_' + 'Efield_' + start_date+'_'+end_date+'_sms-only'+suffix)
     plt.clf()
     plt.close()
     
     #sms off plot of M field
-    xlim = [1e-9, 1e6]
+    xlim = [1e-10, 1e8]
     fig = plt.figure(figsize=(10, 8))
     ax1 = fig.add_subplot(3,1,1)
     for i in range(6):
@@ -214,7 +213,7 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     ax3.set_xlabel('PSD [pT^2/Hz]')
     ax3.legend()
     
-    plt.savefig('./plots/mca_intensity_distribution/mca_' + 'Mfield_' + start_date+'_'+end_date+'_sms-off')
+    plt.savefig('./plots/mca_intensity_distribution/mca_' + 'Mfield_' + start_date+'_'+end_date+'_sms-off'+suffix)
     plt.clf()
     plt.close()
     
@@ -230,6 +229,7 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     ax1.set_ylim(bottom=bottom)
     ax1.legend()
     
+    subtitle = subtitle + ' (sms only)'
     ax1.set_title('Akebono VLF/MCA ' + 'Mfield '+start_date + ' ' + end_date + '\n' + subtitle)
     
     ax2 = fig.add_subplot(3,1,2)
@@ -253,8 +253,9 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     ax3.set_xlabel('PSD [pT^2/Hz]')
     ax3.legend()
     
-    plt.savefig('./plots/mca_intensity_distribution/mca_' + 'Mfield_' + start_date+'_'+end_date+'_sms-only')
+    plt.savefig('./plots/mca_intensity_distribution/mca_' + 'Mfield_' + start_date+'_'+end_date+'_sms-only'+suffix)
     plt.clf()
     plt.close()
     
-mca_intensity_distribution_plot(start_date='1990-02-11', end_date='1990-02-12', del_inst_interference=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'])
+
+mca_intensity_distribution_plot(start_date='1990-2-11', end_date='1990-2-13', del_inst_interference=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'], suffix='_nan_test')

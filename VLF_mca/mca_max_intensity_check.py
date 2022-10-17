@@ -1,5 +1,6 @@
 import load
 from pytplot import get_data
+from pyspedas import tinterpol
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -26,7 +27,17 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     for i in range(date_list.size-1):
         print(date_list[i])
         load.mca([date_list[i], date_list[i+1]], del_invalid_data=del_invalid_data)
-
+        load.orb([date_list[i], date_list[i+1]])
+        
+        try:
+            tinterpol('akb_ILAT', interp_to='Emax_pwr', newname = 'ILAT')
+        except:
+            print('orbit file is not perfect')
+            continue
+        tinterpol('akb_MLAT', interp_to = 'Emax', newname = 'MLAT')
+        tinterpol('akb_MLT', interp_to = 'Emax', newname = 'MLT', method = 'nearest')
+        tinterpol('akb_ALT', interp_to = 'Emax', newname = 'ALT')
+        
         postgap = get_data('PostGap')
         sms_flag_array = np.empty([postgap.y.size])
         for i in range(postgap.y.size):
@@ -46,12 +57,19 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
                 sms_start_index.append(sms_on_index[i+1])
         sms_end_index.append(sms_on_index[-1])
         
+        ilat = get_data('ILAT')
+        mlt = get_data('MLT')
+        cusp_index = np.where((ilat.y > 60) 
+                             & (10 <= mlt.y) & (mlt.y <= 14))
+        cusp_index = cusp_index[0]
+        
         E_tvar = get_data('Emax')
         E_array = E_tvar.y
         E_sms_array = np.copy(E_tvar.y)
         B_tvar = get_data('Bmax')
         B_array = B_tvar.y
         B_sms_array = np.copy(B_tvar.y)
+        
         
         for i in range(len(sms_start_index)):
             E_array[sms_start_index[i]:sms_end_index[i] + 1] = np.nan

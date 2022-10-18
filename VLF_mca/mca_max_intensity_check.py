@@ -42,22 +42,22 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
         
         postgap = get_data('PostGap')
         sms_flag_array = np.empty([postgap.y.size])
-        for i in range(postgap.y.size):
-            postgap_str = format(postgap.y[i], '08b')    
-            sms_flag_array[i] = int(postgap_str[2]) 
+        for flag_index in range(postgap.y.size):
+            postgap_str = format(postgap.y[flag_index], '08b')    
+            sms_flag_array[flag_index] = int(postgap_str[2]) 
 
         sms_on_tuple = np.where(sms_flag_array==1)
-        sms_on_index = sms_on_tuple[0]
-        if sms_on_index.size == 0:
+        sms_on_indices = sms_on_tuple[0]
+        if sms_on_indices.size == 0:
             continue
-        sms_start_index = [sms_on_index[0]]
-        sms_end_index = []
+        sms_start_indices = [sms_on_indices[0]]
+        sms_end_indices = []
         
-        for i in range(sms_on_index.size-1):
-            if sms_on_index[i+1]-sms_on_index[i] > 15:
-                sms_end_index.append(sms_on_index[i])
-                sms_start_index.append(sms_on_index[i+1])
-        sms_end_index.append(sms_on_index[-1])
+        for sms_index in range(sms_on_indices.size-1):
+            if sms_on_indices[sms_index+1]-sms_on_indices[sms_index] > 15:
+                sms_end_indices.append(sms_on_indices[sms_index])
+                sms_start_indices.append(sms_on_indices[sms_index+1])
+        sms_end_indices.append(sms_on_indices[-1])
     
         E_tvar = get_data('Emax')
         E_array = E_tvar.y
@@ -68,16 +68,17 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
         
         ilat = get_data('ILAT')
         mlt = get_data('MLT')
-        out_of_cusp_index = np.where((ilat.y < 60) & (10 >= mlt.y) | (ilat.y < 60) & (mlt.y >= 14))
+        out_of_cusp_index = np.where((ilat.y < 60)|(10 > mlt.y)|(mlt.y > 14)
+                                     |(np.isnan(ilat.y))|(np.isnan(mlt.y)))
         out_of_cusp_index = out_of_cusp_index[0]
         E_array[out_of_cusp_index] = np.nan
         B_array[out_of_cusp_index] = np.nan
         E_sms_array[out_of_cusp_index] = np.nan
         B_sms_array[out_of_cusp_index] = np.nan
-
-        for i in range(len(sms_start_index)):
-            E_array[sms_start_index[i]:sms_end_index[i] + 1] = np.nan
-            B_array[sms_start_index[i]:sms_end_index[i] + 1] = np.nan
+        
+        for sms_time_index in range(len(sms_start_indices)):
+            E_array[sms_start_indices[sms_time_index]:sms_end_indices[sms_time_index] + 1] = np.nan
+            B_array[sms_start_indices[sms_time_index]:sms_end_indices[sms_time_index] + 1] = np.nan
         
         
         E_array_T = E_array.T
@@ -99,18 +100,16 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
             for intensity in range(intensity_array.size):
                 E_matrix_per_day[ch][intensity] = E_list[ch].count(intensity)
                 B_matrix_per_day[ch][intensity] = B_list[ch].count(intensity)
-                for i in range(len(sms_start_index)):
-                    E_sms_matrix_per_day[ch][intensity] = E_sms_list[ch][sms_start_index[i]:sms_end_index[i]+1].count(intensity)
-                    B_sms_matrix_per_day[ch][intensity] = B_sms_list[ch][sms_start_index[i]:sms_end_index[i]+1].count(intensity)
+                for j in range(len(sms_start_indices)):
+                    E_sms_matrix_per_day[ch][intensity] = E_sms_list[ch][sms_start_indices[j]:sms_end_indices[j]+1].count(intensity)
+                    B_sms_matrix_per_day[ch][intensity] = B_sms_list[ch][sms_start_indices[j]:sms_end_indices[j]+1].count(intensity)
 
         E_matrix = E_matrix + E_matrix_per_day
         B_matrix = B_matrix + B_matrix_per_day
         E_sms_matrix = E_sms_matrix + E_sms_matrix_per_day
         B_sms_matrix = B_sms_matrix + B_sms_matrix_per_day
 
-
-    print(sum(E_sms_matrix[0]))
-    print(sum(B_sms_matrix[0]))
+    
     #sms off plot of E field
     bottom = 0.8
     xlim = [1e-15, 10]

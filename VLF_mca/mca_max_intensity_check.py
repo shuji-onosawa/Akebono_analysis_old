@@ -27,8 +27,10 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     for i in range(date_list.size-1):
         print(date_list[i])
         load.mca([date_list[i], date_list[i+1]], del_invalid_data=del_invalid_data)
-        load.orb([date_list[i], date_list[i+1]])
-        
+        try:
+            load.orb([date_list[i], date_list[i+1]])
+        except:
+            continue
         try:
             tinterpol('akb_ILAT', interp_to='Emax_pwr', newname = 'ILAT')
         except:
@@ -56,13 +58,7 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
                 sms_end_index.append(sms_on_index[i])
                 sms_start_index.append(sms_on_index[i+1])
         sms_end_index.append(sms_on_index[-1])
-        
-        ilat = get_data('ILAT')
-        mlt = get_data('MLT')
-        cusp_index = np.where((ilat.y > 60) 
-                             & (10 <= mlt.y) & (mlt.y <= 14))
-        cusp_index = cusp_index[0]
-        
+    
         E_tvar = get_data('Emax')
         E_array = E_tvar.y
         E_sms_array = np.copy(E_tvar.y)
@@ -70,7 +66,15 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
         B_array = B_tvar.y
         B_sms_array = np.copy(B_tvar.y)
         
-        
+        ilat = get_data('ILAT')
+        mlt = get_data('MLT')
+        out_of_cusp_index = np.where((ilat.y < 60) & (10 >= mlt.y) | (ilat.y < 60) & (mlt.y >= 14))
+        out_of_cusp_index = out_of_cusp_index[0]
+        E_array[out_of_cusp_index] = np.nan
+        B_array[out_of_cusp_index] = np.nan
+        E_sms_array[out_of_cusp_index] = np.nan
+        B_sms_array[out_of_cusp_index] = np.nan
+
         for i in range(len(sms_start_index)):
             E_array[sms_start_index[i]:sms_end_index[i] + 1] = np.nan
             B_array[sms_start_index[i]:sms_end_index[i] + 1] = np.nan
@@ -103,7 +107,10 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
         B_matrix = B_matrix + B_matrix_per_day
         E_sms_matrix = E_sms_matrix + E_sms_matrix_per_day
         B_sms_matrix = B_sms_matrix + B_sms_matrix_per_day
-    
+
+
+    print(sum(E_sms_matrix[0]))
+    print(sum(B_sms_matrix[0]))
     #sms off plot of E field
     bottom = 0.8
     xlim = [1e-15, 10]
@@ -122,7 +129,7 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     subtitle = ''
     for i in range(len(del_invalid_data)):
         subtitle = subtitle + ' ' + del_invalid_data[i]
-    ax1.set_title('Akebono VLF/MCA ' + 'Efield '+start_date + ' ' + end_date + '\n' + subtitle)
+    ax1.set_title('Akebono VLF/MCA ' + 'Efield  in cusp '+start_date + ' ' + end_date + '\n' + subtitle)
     
     ax2 = fig.add_subplot(3,1,2)
     for i in range(5):
@@ -165,7 +172,7 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     for i in range(len(del_invalid_data)):
         subtitle = subtitle + ' ' + del_invalid_data[i]
     subtitle = subtitle + ' (sms only)'
-    ax1.set_title('Akebono VLF/MCA ' + 'Efield '+start_date + ' ' + end_date + '\n' + subtitle)
+    ax1.set_title('Akebono VLF/MCA ' + 'Efield in cusp '+start_date + ' ' + end_date + '\n' + subtitle)
     
     ax2 = fig.add_subplot(3,1,2)
     for i in range(5):
@@ -208,7 +215,7 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     subtitle = ''
     for i in range(len(del_invalid_data)):
         subtitle = subtitle + ' ' + del_invalid_data[i]
-    ax1.set_title('Akebono VLF/MCA ' + 'Mfield '+start_date + ' ' + end_date + '\n' + subtitle)
+    ax1.set_title('Akebono VLF/MCA ' + 'Mfield in cusp '+start_date + ' ' + end_date + '\n' + subtitle)
     
     ax2 = fig.add_subplot(3,1,2)
     for i in range(5):
@@ -248,7 +255,7 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     ax1.legend()
     
     subtitle = subtitle + ' (sms only)'
-    ax1.set_title('Akebono VLF/MCA ' + 'Mfield '+start_date + ' ' + end_date + '\n' + subtitle)
+    ax1.set_title('Akebono VLF/MCA ' + 'Mfield in cusp '+start_date + ' ' + end_date + '\n' + subtitle)
     
     ax2 = fig.add_subplot(3,1,2)
     for i in range(5):
@@ -276,4 +283,4 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     plt.close()
     
 
-mca_intensity_distribution_plot(start_date='1990-2-11', end_date='1990-2-13', del_inst_interference=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'], suffix='_nan_test')
+mca_intensity_distribution_plot(start_date='1989-3-5', end_date='2003-12-15', del_inst_interference=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'], suffix='_cusp_test')

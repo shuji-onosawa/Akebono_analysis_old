@@ -114,6 +114,10 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     bottom = 0.8
     xlim = [1e-15, 10]
     marker = '.'
+    Efield_plot_sms_off_save_name = './plots/mca_intensity_distribution/test/mca_' + 'Efield_' + start_date+'_'+end_date+'_sms-off'+suffix
+    Efield_plot_sms_on_save_name = './plots/mca_intensity_distribution/test/mca_' + 'Efield_' + start_date+'_'+end_date+'_sms-only'+suffix
+    Mfield_plot_sms_off_save_name = './plots/mca_intensity_distribution/test/mca_' + 'Mfield_' + start_date+'_'+end_date+'_sms-off'+suffix
+    Mfield_plot_sms_on_save_name = './plots/mca_intensity_distribution/test/mca_' + 'Mfield_' + start_date+'_'+end_date+'_sms-only'+suffix
     
     fig = plt.figure(figsize=(10, 8))
     ax1 = fig.add_subplot(3,1,1)
@@ -152,7 +156,7 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     ax3.legend()
     
 
-    plt.savefig('./plots/mca_intensity_distribution/mca_' + 'Efield_' + start_date+'_'+end_date+'_sms-off'+suffix)
+    plt.savefig(Efield_plot_sms_off_save_name)
     plt.clf()
     plt.close()
     
@@ -195,7 +199,7 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     ax3.set_xlabel('PSD [(mV/m)^2/Hz]')
     ax3.legend()
     
-    plt.savefig('./plots/mca_intensity_distribution/mca_' + 'Efield_' + start_date+'_'+end_date+'_sms-only'+suffix)
+    plt.savefig(Efield_plot_sms_on_save_name)
     plt.clf()
     plt.close()
     
@@ -237,7 +241,7 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     ax3.set_xlabel('PSD [pT^2/Hz]')
     ax3.legend()
     
-    plt.savefig('./plots/mca_intensity_distribution/mca_' + 'Mfield_' + start_date+'_'+end_date+'_sms-off'+suffix)
+    plt.savefig(Mfield_plot_sms_off_save_name)
     plt.clf()
     plt.close()
     
@@ -277,13 +281,15 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     ax3.set_xlabel('PSD [pT^2/Hz]')
     ax3.legend()
     
-    plt.savefig('./plots/mca_intensity_distribution/mca_' + 'Mfield_' + start_date+'_'+end_date+'_sms-only'+suffix)
+    plt.savefig(Mfield_plot_sms_on_save_name)
     plt.clf()
     plt.close()
 
-    
-date_list = pd.date_range(start='1989-3-1', end='2004-1-1', freq='MS')
+'''
+date_list = pd.date_range(start='1989-3-1', end='1989-12-31', freq='MS')
 date_list = np.datetime_as_string(date_list, unit='D')
 date_list = date_list.astype(object)
 for k in range(date_list.size-1):
     mca_intensity_distribution_plot(start_date=date_list[k], end_date=date_list[k+1], del_inst_interference=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'], suffix='_cusp')
+'''
+mca_intensity_distribution_plot('1989-3-1', '1989-12-31', del_inst_interference=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'], suffix='_cusp')

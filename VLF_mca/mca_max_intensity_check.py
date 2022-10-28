@@ -280,6 +280,10 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     plt.savefig('./plots/mca_intensity_distribution/mca_' + 'Mfield_' + start_date+'_'+end_date+'_sms-only'+suffix)
     plt.clf()
     plt.close()
-    
 
-mca_intensity_distribution_plot(start_date='1989-3-5', end_date='2003-12-15', del_inst_interference=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'], suffix='_cusp_test')
+    
+date_list = pd.date_range(start='1989-3-1', end='2004-1-1', freq='MS')
+date_list = np.datetime_as_string(date_list, unit='D')
+date_list = date_list.astype(object)
+for k in range(date_list.size-1):
+    mca_intensity_distribution_plot(start_date=date_list[k], end_date=date_list[k+1], del_inst_interference=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'], suffix='_cusp')

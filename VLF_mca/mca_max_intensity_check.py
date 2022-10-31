@@ -284,7 +284,8 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     plt.savefig(Mfield_plot_sms_on_save_name)
     plt.clf()
     plt.close()
-
+    
+    return E_matrix, B_matrix, E_sms_matrix, B_sms_matrix
 '''
 date_list = pd.date_range(start='1989-3-1', end='1989-12-31', freq='MS')
 date_list = np.datetime_as_string(date_list, unit='D')

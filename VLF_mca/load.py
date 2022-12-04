@@ -208,6 +208,9 @@ def orb(trange = ['2013-01-01', '2013-01-02'], downloadonly = False):
     Bmdl_X = []
     Bmdl_Y = []
     Bmdl_Z = []
+    sc_vel_x = []
+    sc_vel_y = []
+    sc_vel_z = []
 
     for out_file in out_files:
         datalines = []
@@ -251,6 +254,9 @@ def orb(trange = ['2013-01-01', '2013-01-02'], downloadonly = False):
         Bmdl_X = Bmdl_X + data_array[24].tolist()
         Bmdl_Y = Bmdl_Y + data_array[25].tolist()
         Bmdl_Z = Bmdl_Z + data_array[26].tolist()
+        sc_vel_x = sc_vel_x + data_array[-3].tolist()
+        sc_vel_y = sc_vel_y + data_array[-2].tolist()
+        sc_vel_z = sc_vel_z + data_array[-1].tolist()
 
     Pass = [float(n) for n in Pass]
     ILAT = [float(n) for n in ILAT]
@@ -261,6 +267,9 @@ def orb(trange = ['2013-01-01', '2013-01-02'], downloadonly = False):
     Bmdl_X = [float(n) for n in Bmdl_X]
     Bmdl_Y = [float(n) for n in Bmdl_Y]
     Bmdl_Z = [float(n) for n in Bmdl_Z]
+    sc_vel_x = [float(n) for n in sc_vel_x]
+    sc_vel_y = [float(n) for n in sc_vel_y]
+    sc_vel_z = [float(n) for n in sc_vel_z]
 
 
     '''
@@ -286,7 +295,8 @@ def orb(trange = ['2013-01-01', '2013-01-02'], downloadonly = False):
     '''
     if int((time_double(trange[1])-time_double(trange[0]))/30) > len(UT_time_double):
         start_to_end_time_double = np.arange(time_double(trange[0]), time_double(trange[1]), 30)
-        Pass_array = ILAT_array = MLAT_array = MLT_array = ALT_array = Bmdl_X_array = Bmdl_Y_array = Bmdl_Z_array = np.empty(start_to_end_time_double.size)*np.nan
+        Pass_array = ILAT_array = MLAT_array = MLT_array = ALT_array = Bmdl_X_array = Bmdl_Y_array = Bmdl_Z_array = sc_vel_x_array = sc_vel_y_array = sc_vel_z_array =\
+        np.empty(start_to_end_time_double.size)*np.nan
 
         for i in range(len(UT_time_double)):
             time_index = np.where(start_to_end_time_double == UT_time_double[i])
@@ -298,6 +308,9 @@ def orb(trange = ['2013-01-01', '2013-01-02'], downloadonly = False):
             Bmdl_X_array[time_index] = Bmdl_X[i]
             Bmdl_Y_array[time_index] = Bmdl_Y[i]
             Bmdl_Z_array[time_index] = Bmdl_Z[i]
+            sc_vel_x_array[time_index] = sc_vel_x[i]
+            sc_vel_y_array[time_index] = sc_vel_y[i]
+            sc_vel_z_array[time_index] = sc_vel_z[i]
 
         UT_time_double = start_to_end_time_double
         Pass = Pass_array
@@ -308,7 +321,10 @@ def orb(trange = ['2013-01-01', '2013-01-02'], downloadonly = False):
         Bmdl_X = Bmdl_X_array
         Bmdl_Y = Bmdl_Y_array
         Bmdl_Z = Bmdl_Z_array
-        
+        sc_vel_x = sc_vel_x_array
+        sc_vel_y = sc_vel_y_array
+        sc_vel_z = sc_vel_z_array
+
     prefix = 'akb_'
     store_data(prefix+'Pass', data={'x': UT_time_double, 'y': Pass})
     store_data(prefix+'ILAT', data={'x': UT_time_double, 'y': ILAT})
@@ -318,5 +334,9 @@ def orb(trange = ['2013-01-01', '2013-01-02'], downloadonly = False):
     store_data(prefix+'Bmdl_X', data={'x': UT_time_double, 'y': Bmdl_X})
     store_data(prefix+'Bmdl_Y', data={'x': UT_time_double, 'y': Bmdl_Y})
     store_data(prefix+'Bmdl_Z', data={'x': UT_time_double, 'y': Bmdl_Z})
+    store_data(prefix+'sc_vel_x', data={'x': UT_time_double, 'y':sc_vel_x})
+    store_data(prefix+'sc_vel_y', data={'x': UT_time_double, 'y':sc_vel_y})
+    store_data(prefix+'sc_vel_z', data={'x': UT_time_double, 'y':sc_vel_z})
+    store_data(prefix+'sc_vel', data={'x':UT_time_double, 'y':np.sqrt(np.array(sc_vel_x)**2+np.array(sc_vel_y)**2+np.array(sc_vel_z)**2)})
 
     return 

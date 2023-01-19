@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.ticker as ticker
 
+
+
 def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference, alt_range = [0, 11000], suffix = ''):
 
     date_list = pd.date_range(start=start_date, end=end_date, freq='D')
@@ -31,20 +33,21 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
             load.orb([date_list[i], date_list[i+1]])
         except:
             continue
-        try:
-            tinterpol('akb_ILAT', interp_to='Emax_pwr', newname = 'ILAT')
-        except:
-            print('orbit file is not perfect')
-            continue
-        tinterpol('akb_MLAT', interp_to = 'Emax', newname = 'MLAT')
-        tinterpol('akb_MLT', interp_to = 'Emax', newname = 'MLT', method = 'nearest')
-        tinterpol('akb_ALT', interp_to = 'Emax', newname = 'ALT')
         
+        try:
+            tinterpol('akb_ILAT', 'Emax')
+        except:
+            print('data lack in orbit data')
+            continue
+        tinterpol('akb_MLAT', 'Emax', replace=False)
+        tinterpol('akb_MLT', 'Emax')
+        tinterpol('akb_ALT', 'Emax')
+
         postgap = get_data('PostGap')
         sms_flag_array = np.empty([postgap.y.size])
         for flag_index in range(postgap.y.size):
-            postgap_str = format(postgap.y[flag_index], '08b')    
-            sms_flag_array[flag_index] = int(postgap_str[2]) 
+            postgap_str = format(postgap.y[flag_index], '08b')
+            sms_flag_array[flag_index] = int(postgap_str[2])
 
         sms_on_tuple = np.where(sms_flag_array==1)
         sms_on_indices = sms_on_tuple[0]
@@ -66,9 +69,10 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
         B_array = B_tvar.y
         #B_sms_array = np.copy(B_tvar.y)
         
-        ilat = get_data('ILAT')
-        mlt = get_data('MLT')
-        alt = get_data('ALT')
+        ilat = get_data('akb_ILAT-itrp')
+        mlt = get_data('akb_MLT-itrp')
+        alt = get_data('akb_ALT-itrp')
+        
         index_of_data_in_target_region = np.where((ilat.y >= 60)&(10 <= mlt.y)&(mlt.y <= 14)&(alt.y >= alt_range[0])&(alt.y <= alt_range[1]))
         index_of_data_in_target_region = index_of_data_in_target_region[0]
         '''
@@ -83,7 +87,7 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
         
         B_array_in_target_region = B_array[index_of_data_in_target_region]
         B_array_in_target_region_T = B_array_in_target_region.T
-        B_list = B_array_in_target_region_T.tolist()       
+        B_list = B_array_in_target_region_T.tolist()
         #B_sms_list = B_sms_array.T.tolist()
         
         E_matrix_per_day = np.empty((freq_array.size, intensity_array.size), dtype = int)
@@ -126,7 +130,7 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
         
             #ax1.plot(10**(intensity_array/10 -12)/(freq_array[i]*0.3), matrix[i], label = str(freq_array[i])+' Hz', marker = marker)
         #ax1.set_xscale('log')
-        #ax1.set_yscale('log')
+        ax1.set_yscale('log')
         ax1.set_ylabel('Count')
         #ax1.set_xlim(xlim)
         #ax1.set_ylim(ylim)
@@ -136,22 +140,22 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
         ax2 = fig.add_subplot(3,1,2)
         for i in range(5):
             ax2.plot(x, matrix[i+6], label = str(freq_array[i+6]) +' Hz', marker = marker)
-            
+
             #ax2.plot(10**(intensity_array/10 -12)/(freq_array[i+6]*0.3), E_matrix[i+6], label = str(freq_array[i+6])+' Hz', marker = marker)
         #ax2.set_xscale('log')
-        #ax2.set_yscale('log')
+        ax2.set_yscale('log')
         ax2.set_ylabel('Count')
         #ax2.set_xlim(xlim)
         #ax2.set_ylim(ylim)
         ax2.legend()
-                                        
+
         ax3 = fig.add_subplot(3,1,3)
         for i in range(5):
             ax3.plot(x, matrix[i+11], label = str(freq_array[i+11]) + ' Hz', marker = marker)
         
             #ax3.plot(10**(intensity_array/10 -12)/(freq_array[i+11]*0.3), E_matrix[i+11], label = str(freq_array[i+11]) + ' Hz', marker = marker)
         #ax3.set_xscale('log')
-        #ax3.set_yscale('log')
+        ax3.set_yscale('log')
         ax3.set_ylabel('Count')
         #ax3.set_xlim(xlim)
         #ax3.set_ylim(ylim)
@@ -166,7 +170,11 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     
     distribution_plot(x = intensity_array, matrix = E_matrix, title = 'E field intensity distribution ' + start_date + '_' + end_date, save_name = Efield_plot_save_name)
     distribution_plot(x = intensity_array, matrix = B_matrix, title = 'M field intensity distribution ' + start_date + '_' + end_date, save_name = Mfield_plot_save_name)
-    
+    with open('mca_intensity_distribution.txt', 'w') as f:
+        for ch_idx in range(freq_array.size):
+            print(freq_array[ch_idx], ' Hz', file=f)
+            for intensity in intensity_array:
+                print(str(intensity) + ': ' ,E_matrix[ch_idx][intensity], file=f)
     '''
     xlim = [1e-10, 1e8]
     fig = plt.figure(figsize=(10, 8))
@@ -209,4 +217,4 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     plt.clf()
     plt.close()
     '''
-mca_intensity_distribution_plot('1990-1-1', '1991-1-1', del_inst_interference=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'])
+mca_intensity_distribution_plot('1989-4-1', '2003-12-1', del_inst_interference=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'])

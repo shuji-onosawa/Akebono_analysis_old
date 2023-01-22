@@ -22,7 +22,7 @@ def dispersion(theta, w, ne, nh, nhe, no, B0):
     omega_h = q*B0/mh
     omega_he = q*B0/mhe
     omega_o = q*B0/mo
-    
+
     Xe = (pi_e/w)**2
     Xh = (pi_h/w)**2
     Xhe = (pi_he/w)**2

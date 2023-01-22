@@ -39,7 +39,7 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
         except:
             print('data lack in orbit data')
             continue
-        tinterpol('akb_MLAT', 'Emax', replace=False)
+        tinterpol('akb_MLAT', 'Emax')
         tinterpol('akb_MLT', 'Emax')
         tinterpol('akb_ALT', 'Emax')
 
@@ -168,8 +168,8 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
         plt.clf()
         plt.close()
     
-    distribution_plot(x = intensity_array, matrix = E_matrix, title = 'E field intensity distribution ' + start_date + '_' + end_date, save_name = Efield_plot_save_name)
-    distribution_plot(x = intensity_array, matrix = B_matrix, title = 'M field intensity distribution ' + start_date + '_' + end_date, save_name = Mfield_plot_save_name)
+    distribution_plot(x = intensity_array, matrix = E_matrix, title = 'E field intensity distribution dB' + start_date + '_' + end_date, save_name = Efield_plot_save_name)
+    distribution_plot(x = intensity_array, matrix = B_matrix, title = 'M field intensity distribution dB' + start_date + '_' + end_date, save_name = Mfield_plot_save_name)
     with open('mca_intensity_distribution.txt', 'w') as f:
         for ch_idx in range(freq_array.size):
             print(freq_array[ch_idx], ' Hz', file=f)

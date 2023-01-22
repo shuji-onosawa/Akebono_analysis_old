@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from numpy.core.function_base import linspace
-#Ishigaya event4
+
+# Ishigaya event4
 ne = 225e6
 nh = 0.32*ne
 nhe = 0.19*ne
@@ -29,7 +29,9 @@ omega_h = q*B0/mh
 omega_he = q*B0/mhe
 
 print(B0, omega_h)
+
 def dispersion(theta, w):
+
     Xe = (pi_e/w)**2
     Xh = (pi_h/w)**2
     Xhe = (pi_he/w)**2
@@ -44,7 +46,7 @@ def dispersion(theta, w):
 
     S = (R + L)*0.5
     D = (R - L)*0.5
-    P = 1 - Xe - Xh - Xhe - Xo 
+    P = 1 - Xe - Xh - Xhe - Xo
 
     A = S*(np.sin(theta))**2 + P*(np.cos(theta))**2
     B = R*L*(np.sin(theta))**2 + P*S*(1+(np.cos(theta))**2)
@@ -53,14 +55,14 @@ def dispersion(theta, w):
 
     n1 = (B + F)/(2*A)
     n2 = (B - F)/(2*A)
-    
+
     for i in range(w.size):
         if n1[i] < 0:
             n1[i] = np.nan
     for i in range(w.size):
         if n2[i] < 0:
             n2[i] = np.nan
-    
+
     L1 = np.nan*np.zeros(w.size)
     L2 = np.nan*np.zeros(w.size)
     R1 = np.nan*np.zeros(w.size)
@@ -99,11 +101,13 @@ def dispersion(theta, w):
 
     return kL1, kL2, kR1, kR2, kl1, kl2
 
+
 def k_energy(w, E, theta, alpha):
     k_energy = (w - omega_o)/((2*E/mo)*np.cos(np.deg2rad(theta))*np.cos(np.deg2rad(alpha)))
     return k_energy
 
-#dispersion calc
+
+# dispersion calc
 omega_s = np.abs(omega_e)
 w = omega_s*np.arange(1e-6, 1, 1e-5) 
 
@@ -112,7 +116,7 @@ va = 1e7
 wuh = (omega_e**2 + pi_e**2)**0.5
 wlh = (1/(-omega_e*omega_h) + 1/pi_h**2)**-0.5
 kL1_0, kL2_0, kR1_0, kR2_0, kl1, kl2 = dispersion(np.deg2rad(0), w)
-#kL1_30, kL2_30, kR1_30, kR2_30, kl1, kl2 = dispersion(np.deg2rad(30), w)
+# kL1_30, kL2_30, kR1_30, kR2_30, kl1, kl2 = dispersion(np.deg2rad(30), w)
 kL1_60, kL2_60, kR1_60, kR2_60, kl1, kl2 = dispersion(np.deg2rad(60), w)
 kL1_90, kL2_90, kR1_90, kR2_90, kl1, kl2 = dispersion(np.deg2rad(90), w)
 

@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-theta = np.deg2rad(np.arange(0, 90, 0.01))
+theta = np.deg2rad(np.arange(0, 91 + 0.01, 0.01))
 
 # constant
 Q = 1.6e-19
@@ -30,7 +30,7 @@ omega_e = -Q*B0/ME
 omega_o = Q*B0/MO
 omega_he = Q*B0/MHE
 wlh = np.sqrt((omega_h**2+pi_h**2)/(1+(pi_e/omega_e)**2))
-w = 0.5*omega_o
+w = 0.9*omega_o
 
 Xe = (pi_e/w)**2
 Xh = (pi_h/w)**2
@@ -63,7 +63,7 @@ By_to_Bx = -P*(S - n**2)/(D*(P - (n**2)*(np.sin(theta))**2))
 Bz_to_Bx = -np.tan(theta)
 
 rho = MO*no + MH*nh + MHE*nhe
-Va = B0/(MYU*rho)
+Va = B0*(MYU*rho)**-0.5
 E_to_B_Va = C/n/Va*np.sqrt((1+((P-n**2)*(S-n**2)*(np.sin(theta)))**2/((P*np.cos(theta)*(S-n**2))**2-D*(P-(n*np.sin(theta))**2)**2)))
 
 print(Va)
@@ -77,6 +77,7 @@ ax1.plot(np.rad2deg(theta), Ez_to_Ex[0], label='Ez/Ex +')
 ax1.plot(np.rad2deg(theta), Ez_to_Ex[1], label='Ez/Ex -')
 ax1.set_ylabel('Amplitude ratio')
 ax1.set_ylim(-1.1, 1.1)
+ax1.set_xlim(80, 90)
 ax1.legend()
 ax1.set_title('Frequency = 0.5*fco')
 
@@ -91,6 +92,9 @@ ax2.legend()
 ax3 = fig.add_subplot(313)
 ax3.plot(np.rad2deg(theta), E_to_B_Va[0], label='E/VaB +')
 ax3.plot(np.rad2deg(theta), E_to_B_Va[1], label='E/VaB -')
+#ax3.set_ylim(0, 1e-9)
 ax3.set_ylabel('E/B/Va')
+ax3.set_xlabel('Wave normal angle [deg]')
+
+plt.savefig('plots/polarization/Amp_ratio_<fci_xlim.png')
 plt.show()
-plt.savefig('plots/polarization/Amp_ratio_<fci.png')

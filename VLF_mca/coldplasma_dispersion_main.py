@@ -14,7 +14,7 @@ mh = 1.7e-27
 mhe = 6.7e-27
 mo = 2.7e-26
 rho = mo*no + mh*nh + mhe*nhe
-c = 3e+8
+c = 2.99792458e+8
 
 pi_e = (ne*q**2/(eps*me))**0.5
 pi_h = (nh*q**2/(eps*mh))**0.5
@@ -29,7 +29,13 @@ omega_he = q*B0/mhe
 
 print(B0, omega_h)
 
-def dispersion(theta, w):
+
+def calc_dispersion_relation(w, theta):
+    """
+    theta: wave normal angle, 0 - 90 [deg]
+    """
+
+    Theta = np.deg2rad(theta)
 
     Xe = (pi_e/w)**2
     Xh = (pi_h/w)**2
@@ -47,62 +53,21 @@ def dispersion(theta, w):
     D = (R - L)*0.5
     P = 1 - Xe - Xh - Xhe - Xo
 
-    A = S*(np.sin(theta))**2 + P*(np.cos(theta))**2
-    B = R*L*(np.sin(theta))**2 + P*S*(1+(np.cos(theta))**2)
+    A = S*(np.sin(Theta))**2 + P*(np.cos(Theta))**2
+    B = R*L*(np.sin(Theta))**2 + P*S*(1+(np.cos(Theta))**2)
     C = P*R*L
     F = np.sqrt(B**2 - 4*A*C)
 
-    n1 = (B + F)/(2*A)
-    n2 = (B - F)/(2*A)
+    n_plus = (B + F)/(2*A)
+    n_minus = (B - F)/(2*A)
 
-    for i in range(w.size):
-        if n1[i] < 0:
-            n1[i] = np.nan
-    for i in range(w.size):
-        if n2[i] < 0:
-            n2[i] = np.nan
-
-    L1 = np.nan*np.zeros(w.size)
-    L2 = np.nan*np.zeros(w.size)
-    R1 = np.nan*np.zeros(w.size)
-    R2 = np.nan*np.zeros(w.size)
-    l1 = np.nan*np.zeros(w.size)
-    l2 = np.nan*np.zeros(w.size)
-
-    j = 1j
-    for i in range(w.size):
-        s = S[i]
-        d = D[i]
-        p = P[i]
-        N1 = n1[i]
-        N2 = n2[i]
-        Ex_to_Ey1 = j*d*(p - N1*(np.sin(theta))**2)/(s*p - s*N1*(np.sin(theta))**2 - p*N1*(np.cos(theta))**2)
-        Ex_to_Ey2 = j*d*(p - N2*(np.sin(theta))**2)/(s*p - s*N2*(np.sin(theta))**2 - p*N2*(np.cos(theta))**2)
-        if (np.angle(Ex_to_Ey1) > 0) and (np.angle(Ex_to_Ey1) < np.pi):
-            L1[i] = n1[i]
-        if np.angle(Ex_to_Ey1) < 0:
-            R1[i] = n1[i]
-        if (np.angle(Ex_to_Ey1) == 0) or (np.angle(Ex_to_Ey1) == np.pi):
-            l1[i] = n1[i]    
-        if (np.angle(Ex_to_Ey2) > 0) and (np.angle(Ex_to_Ey2) < np.pi):
-            L2[i] = n2[i]
-        if np.angle(Ex_to_Ey2) < 0:
-            R2[i] = n2[i]
-        if (np.angle(Ex_to_Ey2) == 0) or (np.angle(Ex_to_Ey2) == np.pi):
-            l2[i] = n2[i]        
-
-    kL1 = w/c*np.sqrt(L1)
-    kL2 = w/c*np.sqrt(L2)
-    kR1 = w/c*np.sqrt(R1)
-    kR2 = w/c*np.sqrt(R2)
-    kl1 = w/c*np.sqrt(l1)
-    kl2 = w/c*np.sqrt(l2)
-
-    return kL1, kL2, kR1, kR2, kl1, kl2
+    return n_plus, n_minus, S, D, P, L, R
 
 
 def k_energy(w, E, theta, alpha):
-    k_energy = (w - omega_o)/((2*E/mo)*np.cos(np.deg2rad(theta))*np.cos(np.deg2rad(alpha)))
+    theta = np.deg2rad(theta)
+    alpha = np.deg2rad(alpha)
+    k_energy = (w - omega_o)/((2*E/mo)*np.cos(theta)*np.cos(alpha))
     return k_energy
 
 
@@ -111,115 +76,34 @@ wuh = (omega_e**2 + pi_e**2)**0.5
 wlh = ((omega_h**2 + pi_h**2)/(1 + (pi_e/omega_e)**2))**0.5
 
 # dispersion calc
-omega_s = np.abs(wlh)
-w = omega_s*np.arange(1e-4, 1 + 1e-4, 1e-5) 
+omega_s = np.abs(omega_o)
+angler_freq = omega_s*np.arange(1e-2, wlh/omega_o, 1e-4)
 
-kL1_0, kL2_0, kR1_0, kR2_0, kl1, kl2 = dispersion(np.deg2rad(0), w)
-# kL1_30, kL2_30, kR1_30, kR2_30, kl1, kl2 = dispersion(np.deg2rad(30), w)
-kL1_60, kL2_60, kR1_60, kR2_60, kl1, kl2 = dispersion(np.deg2rad(60), w)
-kL1_90, kL2_90, kR1_90, kR2_90, kl1, kl2 = dispersion(np.deg2rad(90), w)
+n_plus, n_minus, S, D, P, L, R = calc_dispersion_relation(angler_freq, 0)
 
 print(B0)
 pi_2 = 2*np.pi
+char_freq = np.array([omega_h, omega_o, -omega_e, wlh]) / omega_s
 
-plt.figure(figsize=[10, 10])
-plt.rcParams["font.size"] = 14
-# plt.plot(w/1e7/pi_2, w/pi_2, label = 'w/k = Va', linestyle = 'dashed',color = 'k')
-plt.plot(kL1_0/pi_2, w/pi_2, label = 'L0°', color = 'red')
-plt.plot(kL2_0/pi_2, w/pi_2, color = 'red')
-#plt.plot(kL1_30/pi_2, w/pi_2, label = 'L30°', color = 'orangered')
-#plt.plot(kL2_30/pi_2, w/pi_2, color = 'orangered')
-plt.plot(kL1_60/pi_2, w/pi_2, label = 'L60°', color = 'darkorange')
-plt.plot(kL2_60/pi_2, w/pi_2, color = 'darkorange')
-plt.plot(kL1_90/pi_2, w/pi_2, label = 'L90°', color = 'y')
-plt.plot(kL2_90/pi_2, w/pi_2, color = 'y')
-plt.plot(kR1_0/pi_2, w/pi_2, label = 'R0°', color = 'blue')
-plt.plot(kR2_0/pi_2, w/pi_2, color = 'blue')
-#plt.plot(kR1_30/pi_2, w/pi_2, label = 'R30°', color = 'royalblue')
-#plt.plot(kR2_30/pi_2, w/pi_2, color = 'royalblue')
-plt.plot(kR1_60/pi_2, w/pi_2, label = 'R60°', color = 'dodgerblue')
-plt.plot(kR2_60/pi_2, w/pi_2, color = 'dodgerblue')
-plt.plot(kR1_90/pi_2, w/pi_2, label = 'R90°', color = 'c')
-plt.plot(kR2_90/pi_2, w/pi_2, color = 'c')
-#plt.plot(w/c/pi_2, w/pi_2, label = 'w = ck/100', linestyle = 'dashed',color = 'gold')
-#plt.plot(k_energy(w, 1.6e-19, 0, 100)/pi_2, w/pi_2, label = '1 eV, θ=0°', color = 'c')
-#plt.plot(k_energy(w, 1.6e-19, 60, 100)/pi_2, w/pi_2, label = '1 eV, θ=60°', color = 'm')
-plt.hlines(omega_h/pi_2, 0, 1e-3, linestyles='dashed', colors = 'k')
-# plt.hlines(omega_he/pi_2, 0, 1e-3, linestyles='dashed', colors = 'k')
-plt.hlines(omega_o/pi_2, 0, 1e-3, linestyles='dashed', colors = 'k')
-# plt.hlines(pi_h/pi_2, 0, 1e-3, linestyles='dashed')
-# plt.hlines(-omega_e/pi_2, 0, 1, linestyles='dashed')
-# plt.hlines(pi_he/pi_2, 0, 1, linestyles='dashed')
-# plt.hlines(pi_o/pi_2, 0, 1, linestyles='dashed')
-plt.hlines(wlh/pi_2, 0, 1e-3, colors='black', linestyles='dashed')
-plt.xscale('log')
-plt.yscale('log')
-plt.xlabel(r'$k [/m]$')
-plt.ylabel(r'$\omega [Hz]$')
-#plt.xlim(1e-7, 1e-5)
-plt.ylim(bottom=1e-1)
+fig = plt.figure(figsize=[16, 8])
+ax1 = fig.add_subplot(121)
+ax1.plot(angler_freq/omega_s, R, label=r'$n^2 R$', color='blue')
+ax1.plot(angler_freq/omega_s, L, label=r'$n^2 L$', color='red')
+ax1.vlines(char_freq, 0, 1e7, linestyles='dashed', colors='k')
+ax1.set_xscale('log')
+ax1.set_yscale('log')
+ax1.set_xlabel(r'$\omega / \Omega_O$')
+ax1.set_ylabel(r'$Refraction index ^2$')
+plt.legend()
+
+ax2 = fig.add_subplot(122)
+ax2.plot(angler_freq/omega_s, n_plus, label=r'$n^2 +$', color='blue')
+ax2.plot(angler_freq/omega_s, n_minus, label=r'$n^2 -$', color='red')
+ax2.vlines(char_freq, 0, 1e7, linestyles='dashed', colors='k')
+ax2.set_xscale('log')
+ax2.set_yscale('log')
+ax2.set_xlabel(r'$\omega / \Omega_O$')
+ax2.set_ylabel(r'$Refraction index ^2$')
+
 plt.legend()
 plt.show()
-'''
-plt.figure()
-plt.plot(w/(2*np.pi), w/kL1_0, label = 'L0°', color = 'red')
-plt.plot(w/(2*np.pi), w/kL2_0, color = 'red')
-plt.plot(w/(2*np.pi), w/kL1_90, label = 'L90°', color = 'tomato')
-plt.plot(w/(2*np.pi), w/kL2_90, color = 'tomato')
-plt.plot(w/(2*np.pi), w/kR1_0, label = 'R0°', color = 'blue')
-plt.plot(w/(2*np.pi), w/kR2_0, color = 'blue')
-plt.plot(w/(2*np.pi), w/kR1_90, label = 'R90°', color = 'c')
-plt.plot(w/(2*np.pi), w/kR2_90, color = 'c')
-plt.vlines(omega_h/pi_2, 1e4, 1e9, linestyles='dashed', colors = 'k')
-plt.vlines(wlh/pi_2, 1e4, 1e9, colors='black', linestyles='dashed')
-plt.xscale('log')
-plt.yscale('log')
-plt.xlabel('frequency [Hz]')
-plt.ylabel('Phase velocity [m/s]')
-plt.xlim(70, 3000)
-plt.ylim(1e6, 1e9)
-plt.legend()
-plt.show()
-'''
-
-'''
-#energy calc
-#pitch angle: H+:10-150, O+:20-120
-alphaH = np.arange(10, 160, 20)
-alphaO = np.arange(20, 130, 20)
-v1 = np.nan*np.empty((alphaH.size, w.size))
-v2 = v1
-E1 = v1
-E2 = v1
-omega = omega_o
-m = mo
-alpha = alphaO
-for i in range(alpha.size):
-    v1[i,:] = (w - omega)/kL1/np.cos(np.radians(alpha[i] - theta))       
-    v2[i,:] = (w - omega)/kL2/np.cos(np.radians(alpha[i] - theta)) 
-    for j in range(w.size):
-        if v1[i,j] > 0:
-            E1[i,j] = (m*v1[i,j]**2)/2/q
-        if v2[i,j] > 0:
-            E2[i,j] = (m*v2[i,j]**2)/2/q
-
-plt.figure()
-plt.rcParams["font.size"] = 14
-for i in range(alpha.size):
-    plt.plot(E1[i,:], w/pi_2, label = str(alpha[i])+'°', color = (1.0 - 0.08*i, 0, 0.08*i))
-plt.hlines(omega_h/pi_2, 0, 1e12, colors = 'k', linestyles='dashed')
-plt.hlines(omega_he/pi_2, 0, 1e12, colors = 'k',linestyles='dashed')
-plt.hlines(omega_o/pi_2, 0, 1e12, colors = 'k',linestyles='dashed')
-plt.xlabel('$Energy [eV]$')
-plt.ylabel('$\omega [Hz]$')
-plt.xscale('log')
-plt.yscale('log')
-plt.xlim(1, 1e2)
-plt.title('$\theta$=' + str(theta) + '°')
-plt.legend()
-plt.show() 
-
-cm = plt.cm.get_cmap('RdYlBu')
-
-
-'''

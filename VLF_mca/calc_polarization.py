@@ -1,100 +1,92 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import calc_dispersion_in_cold_plasma as calc_dr
+import plasma_params as pp
 
-theta = np.deg2rad(np.arange(0, 91 + 0.01, 0.01))
 
-# constant
-Q = 1.6e-19
-EPS = 8.9e-12
-MYU = 1.3e-6
-ME = 9.1e-31
-MH = 1.7e-27
-MHE = 6.7e-27
-MO = 2.7e-26
-C = 2.97e8
+def calc_amp_ratio(n, S, D, P, theta):
+    theta = np.deg2rad(theta)
 
-# plasma parameter
-NE = 100e6
-nh = 0.5*NE
-nhe = 0*NE
-no = 0.5*NE
+    Ey_to_Ex = -D/(S-n)
+    Ez_to_Ex = -n*np.cos(theta)*np.sin(theta)/(P-(n**2)*np.sin(theta)**2)
+    By_to_Bx = -P*(S-n)/(D*(P-n*(np.sin(theta))**2))
+    Bz_to_Bx = -np.tan(theta)*np.ones(n.size)
+    E_to_BVa = pp.C/n/pp.Va*np.sqrt((1+((P-n)*(S-n)*(np.sin(theta)))**2/((P*np.cos(theta)*(S-n))**2-D*(P-n*(np.sin(theta))**2)**2)))
 
-pi_e = (NE*Q**2/(EPS*ME))**0.5
-pi_h = (nh*Q**2/(EPS*MH))**0.5
-pi_he = (nhe*Q**2/(EPS*MHE))**0.5
-pi_o = (no*Q**2/(EPS*MO))**0.5
+    return Ey_to_Ex, Ez_to_Ex, By_to_Bx, Bz_to_Bx, E_to_BVa
 
-omega_h = 2*np.pi*100
-B0 = omega_h*MO/Q
-omega_e = -Q*B0/ME
-omega_o = Q*B0/MO
-omega_he = Q*B0/MHE
-wlh = np.sqrt((omega_h**2+pi_h**2)/(1+(pi_e/omega_e)**2))
-w = 0.9*omega_o
 
-Xe = (pi_e/w)**2
-Xh = (pi_h/w)**2
-Xhe = (pi_he/w)**2
-Xo = (pi_o/w)**2
-Ye = omega_e/w
-Yh = omega_h/w
-Yhe = omega_he/w
-Yo = omega_o/w
+theta = 0
+omega_s = np.abs(pp.omega_h)
+freq = omega_s*np.arange(1e-2, 2, 1e-2)
 
-R = 1 - Xe/(1 + Ye) - Xh/(1 + Yh) - Xhe/(1 + Yhe) - Xo/(1 + Yo)
-L = 1 - Xe/(1 - Ye) - Xh/(1 - Yh) - Xhe/(1 - Yhe) - Xo/(1 - Yo)
+amp_ratio_L = np.empty((5, freq.size))
+amp_ratio_R = np.empty((5, freq.size))
 
-S = (R + L)*0.5
-D = (R - L)*0.5
-P = 1 - Xe - Xh - Xhe - Xo
+n_L, n_R, S, D, P = calc_dr.calc_dispersion_relation(freq, theta)
+amp_ratio_L[0], amp_ratio_L[1], amp_ratio_L[2], amp_ratio_L[3], amp_ratio_L[4] = \
+    calc_amp_ratio(n_L, S, D, P, theta)
+amp_ratio_R[0], amp_ratio_R[1], amp_ratio_R[2], amp_ratio_R[3], amp_ratio_R[4] = \
+    calc_amp_ratio(n_R, S, D, P, theta)
 
-A = S*(np.sin(theta))**2 + P*(np.cos(theta))**2
-B = R*L*(np.sin(theta))**2 + P*S*(1+(np.cos(theta))**2)
-C = P*R*L
-F = np.sqrt(B**2 - 4*A*C)
+fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(18, 8))
+fig.suptitle('WNA 0°')
 
-n = np.array([np.sqrt((B + F)/(2*A)), np.sqrt((B - F)/(2*A))])
+mp1 = axs[0].scatter(x=freq/omega_s, y=n_L, c=amp_ratio_L[0], marker='.',
+                     cmap='jet', vmin=-2, vmax=2, label='L')
+mp2 = axs[0].scatter(x=freq/omega_s, y=n_R, c=amp_ratio_R[0], marker='.',
+                     cmap='jet', vmin=-2, vmax=2, label='R')
+cbar = plt.colorbar(mp1, aspect=10)
+axs[0].set_ylabel(r'$n^2$')
+# ax1.set_xlabel(r'$\omega/\Omega_cO$')
+axs[0].set_xscale('log')
+axs[0].set_yscale('log')
+axs[0].set_ylim(top=1e7)
+axs[0].set_title('Ey / Ex')
+plt.legend()
 
-Ey_to_Ex = - D/(S - n**2)
-# plus(minus) means Eperp rotate in the same direction as ion(electron) gyro
-Ez_to_Ex = - (n**2)*np.cos(theta)*np.sin(theta)/(P - (n**2)*np.sin(theta)**2)
+axs[1]
+mp3 = axs[1].scatter(x=freq/omega_s, y=n_L, c=amp_ratio_L[1], marker='.',
+                     cmap='jet', vmin=-2, vmax=2, label='L')
+mp4 = axs[1].scatter(x=freq/omega_s, y=n_R, c=amp_ratio_R[1], marker='.',
+                     cmap='jet', vmin=-2, vmax=2, label='R')
+cbar = plt.colorbar(mp3, aspect=10)
+axs[1].set_ylabel(r'$n^2$')
+# axs[1].set_xlabel(r'$\omega/\Omega_cO$')
+axs[1].set_xscale('log')
+axs[1].set_yscale('log')
+axs[1].set_ylim(top=1e7)
+axs[1].set_title('Ez / Ex ')
+plt.legend()
+'''
+ax3 = fig.add_subplot(223)
+mp = ax3.scatter(x=freq/omega_s, y=n_L, c=By_Bx_L, marker='>',
+                 cmap='jet', vmin=-2, vmax=2, label='L')
+mp = ax3.scatter(x=freq/omega_s, y=n_R, c=By_Bx_R, marker='<',
+                 cmap='jet', vmin=-2, vmax=2, label='R')
+cbar = plt.colorbar(mp, aspect=10)
+ax3.set_ylabel(r'$n^2$')
+ax3.set_xlabel(r'$\omega/\Omega_cO$')
+ax3.set_xscale('log')
+ax3.set_yscale('log')
+ax3.set_ylim(top=1e7)
+ax3.set_title('By / Bx ')
+plt.legend()
 
-By_to_Bx = -P*(S - n**2)/(D*(P - (n**2)*(np.sin(theta))**2))
-Bz_to_Bx = -np.tan(theta)
+ax4 = fig.add_subplot(224)
+mp = ax4.scatter(x=freq/omega_s, y=n_L, c=Bz_Bx_L, marker='>',
+                 cmap='jet', vmin=-2, vmax=2, label='L')
+mp = ax4.scatter(x=freq/omega_s, y=n_R, c=Bz_Bx_R, marker='<',
+                 cmap='jet', vmin=-2, vmax=2, label='R')
 
-rho = MO*no + MH*nh + MHE*nhe
-Va = B0*(MYU*rho)**-0.5
-E_to_B_Va = C/n/Va*np.sqrt((1+((P-n**2)*(S-n**2)*(np.sin(theta)))**2/((P*np.cos(theta)*(S-n**2))**2-D*(P-(n*np.sin(theta))**2)**2)))
-
-print(Va)
-print(wlh/omega_h)
-fig = plt.figure(figsize=(10, 10))
-
-ax1 = fig.add_subplot(311)
-ax1.plot(np.rad2deg(theta), Ey_to_Ex[0], label='Ey/Ex +')
-ax1.plot(np.rad2deg(theta), Ey_to_Ex[1], label='Ey/Ex -')
-ax1.plot(np.rad2deg(theta), Ez_to_Ex[0], label='Ez/Ex +')
-ax1.plot(np.rad2deg(theta), Ez_to_Ex[1], label='Ez/Ex -')
-ax1.set_ylabel('Amplitude ratio')
-ax1.set_ylim(-1.1, 1.1)
-ax1.set_xlim(80, 90)
-ax1.legend()
-ax1.set_title('Frequency = 0.5*fco')
-
-ax2 = fig.add_subplot(312)
-ax2.plot(np.rad2deg(theta), By_to_Bx[0], label='By/Bx +')
-ax2.plot(np.rad2deg(theta), By_to_Bx[1], label='By/Bx -')
-ax2.plot(np.rad2deg(theta), Bz_to_Bx, label='Bz/Bx')
-ax2.set_ylabel('Amplitude ratio')
-ax2.set_ylim(-10, 10)
-ax2.legend()
-
-ax3 = fig.add_subplot(313)
-ax3.plot(np.rad2deg(theta), E_to_B_Va[0], label='E/VaB +')
-ax3.plot(np.rad2deg(theta), E_to_B_Va[1], label='E/VaB -')
-#ax3.set_ylim(0, 1e-9)
-ax3.set_ylabel('E/B/Va')
-ax3.set_xlabel('Wave normal angle [deg]')
-
-plt.savefig('plots/polarization/Amp_ratio_<fci_xlim.png')
+cbar = plt.colorbar(mp, aspect=10)
+ax4.set_ylabel(r'$n^2$')
+ax4.set_xlabel(r'$\omega/\Omega_cO$')
+ax4.set_xscale('log')
+ax4.set_yscale('log')
+ax4.set_ylim(top=1e7)
+ax4.set_title('Bz / Bx ')
+plt.legend()
+'''
+plt.savefig('plots/polarization/Amp_ratio_test.png')
 plt.show()

@@ -1,4 +1,5 @@
 import numpy as np
+
 # constant
 Q = 1.6e-19  # [C]
 EPS = 8.9e-12  # [F m*-1]
@@ -12,7 +13,7 @@ B0 = 6e-6  # [T]
 
 # plasma parameter
 NE = 100e6  # [m**-3]
-ion_ratio = np.array([0.5, 0, 0.5])
+ion_ratio = np.array([0.5, 0.25, 0.25])
 nh = ion_ratio[0]*NE
 nhe = ion_ratio[1]*NE
 no = ion_ratio[2]*NE

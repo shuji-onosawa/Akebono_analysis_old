@@ -1,8 +1,21 @@
 import numpy as np
 
 
-def get_nearest_value_idx(array, value):
-    idx = np.abs(array - value).argmin()
+def get_num_ion_species():
+    import plasma_params as pp
+    num_ion_species = sum(pp.ion_ratio != 0)
+    return num_ion_species
+
+
+def get_crossover_freq_idx(array, value):
+    num_ion_species = get_num_ion_species()
+    print(num_ion_species)
+    array_ = np.copy(array)
+    idx = np.empty(num_ion_species, dtype=int)
+    for i in range(num_ion_species):
+        idx[i] = int(np.nanargmin(np.abs(array_ - value)))
+        array_[idx[i]] = np.nan
+
     return idx
 
 

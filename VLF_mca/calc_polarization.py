@@ -16,12 +16,14 @@ def calc_amp_ratio(n, S, D, P, theta):
     return Ey_to_Ex, Ez_to_Ex, By_to_Bx, Bz_to_Bx, E_to_BVa
 
 
-theta = 0
+theta = 60
 omega_s = np.abs(pp.omega_h)
-freq = omega_s*np.arange(1e-2, 2, 1e-2)
+freq = omega_s*np.logspace(-4, 1, 10000)
+
 
 amp_ratio_L = np.empty((5, freq.size))
 amp_ratio_R = np.empty((5, freq.size))
+subplot_title = ['Ey / Ex', 'Ez / Ex', 'By / Bx', 'Bz / Bx']
 
 n_L, n_R, S, D, P = calc_dr.calc_dispersion_relation(freq, theta)
 amp_ratio_L[0], amp_ratio_L[1], amp_ratio_L[2], amp_ratio_L[3], amp_ratio_L[4] = \
@@ -29,64 +31,31 @@ amp_ratio_L[0], amp_ratio_L[1], amp_ratio_L[2], amp_ratio_L[3], amp_ratio_L[4] =
 amp_ratio_R[0], amp_ratio_R[1], amp_ratio_R[2], amp_ratio_R[3], amp_ratio_R[4] = \
     calc_amp_ratio(n_R, S, D, P, theta)
 
-fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(18, 8))
-fig.suptitle('WNA 0°')
 
-mp1 = axs[0].scatter(x=freq/omega_s, y=n_L, c=amp_ratio_L[0], marker='.',
-                     cmap='jet', vmin=-2, vmax=2, label='L')
-mp2 = axs[0].scatter(x=freq/omega_s, y=n_R, c=amp_ratio_R[0], marker='.',
-                     cmap='jet', vmin=-2, vmax=2, label='R')
-cbar = plt.colorbar(mp1, aspect=10)
-axs[0].set_ylabel(r'$n^2$')
-# ax1.set_xlabel(r'$\omega/\Omega_cO$')
-axs[0].set_xscale('log')
-axs[0].set_yscale('log')
-axs[0].set_ylim(top=1e7)
-axs[0].set_title('Ey / Ex')
-plt.legend()
+char_freq = np.array([pp.omega_o, pp.omega_he, pp.omega_h]) / omega_s
+idx = calc_dr.get_nearest_value_idx(D, 0)
+crossover_freq = np.array([freq[idx]]) / omega_s
 
-axs[1]
-mp3 = axs[1].scatter(x=freq/omega_s, y=n_L, c=amp_ratio_L[1], marker='.',
-                     cmap='jet', vmin=-2, vmax=2, label='L')
-mp4 = axs[1].scatter(x=freq/omega_s, y=n_R, c=amp_ratio_R[1], marker='.',
-                     cmap='jet', vmin=-2, vmax=2, label='R')
-cbar = plt.colorbar(mp3, aspect=10)
-axs[1].set_ylabel(r'$n^2$')
-# axs[1].set_xlabel(r'$\omega/\Omega_cO$')
-axs[1].set_xscale('log')
-axs[1].set_yscale('log')
-axs[1].set_ylim(top=1e7)
-axs[1].set_title('Ez / Ex ')
-plt.legend()
-'''
-ax3 = fig.add_subplot(223)
-mp = ax3.scatter(x=freq/omega_s, y=n_L, c=By_Bx_L, marker='>',
-                 cmap='jet', vmin=-2, vmax=2, label='L')
-mp = ax3.scatter(x=freq/omega_s, y=n_R, c=By_Bx_R, marker='<',
-                 cmap='jet', vmin=-2, vmax=2, label='R')
-cbar = plt.colorbar(mp, aspect=10)
-ax3.set_ylabel(r'$n^2$')
-ax3.set_xlabel(r'$\omega/\Omega_cO$')
-ax3.set_xscale('log')
-ax3.set_yscale('log')
-ax3.set_ylim(top=1e7)
-ax3.set_title('By / Bx ')
-plt.legend()
-
-ax4 = fig.add_subplot(224)
-mp = ax4.scatter(x=freq/omega_s, y=n_L, c=Bz_Bx_L, marker='>',
-                 cmap='jet', vmin=-2, vmax=2, label='L')
-mp = ax4.scatter(x=freq/omega_s, y=n_R, c=Bz_Bx_R, marker='<',
-                 cmap='jet', vmin=-2, vmax=2, label='R')
-
-cbar = plt.colorbar(mp, aspect=10)
-ax4.set_ylabel(r'$n^2$')
-ax4.set_xlabel(r'$\omega/\Omega_cO$')
-ax4.set_xscale('log')
-ax4.set_yscale('log')
-ax4.set_ylim(top=1e7)
-ax4.set_title('Bz / Bx ')
-plt.legend()
-'''
-plt.savefig('plots/polarization/Amp_ratio_test.png')
+fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(18, 8))
+fig.suptitle('WNA'+str(theta)+'°,'+'H:He:O='+str(pp.ion_ratio)+
+             ',Ne='+'{:.2g}'.format(pp.NE/1e6)+'/cc,B0='+'{:.2g}'.format(pp.B0/1e-9)+'nT')
+for i in range(2):
+    for j in range(2):
+        mp = axs[i][j].scatter(x=freq/omega_s, y=n_L, c=amp_ratio_L[2*i+j], marker='.',
+                               cmap='jet', vmin=-2, vmax=2, label='L')
+        mp = axs[i][j].scatter(x=freq/omega_s, y=n_R, c=amp_ratio_R[2*i+j], marker=',',
+                               cmap='jet', vmin=-2, vmax=2, label='R')
+        cbar = plt.colorbar(mp, aspect=10)
+        axs[i][j].vlines(char_freq, ymin=0, ymax=1e7, colors='k', linestyles='dashed')
+        axs[i][j].vlines(crossover_freq, ymin=0, ymax=1e7, colors='r', linestyles='dashed')
+        axs[i][j].set_ylabel(r'$n^2$')
+        axs[i][j].set_xscale('log')
+        axs[i][j].set_yscale('log')
+        axs[i][j].set_ylim(top=1e7)
+        axs[i][j].set_title(subplot_title[2*i+j])
+        axs[i][j].legend()
+        if i == 1:
+            axs[i][j].set_xlabel(r'$\omega/\Omega_cH$')
+plt.savefig('plots/polarization/Amp_ratio_WNA'+str(theta)+'_H_He_O_'
+            +str(pp.ion_ratio)+'_N_e'+str(pp.NE/1e6)+'cc_B0_'+str(pp.B0/1e-9)+'_nT'+'.png')
 plt.show()

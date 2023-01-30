@@ -1,0 +1,105 @@
+mcs_ave
+ 
+ MCA生CDFからn秒平均CDFファイルを生成する。
+ 実行方法は、実行ファイル名 bnd (Makefileに明記)と作成したいファイルの年月日
+ と何秒平均するかを指定する。
+        bnd YYYY MM DD n
+ n は 平均したい秒数(1から60秒まで)。
+ (例: mkCDF.sh)
+ 実行する前に、CDFが生成されるフォルダー内に名前「YYYY」のフォルダーが存在し
+ なければならない。
+
+average.h : ヘッダーファイル
+		OPNAME は MCA生データがある場所を定義。
+		CRNAME は 平均CDFファイルを保存する場所を定義。
+		OPEN_LEN は 開くファイルの場所の文字列の文字数(だいたい)。
+		CREATE_LEN は 保存するファイルの場所の文字列の文字数。
+                MAX_ARGC は実行コマンドの単語数を定義。
+
+mca_ave.c    : main()
+		
+	       openCDF()
+		平均するMCA生CDFを開く。
+		"remote/raid4/MCADB/CDF-H0/YYYY/ak_h0_mca_YYYYMMDD_v01"
+	       closeCDF()
+		開いたCDFと生成したCDFを閉じる。
+	       get_VarNum()
+		開いたCDFの変数idを取得する。
+	       get_Data()
+		開いたCDFの CDF_UINT1型変数 の値を取得する。
+	       get_EB()
+		開いたCDFの電界,磁界 の値を取得する。
+	       get_Epoch()
+		開いたCDFのEpochの値を取得する。
+	       get_PostGap()
+		開いたCDFのPostGapの値を取得する。
+	       get_channel()
+		開いたCDFのchannelの値を取得する。
+	       get_wida()
+		WIDAステータス4ch1バイトで保存されているものを、
+		1chずつにばらす。
+		(1バイトにMLBから 4ch 3ch 2ch 1ch の順に保存されている)
+	       heffe()
+		電界のアンテナ実効長を求める。
+	       heffb()
+		磁界のアンテナ実効長を求める。
+	       abs_E_dB()
+		MCA電界生データ値を絶対値に較正する(単位[mV/m])。
+		それを帯域幅で割る。
+		さらに、二乗和平均を計算するために、二乗計算をしておく。
+	       abs_B_dB()
+		MCA磁界生データ値を絶対値に較正する(単位[pT])。
+		それを帯域幅で割る。
+		さらに、二乗和平均を計算するために、二乗計算をしておく。
+	       data_total()
+		二乗和平均を計算するために、n秒間の二乗和計算をする。
+	       data_ave()
+		n秒間のデータの二乗和平均を計算する。
+		さらに、平均した値をdB値に直す。
+	       ave_data()
+		平均計算をする関数の大元。
+		生データからn秒分のデータを取得し、平均計算を行う。
+		n秒の中で一部データが欠けていても、PostGapFlagを立てて、
+		平均計算を行う。
+	       StatusHandler()
+		CDFステータスハンドラー。
+		
+create_cdf.c : 
+	       createCDF()
+		平均結果を保存するCDFファイルを作成する
+		"remote/raid4/MCADB/CDF-H30/YYYY/ak_h30_mca_YYYYMMDD_v01"
+	       create_zVAR()
+		z変数を作る。
+	       input_channel()
+		z変数 channel に値を格納する。
+	       input_Epoch()
+		z変数 Epoch に値を格納する。
+	       input_Emax()
+		z変数 Emax に値を格納する。
+	       input_Eave()
+		z変数 Eave に値を格納する。
+	       input_Bmax()
+		z変数 Bmax に値を格納する。
+	       input_Bave()
+		z変数 Bave に値を格納する。
+	       input_PostGap()
+		z変数 PostGap に値を格納する。
+
+gattr.c : global_attr()
+		グローバル属性と、その属性値が書かれている。
+	       input_gATTR()
+		global_attr()に書かれた属性を作り、その属性値を保存する。
+	       get_date()
+		このプログラムを実行したときの年月日を求める。
+vattr.c : valiable_attr()
+		変数属性を作る大元。
+	       make・・・()
+		「・・・」という変数属性を作り、各変数のその属性値を書く。
+	       input_vATTR()
+		v属性を作る。
+	       input_・・・zENTRY()
+		・・・型の属性値を保存するための関数。
+
+
+
+

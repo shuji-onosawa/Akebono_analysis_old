@@ -90,12 +90,12 @@ def count_mca_intnsity(start_date, end_date,
     Efield_plot_save_name = './plots/mca_intensity_distribution/Efield/' +\
                             'mca_E_' + start_date+'_'+end_date+'_' +\
                             'alt'+str(alt_range[0])+'_'+str(alt_range[1]) +\
-                            'mlt'+str(alt_range[0])+'_'+str(alt_range[1]) +\
+                            'mlt'+str(mlt_range[0])+'_'+str(mlt_range[1]) +\
                             save_name_suffix
     Mfield_plot_save_name = './plots/mca_intensity_distribution/Mfield/' +\
                             'mca_M_' + start_date+'_'+end_date+'_' +\
                             'alt'+str(alt_range[0])+'_'+str(alt_range[1]) +\
-                            'mlt'+str(alt_range[0])+'_'+str(alt_range[1]) +\
+                            'mlt'+str(mlt_range[0])+'_'+str(mlt_range[1]) +\
                             save_name_suffix
 
     def distribution_plot(x, matrix, title, save_name):
@@ -122,11 +122,13 @@ def count_mca_intnsity(start_date, end_date,
     for ch in range(16):
         pwr_array[ch] = convert_dB_to_pwr(intensity_array, freq_array[ch])
 
+    plot_title_suffix = start_date + ' ' + end_date + '\n' +\
+        'alt_' + str(alt_range) + ', mlt_' + str(mlt_range)
     distribution_plot(x=pwr_array, matrix=E_matrix,
-                      title='E field ' + start_date + ' ' + end_date + '\n' + 'alt_' + str(alt_range),
+                      title='E field ' + plot_title_suffix,
                       save_name=Efield_plot_save_name)
     distribution_plot(x=pwr_array, matrix=B_matrix,
-                      title='M field ' + start_date + ' ' + end_date + '\n' + 'alt_' + str(alt_range),
+                      title='M field ' + plot_title_suffix,
                       save_name=Mfield_plot_save_name)
 
 

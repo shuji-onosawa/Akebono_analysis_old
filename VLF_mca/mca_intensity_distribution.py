@@ -13,9 +13,17 @@ def get_date_list(start_date, end_date):
     return date_list
 
 
+def convert_dB_to_pwr(dB, center_freq):
+    DB_0 = 1e-6
+    pwr = DB_0**2 * 10**(dB/10) / (0.3*center_freq)
+    return pwr
+
+
 def count_mca_intnsity(start_date, end_date,
                        postgap=['off', 'noisy', 'bdr', 'sms', 'bit rate m', 'pws'],
-                       alt_range=[0, 2000]):
+                       alt_range=[0, 11000],
+                       mlt_range=[10, 14],
+                       save_name_suffix=''):
 
     date_list = get_date_list(start_date, end_date)
 
@@ -50,14 +58,12 @@ def count_mca_intnsity(start_date, end_date,
         B_array = B_tvar.y
 
         ilat = get_data('ILAT')
-#       mlt = get_data('MLT')
+        mlt = get_data('MLT')
         alt = get_data('ALT')
         idx_target_region = \
             np.where((ilat.y >= 60) &
+                     (mlt_range[0] <= mlt.y) & (mlt.y <= mlt_range[1]) &
                      (alt.y >= alt_range[0]) & (alt.y <= alt_range[1]))
-#           np.where((ilat.y >= 60) &
-#                    (10 <= mlt.y) & (mlt.y <= 14) &
-#                    (alt.y >= alt_range[0]) & (alt.y <= alt_range[1]))
         idx_target_region = idx_target_region[0]
 
         E_array_in_target_region = E_array[idx_target_region]
@@ -83,10 +89,14 @@ def count_mca_intnsity(start_date, end_date,
     marker = '.'
     Efield_plot_save_name = './plots/mca_intensity_distribution/Efield/' +\
                             'mca_E_' + start_date+'_'+end_date+'_' +\
-                            'alt'+str(alt_range[0])+'_'+str(alt_range[1])
+                            'alt'+str(alt_range[0])+'_'+str(alt_range[1]) +\
+                            'mlt'+str(alt_range[0])+'_'+str(alt_range[1]) +\
+                            save_name_suffix
     Mfield_plot_save_name = './plots/mca_intensity_distribution/Mfield/' +\
                             'mca_M_' + start_date+'_'+end_date+'_' +\
-                            'alt'+str(alt_range[0])+'_'+str(alt_range[1])
+                            'alt'+str(alt_range[0])+'_'+str(alt_range[1]) +\
+                            'mlt'+str(alt_range[0])+'_'+str(alt_range[1]) +\
+                            save_name_suffix
 
     def distribution_plot(x, matrix, title, save_name):
 
@@ -94,10 +104,11 @@ def count_mca_intnsity(start_date, end_date,
         fig.suptitle(title)
         for i in range(4):
             for j in range(4):
-                axs[i].plot(x, matrix[j+4*i],
+                axs[i].plot(x[j+4*i], matrix[j+4*i],
                             label=str(freq_array[j+4*i]) + ' Hz',
                             marker=marker)
             axs[i].set_yscale('log')
+            axs[i].set_xscale('log')
             axs[i].set_ylabel('Count')
             axs[i].legend()
             if i == 3:
@@ -107,12 +118,18 @@ def count_mca_intnsity(start_date, end_date,
         plt.clf()
         plt.close()
 
-    distribution_plot(x=intensity_array, matrix=E_matrix,
-                      title='E field ' + start_date + ' ' + end_date,
+    pwr_array = np.empty((16, 255), dtype=float)
+    for ch in range(16):
+        pwr_array[ch] = convert_dB_to_pwr(intensity_array, freq_array[ch])
+
+    distribution_plot(x=pwr_array, matrix=E_matrix,
+                      title='E field ' + start_date + ' ' + end_date + '\n' + 'alt_' + str(alt_range),
                       save_name=Efield_plot_save_name)
-    distribution_plot(x=intensity_array, matrix=B_matrix,
-                      title='M field ' + start_date + '' + end_date,
+    distribution_plot(x=pwr_array, matrix=B_matrix,
+                      title='M field ' + start_date + ' ' + end_date + '\n' + 'alt_' + str(alt_range),
                       save_name=Mfield_plot_save_name)
 
 
-count_mca_intnsity('1990-2-1', '1990-3-1', postgap=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'])
+count_mca_intnsity(start_date='1990-2-1', end_date='1990-3-1',
+                   postgap=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'],
+                   save_name_suffix='_test')

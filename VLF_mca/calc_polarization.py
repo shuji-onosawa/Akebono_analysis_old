@@ -1,102 +1,61 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import calc_dispersion_in_cold_plasma as calc_dr
+import plasma_params as pp
 
-theta = np.deg2rad(np.linspace(0, 90))
 
-#constant
-q = 1.6e-19
-eps = 8.9e-12
-myu = 1.3e-6
-me = 9.1e-31
-mh = 1.7e-27
-mhe = 6.7e-27
-mo = 2.7e-26
-c = 2.97e8
+def calc_amp_ratio(n, S, D, P, theta):
+    theta = np.deg2rad(theta)
 
-#plasma parameter
-ne = 100e6
-nh = 0.5*ne
-nhe = 0*ne
-no = 0.5*ne
+    Ey_to_Ex = -D/(S-n)
+    Ez_to_Ex = -n*np.cos(theta)*np.sin(theta)/(P-(n**2)*np.sin(theta)**2)
+    By_to_Bx = -P*(S-n)/(D*(P-n*(np.sin(theta))**2))
+    Bz_to_Bx = -np.tan(theta)*np.ones(n.size)
+    E_to_BVa = pp.C/n/pp.Va*np.sqrt((1+((P-n)*(S-n)*(np.sin(theta)))**2/((P*np.cos(theta)*(S-n))**2-D*(P-n*(np.sin(theta))**2)**2)))
 
-pi_e = (ne*q**2/(eps*me))**0.5
-pi_h = (nh*q**2/(eps*mh))**0.5
-pi_he = (nhe*q**2/(eps*mhe))**0.5
-pi_o = (no*q**2/(eps*mo))**0.5
+    return Ey_to_Ex, Ez_to_Ex, By_to_Bx, Bz_to_Bx, E_to_BVa
 
-omega_h = 2*np.pi*100
-B0 = omega_h*mo/q
-omega_e = -q*B0/me
-omega_o = q*B0/mo
-omega_he = q*B0/mhe
-wlh = np.sqrt((omega_h**2+pi_h**2)/(1+(pi_e/omega_e)**2))
-w = 0.9*omega_o
 
-Xe = (pi_e/w)**2
-Xh = (pi_h/w)**2
-Xhe = (pi_he/w)**2
-Xo = (pi_o/w)**2
-Ye = omega_e/w
-Yh = omega_h/w
-Yhe = omega_he/w
-Yo = omega_o/w
+theta = 0
+omega_s = np.abs(pp.omega_h)
+freq = omega_s*np.logspace(-4, 1, 10000)
 
-R = 1 - Xe/(1 + Ye) - Xh/(1 + Yh) - Xhe/(1 + Yhe) - Xo/(1 + Yo)
-L = 1 - Xe/(1 - Ye) - Xh/(1 - Yh) - Xhe/(1 - Yhe) - Xo/(1 - Yo)
 
-S = (R + L)*0.5
-D = (R - L)*0.5
-P = 1 - Xe - Xh - Xhe - Xo 
+amp_ratio_L = np.empty((5, freq.size))
+amp_ratio_R = np.empty((5, freq.size))
+subplot_title = ['Ey / Ex', 'Ez / Ex', 'By / Bx', 'Bz / Bx']
 
-A = S*(np.sin(theta))**2 + P*(np.cos(theta))**2
-B = R*L*(np.sin(theta))**2 + P*S*(1+(np.cos(theta))**2)
-C = P*R*L
-F = np.sqrt(B**2 - 4*A*C)
+n_L, n_R, S, D, P = calc_dr.calc_dispersion_relation(freq, theta)
+amp_ratio_L[0], amp_ratio_L[1], amp_ratio_L[2], amp_ratio_L[3], amp_ratio_L[4] = \
+    calc_amp_ratio(n_L, S, D, P, theta)
+amp_ratio_R[0], amp_ratio_R[1], amp_ratio_R[2], amp_ratio_R[3], amp_ratio_R[4] = \
+    calc_amp_ratio(n_R, S, D, P, theta)
 
-n1 = np.sqrt((B + F)/(2*A))
-n2 = np.sqrt((B - F)/(2*A))
 
-Ey_to_Ex1, Ey_to_Ex2 = - D/(S - n1**2), -D/(S - n2**2)
-Ez_to_Ex1, Ez_to_Ex2 = - n1**2*np.cos(theta)*np.sin(theta)/(P - n1**2*np.sin(theta)**2), - n2**2*np.cos(theta)*np.sin(theta)/(P - n2**2*np.sin(theta)**2) 
-Bx_to_Ex1, Bx_to_Ex2 = - n1/c*np.cos(theta)*Ey_to_Ex1, - n2/c*np.cos(theta)*Ey_to_Ex2
-By_to_Ex1, By_to_Ex2 = n1/c*(np.cos(theta) - Ez_to_Ex1*np.sin(theta)), n2/c*(np.cos(theta) - Ez_to_Ex2*np.sin(theta))
-Bz_to_Ex1, Bz_to_Ex2 = n1/c*np.sin(theta)*Ey_to_Ex1, n2/c*np.sin(theta)*Ey_to_Ex2
+char_freq = np.array([pp.omega_o, pp.omega_he, pp.omega_h]) / omega_s
+# idx = calc_dr.get_nearest_value_idx(D, 0)
+# crossover_freq = np.array([freq[idx]]) / omega_s
 
-print(wlh/omega_h)
-fig = plt.figure(figsize=(10, 8))
-
-ax1 = fig.add_subplot(2,2,1)
-ax1.plot(np.rad2deg(theta), np.ones(theta.size))
-ax1.plot(np.rad2deg(theta), Ey_to_Ex1, label='Ey')
-ax1.plot(np.rad2deg(theta), Ez_to_Ex1, label='Ez')
-ax1.hlines(1, xmin=0, xmax=90, linestyles='dashed', label='Ex')
-ax1.set_ylabel('Amplitude ratio')
-ax1.legend()
-ax1.set_title('Frequency = 0.9*fco')
-
-ax2 = fig.add_subplot(2,2,2)
-ax2.plot(np.rad2deg(theta), np.ones(theta.size))
-ax2.plot(np.rad2deg(theta), Bx_to_Ex1, label='Bx')
-ax2.plot(np.rad2deg(theta), By_to_Ex1, label='By')
-ax2.plot(np.rad2deg(theta), Bz_to_Ex1, label='Bz')
-ax2.hlines(1, xmin=0, xmax=90, linestyles='dashed', label='Ex')
-ax2.legend()
-
-ax3 = fig.add_subplot(2,2,3)
-ax3.plot(np.rad2deg(theta), np.ones(theta.size))
-ax3.plot(np.rad2deg(theta), Ey_to_Ex2, label='Ey')
-ax3.plot(np.rad2deg(theta), Ez_to_Ex2, label='Ez')
-ax3.hlines(1, xmin=0, xmax=90, linestyles='dashed', label='Ex')
-ax3.set_xlabel('wave normal angle [deg]')
-ax3.legend()
-
-ax4 = fig.add_subplot(2,2,4)
-ax4.plot(np.rad2deg(theta), np.ones(theta.size))
-ax4.plot(np.rad2deg(theta), Bx_to_Ex2, label='Bx')
-ax4.plot(np.rad2deg(theta), By_to_Ex2, label='By')
-ax4.plot(np.rad2deg(theta), Bz_to_Ex2, label='Bz')
-ax4.hlines(1, xmin=0, xmax=90, linestyles='dashed', label='Ex')
-ax4.set_xlabel('wave normal angle [deg]')
-ax4.legend()
-
+fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(16, 10))
+fig.suptitle('WNA'+str(theta)+'°,'+'H:He:O='+str(pp.ion_ratio) +
+             ',Ne='+'{:.2g}'.format(pp.NE/1e6)+'/cc,B0='+'{:.2g}'.format(pp.B0/1e-9)+'nT')
+for i in range(2):
+    for j in range(2):
+        mp = axs[i][j].scatter(x=freq/omega_s, y=n_L, c=amp_ratio_L[2*i+j], marker='.',
+                               cmap='jet', vmin=-2, vmax=2, label='L')
+        mp = axs[i][j].scatter(x=freq/omega_s, y=n_R, c=amp_ratio_R[2*i+j], marker=',',
+                               cmap='jet', vmin=-2, vmax=2, label='R')
+        fig.colorbar(mappable=mp, ax=axs[i][j])
+        axs[i][j].vlines(char_freq, ymin=0, ymax=1e7, colors='k', linestyles='dashed')
+        # axs[i][j].vlines(crossover_freq, ymin=0, ymax=1e7, colors='r', linestyles='dashed')
+        axs[i][j].set_ylabel(r'$n^2$')
+        axs[i][j].set_xscale('log')
+        axs[i][j].set_yscale('log')
+        axs[i][j].set_ylim(top=1e7)
+        axs[i][j].set_title(subplot_title[2*i+j])
+        axs[i][j].legend()
+        if i == 1:
+            axs[i][j].set_xlabel(r'$\omega/\Omega_cH$')
+plt.savefig('plots/polarization/Amp_ratio_WNA'+str(theta)+'_H_He_O_'
+            +str(pp.ion_ratio)+'_N_e'+str(pp.NE/1e6)+'cc_B0_'+str(pp.B0/1e-9)+'_nT'+'.png')
 plt.show()

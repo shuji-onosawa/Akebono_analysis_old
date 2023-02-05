@@ -4,41 +4,62 @@ from pyspedas import tinterpol
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.ticker as ticker
 
+<<<<<<< HEAD
 
 
 def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference, alt_range = [0, 11000], suffix = ''):
+=======
+>>>>>>> calc_polarization
 
+def get_date_list(start_date, end_date):
     date_list = pd.date_range(start=start_date, end=end_date, freq='D')
     date_list = np.datetime_as_string(date_list, unit='D')
     date_list = date_list.astype(object)
+    return date_list
 
-    del_invalid_data = del_inst_interference
+
+def convert_dB_to_pwr(dB, center_freq):
+    DB_0 = 1e-6
+    pwr = DB_0**2 * 10**(dB/10) / (0.3*center_freq)
+    return pwr
+
+
+def count_mca_intnsity(start_date, end_date,
+                       postgap=['off', 'noisy', 'bdr', 'sms', 'bit rate m', 'pws'],
+                       alt_range=[0, 2000],
+                       mlt_range=[10, 14],
+                       save_name_suffix=''):
+
+    date_list = get_date_list(start_date, end_date)
+
     E_matrix = np.zeros((16, 255))
-    E_sms_matrix = np.zeros((16, 255))
     B_matrix = np.zeros((16, 255))
-    B_sms_matrix = np.zeros((16, 255))
-    
+
     freq_array = np.array([3.16, 5.62, 10.0, 17.8,
                            31.6, 56.2, 100,  178,
                            316,  562,  1000, 1780,
-                           3160, 5620, 10000,17800])
-    intensity_array = np.arange(0,255) #0 - 254 dB
-    
+                           3160, 5620, 10000, 17800])
+    intensity_array = np.arange(0, 255)  # 0 - 254 dB
+
     for i in range(date_list.size-1):
         print(date_list[i])
-        load.mca([date_list[i], date_list[i+1]], del_invalid_data=del_invalid_data)
+        load.mca([date_list[i], date_list[i+1]], del_invalid_data=postgap)
         try:
             load.orb([date_list[i], date_list[i+1]])
         except:
             continue
         
         try:
+<<<<<<< HEAD
             tinterpol('akb_ILAT', 'Emax')
+=======
+            tinterpol('akb_ILAT', interp_to='Emax_pwr', newname='ILAT')
+>>>>>>> calc_polarization
         except:
             print('data lack in orbit data')
             continue
+<<<<<<< HEAD
         tinterpol('akb_MLAT', 'Emax')
         tinterpol('akb_MLT', 'Emax')
         tinterpol('akb_ALT', 'Emax')
@@ -62,11 +83,17 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
                 sms_start_indices.append(sms_on_indices[sms_index+1])
         sms_end_indices.append(sms_on_indices[-1])
     
+=======
+        tinterpol('akb_MLAT', interp_to='Emax', newname='MLAT')
+        tinterpol('akb_MLT', interp_to='Emax', newname='MLT', method='nearest')
+        tinterpol('akb_ALT', interp_to='Emax', newname='ALT')
+
+>>>>>>> calc_polarization
         E_tvar = get_data('Emax')
         E_array = E_tvar.y
-        #E_sms_array = np.copy(E_tvar.y)
         B_tvar = get_data('Bmax')
         B_array = B_tvar.y
+<<<<<<< HEAD
         #B_sms_array = np.copy(B_tvar.y)
         
         ilat = get_data('akb_ILAT-itrp')
@@ -81,13 +108,26 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
             B_array[sms_start_indices[sms_time_index]:sms_end_indices[sms_time_index] + 1] = np.nan
         '''
         E_array_in_target_region = E_array[index_of_data_in_target_region]
+=======
+
+        ilat = get_data('ILAT')
+        mlt = get_data('MLT')
+        alt = get_data('ALT')
+        idx_target_region = \
+            np.where((ilat.y >= 60) &
+                     (mlt_range[0] <= mlt.y) & (mlt.y <= mlt_range[1]) &
+                     (alt.y >= alt_range[0]) & (alt.y <= alt_range[1]))
+        idx_target_region = idx_target_region[0]
+
+        E_array_in_target_region = E_array[idx_target_region]
+>>>>>>> calc_polarization
         E_array_in_target_region_T = E_array_in_target_region.T
         E_list = E_array_in_target_region_T.tolist()
-        #E_sms_list = E_sms_array.T[].tolist()
-        
-        B_array_in_target_region = B_array[index_of_data_in_target_region]
+
+        B_array_in_target_region = B_array[idx_target_region]
         B_array_in_target_region_T = B_array_in_target_region.T
         B_list = B_array_in_target_region_T.tolist()
+<<<<<<< HEAD
         #B_sms_list = B_sms_array.T.tolist()
         
         E_matrix_per_day = np.empty((freq_array.size, intensity_array.size), dtype = int)
@@ -96,24 +136,23 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
         #E_sms_matrix_per_day = np.empty((freq_array.size, intensity_array.size), dtype = int)
         #B_sms_matrix_per_day = np.empty((freq_array.size, intensity_array.size), dtype = int)
         
+=======
+
+        E_matrix_per_day = np.empty((16, 255), dtype=int)
+        B_matrix_per_day = np.empty((16, 255), dtype=int)
+>>>>>>> calc_polarization
 
         for ch in range(freq_array.size):
             for intensity in intensity_array:
                 E_matrix_per_day[ch][intensity] = E_list[ch].count(intensity)
                 B_matrix_per_day[ch][intensity] = B_list[ch].count(intensity)
-                #for j in range(len(sms_start_indices)):
-                #    E_sms_matrix_per_day[ch][intensity] = E_sms_list[ch][sms_start_indices[j]:sms_end_indices[j]+1].count(intensity)
-                #    B_sms_matrix_per_day[ch][intensity] = B_sms_list[ch][sms_start_indices[j]:sms_end_indices[j]+1].count(intensity)
 
         E_matrix = E_matrix + E_matrix_per_day
         B_matrix = B_matrix + B_matrix_per_day
-        #E_sms_matrix = E_sms_matrix + E_sms_matrix_per_day
-        #B_sms_matrix = B_sms_matrix + B_sms_matrix_per_day
-        
-    bottom = 0.8
-    #xlim = [1e-15, 10]
-    ylim = [0.8, 5e5]
+
+    # plot part
     marker = '.'
+<<<<<<< HEAD
     #Efield_plot_save_name = './plots/mca_intensity_distribution/test/mca_' + 'Efield_' + start_date+'_'+end_date+suffix
     Efield_plot_save_name = './plots/mca_intensity_distributio_per_alt_plot/mca_' + 'Efield_' + start_date+'_'+end_date+'_'+'alt'+str(alt_range[0])+'_'+str(alt_range[1])+suffix
     Efield_plot_sms_on_save_name = './plots/mca_intensity_distribution/test/mca_' + 'Efield_' + start_date+'_'+end_date+'_sms-only'+suffix
@@ -163,10 +202,41 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
         ax3.set_xlabel('Count')
         ax3.legend()
         
+=======
+    Efield_plot_save_name = './plots/mca_intensity_distribution/Efield/' +\
+                            'mca_E_' + start_date+'_'+end_date+'_' +\
+                            'alt'+str(alt_range[0])+'_'+str(alt_range[1]) +\
+                            'mlt'+str(mlt_range[0])+'_'+str(mlt_range[1]) +\
+                            save_name_suffix
+    Mfield_plot_save_name = './plots/mca_intensity_distribution/Mfield/' +\
+                            'mca_M_' + start_date+'_'+end_date+'_' +\
+                            'alt'+str(alt_range[0])+'_'+str(alt_range[1]) +\
+                            'mlt'+str(mlt_range[0])+'_'+str(mlt_range[1]) +\
+                            save_name_suffix
 
+    def distribution_plot(x, matrix, title, save_name, field):
+>>>>>>> calc_polarization
+
+        fig, axs = plt.subplots(nrows=4, ncols=1, figsize=(10, 14))
+        fig.suptitle(title)
+        for i in range(4):
+            for j in range(4):
+                axs[i].plot(x[j+4*i], matrix[j+4*i],
+                            label=str(freq_array[j+4*i]) + ' Hz',
+                            marker=marker)
+            axs[i].set_yscale('log')
+            axs[i].set_xscale('log')
+            axs[i].set_ylabel('Count')
+            axs[i].legend()
+            if i == 3:
+                if field == 'E':
+                    axs[i].set_xlabel('mV/m/Hz^0.5')
+                if field == 'M':
+                    axs[i].set_xlabel('pT/Hz^0.5')
         plt.savefig(save_name)
         plt.clf()
         plt.close()
+<<<<<<< HEAD
     
     distribution_plot(x = intensity_array, matrix = E_matrix, title = 'E field intensity distribution dB' + start_date + '_' + end_date, save_name = Efield_plot_save_name)
     distribution_plot(x = intensity_array, matrix = B_matrix, title = 'M field intensity distribution dB' + start_date + '_' + end_date, save_name = Mfield_plot_save_name)
@@ -218,3 +288,35 @@ def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference,
     plt.close()
     '''
 mca_intensity_distribution_plot('1989-4-1', '2003-12-1', del_inst_interference=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'])
+=======
+
+    pwr_array = np.empty((16, 255), dtype=float)
+    for ch in range(16):
+        pwr_array[ch] = convert_dB_to_pwr(intensity_array, freq_array[ch])
+
+    plot_title_suffix = start_date + ' ' + end_date + '\n' +\
+        'alt_' + str(alt_range) + ', mlt_' + str(mlt_range)
+    distribution_plot(x=pwr_array, matrix=E_matrix,
+                      title='E field ' + plot_title_suffix,
+                      save_name=Efield_plot_save_name, field='E')
+    distribution_plot(x=pwr_array, matrix=B_matrix,
+                      title='M field ' + plot_title_suffix,
+                      save_name=Mfield_plot_save_name, field='M')
+
+
+count_mca_intnsity(start_date='1989-1-1', end_date='1993-1-1',
+                   postgap=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'],
+                   save_name_suffix='')
+count_mca_intnsity(start_date='1993-1-1', end_date='1998-1-1',
+                   postgap=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'],
+                   save_name_suffix='')
+count_mca_intnsity(start_date='1998-1-1', end_date='2004-1-1',
+                   postgap=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'],
+                   save_name_suffix='')
+count_mca_intnsity(start_date='2004-1-1', end_date='2011-1-1',
+                   postgap=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'],
+                   save_name_suffix='')
+count_mca_intnsity(start_date='2011-1-1', end_date='2014-1-1',
+                   postgap=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'],
+                   save_name_suffix='')
+>>>>>>> calc_polarization

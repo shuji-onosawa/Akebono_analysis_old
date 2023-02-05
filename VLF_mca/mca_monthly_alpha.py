@@ -38,8 +38,7 @@ def mca_monthly_plot(start_date = '1989-03-01', end_date = '1989-04-01', unit_ti
         return
 
     days = np.arange(start_time, end_time, seconds_per_day, float)
-    days_string = time_string(days, fmt= '%Y-%m-%d %H:%M:%S')
-
+    days_string = time_string(days, fmt='%Y-%m-%d %H:%M:%S')
 
     for i in range(len(days_string)-1):
         trange = [days_string[i], days_string[i+1]]

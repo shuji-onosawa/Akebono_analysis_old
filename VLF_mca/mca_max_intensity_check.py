@@ -4,7 +4,7 @@ from pyspedas import tinterpol
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.ticker as ticker
+
 
 def mca_intensity_distribution_plot(start_date, end_date, del_inst_interference, suffix = ''):
 

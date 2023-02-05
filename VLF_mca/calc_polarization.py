@@ -16,7 +16,7 @@ def calc_amp_ratio(n, S, D, P, theta):
     return Ey_to_Ex, Ez_to_Ex, By_to_Bx, Bz_to_Bx, E_to_BVa
 
 
-theta = 60
+theta = 0
 omega_s = np.abs(pp.omega_h)
 freq = omega_s*np.logspace(-4, 1, 10000)
 
@@ -33,11 +33,11 @@ amp_ratio_R[0], amp_ratio_R[1], amp_ratio_R[2], amp_ratio_R[3], amp_ratio_R[4] =
 
 
 char_freq = np.array([pp.omega_o, pp.omega_he, pp.omega_h]) / omega_s
-idx = calc_dr.get_nearest_value_idx(D, 0)
-crossover_freq = np.array([freq[idx]]) / omega_s
+# idx = calc_dr.get_nearest_value_idx(D, 0)
+# crossover_freq = np.array([freq[idx]]) / omega_s
 
-fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(18, 8))
-fig.suptitle('WNA'+str(theta)+'°,'+'H:He:O='+str(pp.ion_ratio)+
+fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(16, 10))
+fig.suptitle('WNA'+str(theta)+'°,'+'H:He:O='+str(pp.ion_ratio) +
              ',Ne='+'{:.2g}'.format(pp.NE/1e6)+'/cc,B0='+'{:.2g}'.format(pp.B0/1e-9)+'nT')
 for i in range(2):
     for j in range(2):
@@ -45,9 +45,9 @@ for i in range(2):
                                cmap='jet', vmin=-2, vmax=2, label='L')
         mp = axs[i][j].scatter(x=freq/omega_s, y=n_R, c=amp_ratio_R[2*i+j], marker=',',
                                cmap='jet', vmin=-2, vmax=2, label='R')
-        cbar = plt.colorbar(mp, aspect=10)
+        fig.colorbar(mappable=mp, ax=axs[i][j])
         axs[i][j].vlines(char_freq, ymin=0, ymax=1e7, colors='k', linestyles='dashed')
-        axs[i][j].vlines(crossover_freq, ymin=0, ymax=1e7, colors='r', linestyles='dashed')
+        # axs[i][j].vlines(crossover_freq, ymin=0, ymax=1e7, colors='r', linestyles='dashed')
         axs[i][j].set_ylabel(r'$n^2$')
         axs[i][j].set_xscale('log')
         axs[i][j].set_yscale('log')

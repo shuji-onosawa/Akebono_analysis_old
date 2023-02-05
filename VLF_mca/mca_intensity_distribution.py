@@ -21,7 +21,7 @@ def convert_dB_to_pwr(dB, center_freq):
 
 def count_mca_intnsity(start_date, end_date,
                        postgap=['off', 'noisy', 'bdr', 'sms', 'bit rate m', 'pws'],
-                       alt_range=[0, 11000],
+                       alt_range=[0, 2000],
                        mlt_range=[10, 14],
                        save_name_suffix=''):
 
@@ -98,7 +98,7 @@ def count_mca_intnsity(start_date, end_date,
                             'mlt'+str(mlt_range[0])+'_'+str(mlt_range[1]) +\
                             save_name_suffix
 
-    def distribution_plot(x, matrix, title, save_name):
+    def distribution_plot(x, matrix, title, save_name, field):
 
         fig, axs = plt.subplots(nrows=4, ncols=1, figsize=(10, 14))
         fig.suptitle(title)
@@ -112,8 +112,10 @@ def count_mca_intnsity(start_date, end_date,
             axs[i].set_ylabel('Count')
             axs[i].legend()
             if i == 3:
-                axs[i].set_xlabel('dB')
-
+                if field == 'E':
+                    axs[i].set_xlabel('mV/m/Hz^0.5')
+                if field == 'M':
+                    axs[i].set_xlabel('pT/Hz^0.5')
         plt.savefig(save_name)
         plt.clf()
         plt.close()
@@ -126,12 +128,24 @@ def count_mca_intnsity(start_date, end_date,
         'alt_' + str(alt_range) + ', mlt_' + str(mlt_range)
     distribution_plot(x=pwr_array, matrix=E_matrix,
                       title='E field ' + plot_title_suffix,
-                      save_name=Efield_plot_save_name)
+                      save_name=Efield_plot_save_name, field='E')
     distribution_plot(x=pwr_array, matrix=B_matrix,
                       title='M field ' + plot_title_suffix,
-                      save_name=Mfield_plot_save_name)
+                      save_name=Mfield_plot_save_name, field='M')
 
 
-count_mca_intnsity(start_date='1990-2-1', end_date='1990-3-1',
+count_mca_intnsity(start_date='1989-1-1', end_date='1993-1-1',
                    postgap=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'],
-                   save_name_suffix='_test')
+                   save_name_suffix='')
+count_mca_intnsity(start_date='1993-1-1', end_date='1998-1-1',
+                   postgap=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'],
+                   save_name_suffix='')
+count_mca_intnsity(start_date='1998-1-1', end_date='2004-1-1',
+                   postgap=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'],
+                   save_name_suffix='')
+count_mca_intnsity(start_date='2004-1-1', end_date='2011-1-1',
+                   postgap=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'],
+                   save_name_suffix='')
+count_mca_intnsity(start_date='2011-1-1', end_date='2014-1-1',
+                   postgap=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'],
+                   save_name_suffix='')

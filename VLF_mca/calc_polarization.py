@@ -16,7 +16,7 @@ def calc_amp_ratio(n, S, D, P, theta):
     return Ey_to_Ex, Ez_to_Ex, By_to_Bx, Bz_to_Bx, E_to_BVa
 
 
-theta = 0
+theta = 90
 omega_s = np.abs(pp.omega_h)
 freq = omega_s*np.logspace(-4, 1, 10000)
 
@@ -37,7 +37,7 @@ char_freq = np.array([pp.omega_o, pp.omega_he, pp.omega_h]) / omega_s
 # crossover_freq = np.array([freq[idx]]) / omega_s
 
 fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(16, 10))
-fig.suptitle('WNA'+str(theta)+'°,'+'H:He:O='+str(pp.ion_ratio) +
+fig.suptitle('WNA'+str(theta)+'deg,'+'H:He:O='+str(pp.ion_ratio) +
              ',Ne='+'{:.2g}'.format(pp.NE/1e6)+'/cc,B0='+'{:.2g}'.format(pp.B0/1e-9)+'nT')
 for i in range(2):
     for j in range(2):

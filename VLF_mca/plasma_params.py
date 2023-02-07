@@ -13,7 +13,7 @@ B0 = 6e-6  # [T]
 
 # plasma parameter
 NE = 100e6  # [m**-3]
-ion_ratio = np.array([0.5, 0.25, 0.25])
+ion_ratio = np.array([0.5, 0, 0.5])
 nh = ion_ratio[0]*NE
 nhe = ion_ratio[1]*NE
 no = ion_ratio[2]*NE
@@ -32,3 +32,5 @@ omega_he = Q*B0/MHE
 wlh = np.sqrt((omega_h**2+pi_h**2)/(1+(pi_e/omega_e)**2))
 wuh = (omega_e**2 + pi_e**2)**0.5
 Va = B0/(MYU*RHO)**0.5
+
+print(pi_e/6)

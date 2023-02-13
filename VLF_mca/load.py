@@ -11,11 +11,11 @@ import time
 from calendar import timegm
 from datetime import datetime, timedelta
 
-#mca
-def mca(trange = ['2014-01-01', '2014-01-02'],
-        downloadonly = False,
-        spec_type = 'pwr',
-        del_invalid_data = ['off']):
+# mca
+def mca(trange=['2014-01-01', '2014-01-02'],
+        downloadonly=False,
+        spec_type='pwr',
+        del_invalid_data=['off']):
 
     '''
     spec_type: dB : decibel, 0[dB]=10^-6[mV/m] for E-field and 0[dB] = 10^-6[pT] for B-field
@@ -42,11 +42,11 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
     out_files = []
 
     pathname = './Akebono_MCA_data/'
-    
-    
+
     try:
         os.mkdir(pathname)
-    except:
+    except Exception as e:
+        print(e)
         pass
 
     for remote_name in remote_names:                           
@@ -54,7 +54,7 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
         save_name = pathname + remote_name 
         save_name = save_name.replace(remote_name_prefix, '')
 
-        if(os.path.isfile(save_name)==False):
+        if (os.path.isfile(save_name)== False):
             
             data = urllib.request.urlopen(remote_name).read()
         
@@ -69,7 +69,7 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
     out_files = sorted(out_files)
     
     try:
-        tvars = cdf_to_tplot(out_files)
+        cdf_to_tplot(out_files)
     except:
         print('///////////////////////////ERROR/////////////////////////')
         print("You cannot get orbit file or you can not open orbit file \n")
@@ -128,39 +128,23 @@ def mca(trange = ['2014-01-01', '2014-01-02'],
         Bmax_array[invalid_data_index] = np.nan
         Eave_array[invalid_data_index] = np.nan
         Bave_array[invalid_data_index] = np.nan
-        
+
         store_data('Emax', data={'x':Emax.times, 'y':Emax_array, 'v':Emax.v})
         store_data('Bmax', data={'x':Bmax.times, 'y':Bmax_array, 'v':Bmax.v})
         store_data('Eave', data={'x':Eave.times, 'y':Eave_array, 'v':Eave.v})
         store_data('Bave', data={'x':Bave.times, 'y':Bave_array, 'v':Bave.v})
-    
-    
+
     if spec_type == 'dB':
         return
-    if spec_type == 'amp':
-        tplot_names = ['Emax', 'Eave', 'Bmax', 'Bave']
-        for i in range(4):
-            tplot_variable = get_data(tplot_names[i])
-            tplot_variable_float = (tplot_variable.y).astype(float)
-            tplot_variable_0dB = 1e-6 #mV or pT
-            bandwidth = tplot_variable.v * 0.3
-            tplot_variable_amplitude = (10**(tplot_variable_float/20)) * (tplot_variable_0dB)  / np.sqrt(bandwidth)
-            store_data(tplot_names[i] +'_amp', data={'x': tplot_variable.times, 'y': tplot_variable_amplitude, 'v': tplot_variable.v})
-    if spec_type == 'pwr':
-        tplot_names = ['Emax', 'Eave', 'Bmax', 'Bave']
-        for i in range(4):
-            tplot_variable = get_data(tplot_names[i])
-            tplot_variable_float = (tplot_variable.y).astype(float)
-            tplot_variable_0dB = 1e-6 #mV or pT
-            bandwidth = tplot_variable.v * 0.3
-            tplot_variable_power = (10**(tplot_variable_float/10)) * ((tplot_variable_0dB)**2) / bandwidth
-            store_data(tplot_names[i] +'_pwr', data={'x': tplot_variable.times, 'y': tplot_variable_power, 'v': tplot_variable.v})
-    
-    return 
+    else:
+        mca_h1cdf_dB_to_absolute(spec_type)
+    return
 
-#orbit
-def orb(trange = ['2013-01-01', '2013-01-02'], downloadonly = False):
-    
+
+# orbit
+def orb(trange=['2013-01-01', '2013-01-02'],
+        downloadonly=False):
+
     pathformat = 'https://darts.isas.jaxa.jp/stp/data/exosd/orbit/daily/%Y%m/ED%y%m%d.txt'
     remote_names = dailynames(file_format=pathformat, trange=trange)
 
@@ -340,3 +324,48 @@ def orb(trange = ['2013-01-01', '2013-01-02'], downloadonly = False):
     store_data(prefix+'sc_vel', data={'x':UT_time_double, 'y':np.sqrt(np.array(sc_vel_x)**2+np.array(sc_vel_y)**2+np.array(sc_vel_z)**2)})
 
     return 
+
+
+def dB_to_absolute(dB_value, reference_value):
+    return reference_value * 10**(dB_value/10)
+
+
+def mca_h1cdf_dB_to_absolute(spec_type: str):
+    if spec_type == 'pwr':
+        tvar_names = ['Emax', 'Eave', 'Bmax', 'Bave']
+        for i in range(4):
+            tvar = get_data(tvar_names[i])
+            tvar_pwr = dB_to_absolute((tvar.y).astype(float), 1e-6)
+            # (mV/m)^2/Hz or pT^2/Hz
+            store_data(tplot_names[i] + '_pwr',
+                       data={'x': tvar.times, 'y': tvar_pwr, 'v': tvar.v})
+            if tvar_names[i] == 'Emax' or tvar_names[i] =='Eave':
+                opt_dict = {'spec': 1, 'ylog': 1, 'zlog': 1,
+                            'yrange': [1, 2e4], 'ysubtitle': 'freq [Hz]',
+                            'zrange': [1e-10, 1e2], 'ztitle': '$[(mV/m)^2/Hz]$'}
+                options(tvar_names[i] + '_pwr', opt_dict)
+            if tvar_names[i] == 'Bmax' or tvar_names[i] =='Bave':
+                opt_dict = {'spec': 1, 'ylog': 1, 'zlog': 1,
+                            'yrange': [1, 2e4], 'ysubtitle': 'freq [Hz]',
+                            'zrange': [1e-8, 1e6], 'ztitle': '$[(mV/m)^2/Hz]$'}
+                options(tvar_names[i] + '_pwr', opt_dict)
+            
+    if spec_type == 'amp':
+        tplot_names = ['Emax', 'Eave', 'Bmax', 'Bave']
+        for i in range(4):
+            tvar = get_data(tplot_names[i])
+            tvar_pwr = dB_to_absolute((tvar.y).astype(float), 1e-6)
+            tvar_amp = np.sqrt(tvar_pwr)
+            # mV/m/Hz^0.5 or pT/Hz^0.5
+            store_data(tplot_names[i] + '_amp',
+                       data={'x': tvar.times, 'y': tvar_amp, 'v': tvar.v})
+            if tvar_names[i] == 'Emax' or tvar_names[i] =='Eave':
+                opt_dict = {'spec': 1, 'ylog': 1, 'zlog': 1,
+                            'yrange': [1, 2e4], 'ysubtitle': 'freq [Hz]',
+                            'zrange': [1e-5, 10], 'ztitle': '$[(mV/m)^2/Hz]$'}
+                options(tvar_names[i] + '_pwr', opt_dict)
+            if tvar_names[i] == 'Bmax' or tvar_names[i] =='Bave':
+                opt_dict = {'spec': 1, 'ylog': 1, 'zlog': 1,
+                            'yrange': [1, 2e4], 'ysubtitle': 'freq [Hz]',
+                            'zrange': [1e-5, 10], 'ztitle': '$[(mV/m)^2/Hz]$'}
+                options(tvar_names[i] + '_pwr', opt_dict)

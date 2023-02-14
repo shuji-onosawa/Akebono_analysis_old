@@ -29,14 +29,14 @@ def calc_dispersion_relation(w, theta):
 
     Theta = np.deg2rad(theta)
 
-    Xe = (pp.pi_e/w)**2
-    Xh = (pp.pi_h/w)**2
-    Xhe = (pp.pi_he/w)**2
-    Xo = (pp.pi_o/w)**2
-    Ye = pp.omega_e/w
-    Yh = pp.omega_h/w
-    Yhe = pp.omega_he/w
-    Yo = pp.omega_o/w
+    Xe = (pp.pi_e['value']/w)**2
+    Xh = (pp.pi_h['value']/w)**2
+    Xhe = (pp.pi_he['value']/w)**2
+    Xo = (pp.pi_o['value']/w)**2
+    Ye = pp.omega_e['value']/w
+    Yh = pp.omega_h['value']/w
+    Yhe = pp.omega_he['value']/w
+    Yo = pp.omega_o['value']/w
 
     R = 1 - Xe/(1 + Ye) - Xh/(1 + Yh) - Xhe/(1 + Yhe) - Xo/(1 + Yo)
     L = 1 - Xe/(1 - Ye) - Xh/(1 - Yh) - Xhe/(1 - Yhe) - Xo/(1 - Yo)

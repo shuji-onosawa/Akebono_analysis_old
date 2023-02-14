@@ -20,17 +20,17 @@ no = ion_ratio[2]*NE
 
 RHO = sum(ion_ratio*np.array([MH, MHE, MO]))
 
-pi_e = (NE*Q**2/(EPS*ME))**0.5
-pi_h = (nh*Q**2/(EPS*MH))**0.5
-pi_he = (nhe*Q**2/(EPS*MHE))**0.5
-pi_o = (no*Q**2/(EPS*MO))**0.5
+pi_e = {'value': (NE*Q**2/(EPS*ME))**0.5, 'label': r'$\Pi_{e}$'}
+pi_h = {'value': (nh*Q**2/(EPS*MH))**0.5, 'lable': r'$\Pi_{h}$'}
+pi_he = {'value': (nhe*Q**2/(EPS*MHE))**0.5, 'label': r'$\Pi_{he}$'}
+pi_o = {'value': (no*Q**2/(EPS*MO))**0.5, 'label': r'$\Pi_{o}$'}
 
-omega_h = 2*np.pi*100
-omega_e = -Q*B0/ME
-omega_o = Q*B0/MO
-omega_he = Q*B0/MHE
-wlh = np.sqrt((omega_h**2+pi_h**2)/(1+(pi_e/omega_e)**2))
-wuh = (omega_e**2 + pi_e**2)**0.5
+omega_e = {'value': -Q*B0/ME, 'label': r'$\Omega_{ce}$'}
+omega_h = {'value': Q*B0/MH, 'label': r'$\Omega_{ch}$'}
+omega_o = {'value': Q*B0/MO, 'label': r'$\Omega_{co}$'}
+omega_he = {'value': Q*B0/MHE, 'label': r'$\Omega_{che}$'}
+wlh = {'value': np.sqrt((omega_h['value']**2 + pi_h['value']**2) / (1 + (pi_e['value']/omega_e['value'])**2)),
+       'label': r'$\Omega_{lh}$'}
+wuh = {'value': np.sqrt(omega_e['value']**2 + pi_e['value']**2),
+       'label': r'$\Omega_{uh}$'}
 Va = B0/(MYU*RHO)**0.5
-
-print(pi_e/6)

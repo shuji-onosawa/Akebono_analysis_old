@@ -337,7 +337,6 @@ def mca_h1cdf_dB_to_absolute(spec_type: str):
             tvar = get_data(tvar_names[i])
             tvar_pwr = dB_to_absolute((tvar.y).astype(float), 1e-12)
             # (mV/m)^2/Hz or pT^2/Hz
-            print('test')
             store_data(tvar_names[i] + '_pwr',
                        data={'x': tvar.times, 'y': tvar_pwr, 'v': tvar.v})
             if tvar_names[i] == 'Emax' or tvar_names[i] == 'Eave':

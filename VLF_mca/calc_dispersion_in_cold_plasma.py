@@ -21,6 +21,7 @@ def get_crossover_freq_idx(array, value):
 
 def calc_dispersion_relation(w, theta):
     """
+    w: float or array of float, rad/s
     theta: int, wave normal angle, 0 - 90 [deg]
 
     return: n_L, n_R, S, D, P
@@ -70,3 +71,16 @@ def calc_dispersion_relation(w, theta):
         n_plus[R_mode_plus_idx[0]], n_minus[R_mode_minus_idx[0]]
 
     return n_L, n_R, S, D, P
+
+
+def calc_amp_ratio(n, S, D, P, theta):
+    theta = np.deg2rad(theta)
+
+    Ey_to_Ex = -D/(S-n)
+    Ez_to_Ex = -n*np.cos(theta)*np.sin(theta)/(P-(n**2)*np.sin(theta)**2)
+    By_to_Bx = -P*(S-n)/(D*(P-n*(np.sin(theta))**2))
+    Bz_to_Bx = -np.tan(theta)*np.ones(n.size)
+    E_to_cB = np.sqrt((1+((P-n)*(S-n)*(np.sin(theta)))**2/((P*np.cos(theta)*(S-n))**2-D*(P-n*(np.sin(theta))**2)**2))/n)
+
+    return Ey_to_Ex, Ez_to_Ex, By_to_Bx, Bz_to_Bx, E_to_cB
+

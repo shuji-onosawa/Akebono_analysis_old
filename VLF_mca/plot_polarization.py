@@ -4,9 +4,9 @@ import matplotlib.colors as colors
 import calc_dispersion_in_cold_plasma as calc_dr
 import plasma_params as pp
 
-theta = 0
+theta = 90
 omega_s = pp.wlh
-freq = np.abs(omega_s['value'])*np.logspace(-3, 1, 1000)
+freq = np.abs(omega_s['value'])*np.logspace(-3, 1, 100)
 
 amp_ratio_L = np.empty((5, freq.size))
 amp_ratio_R = np.empty((5, freq.size))
@@ -21,8 +21,6 @@ amp_ratio_R[0], amp_ratio_R[1], amp_ratio_R[2], amp_ratio_R[3], amp_ratio_R[4] =
 char_freq = np.array([pp.omega_o['value'], pp.omega_he['value'],
                       pp.omega_h['value'], pp.wlh['value']])
 
-# idx = calc_dr.get_nearest_value_idx(D, 0)
-# crossover_freq = np.array([freq[idx]]) / omega_s
 '''
 fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(16, 10))
 fig.suptitle('WNA'+str(theta)+'deg,'+'H:He:O='+str(pp.ion_ratio) +
@@ -49,7 +47,7 @@ plt.savefig('plots/polarization/Amp_ratio_WNA'+str(theta)+'_H_He_O_'
             + str(pp.B0/1e-9) + '_nT'+'.png')
 plt.show()
 '''
-fig, axs = plt.subplots(nrows=1, ncols=1, figsize=(8, 8))
+fig, axs = plt.subplots(nrows=1, ncols=1, figsize=(10, 8))
 fig.suptitle('WNA'+str(theta)+'deg,'+'H:He:O='+str(pp.ion_ratio) +
              ',Ne='+'{:.2g}'.format(pp.NE/1e6)+'/cc,B0='+'{:.2g}'.format(pp.B0/1e-9)+'nT')
 mp = axs.scatter(x=freq/np.abs(omega_s['value']), y=n_L, c=amp_ratio_L[4], marker='.',

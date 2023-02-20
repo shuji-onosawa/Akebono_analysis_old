@@ -1,4 +1,4 @@
-from pytplot import cdf_to_tplot, tlimit, tplot, get_data, store_data, options, tplot_names
+from pytplot import cdf_to_tplot, tlimit, tplot, get_data, store_data, options, tplot_options
 from pyspedas import tinterpol
 from load import mca_h1cdf_dB_to_absolute, orb, get_inst_flag_array, calc_B0
 import calc_dispersion_in_cold_plasma as calc_dr
@@ -29,8 +29,8 @@ store_data(name='E_to_cB',
            data={'x': times, 'y': E_to_cB, 'v': center_freq})
 
 # calc theoretical E/cB
-theta = 0
-n_R, n_L, S, D, P = calc_dr.calc_dispersion_relation(center_freq, theta)
+theta = 30
+n_L, n_R, S, D, P = calc_dr.calc_dispersion_relation(center_freq, theta)
 _, _, _, _, E_to_cB_R = calc_dr.calc_amp_ratio(n_R, S, D, P, theta)
 _, _, _, _, E_to_cB_L = calc_dr.calc_amp_ratio(n_L, S, D, P, theta)
 
@@ -40,7 +40,7 @@ store_data(name='obs_theor_ratio_R',
 store_data(name='obs_theor_ratio_L',
            data={'x': times, 'y': E_to_cB/E_to_cB_L, 'v': center_freq})
 options(['obs_theor_ratio_R', 'obs_theor_ratio_L'],
-        opt_dict={'spec': 1, 'ylog': 1, 'zlog': 1, 'zrange': [1e-2, 1e2]})
+        opt_dict={'spec': 1, 'ylog': 1, 'zlog': 1, 'zrange': [1e-1, 1e1]})
 options(name='obs_theor_ratio_R',
         opt_dict={'ytitle': r'$E/B_{obs}/E/B_{theor}$', 'ysubtitle': 'R-mode'})
 options('obs_theor_ratio_L',
@@ -58,9 +58,17 @@ next_year, next_month, next_date = next_day(year, month, date)
 orb([year+'-'+month+'-'+date,
      next_year+'-'+next_month+'-'+next_date])
 calc_B0()
-tinterpol(names=['akb_ILAT', 'akb_MLT', 'akb_ALT', 'total_Bmdl'], interp_to='Emax_amp')
+tinterpol(names=['akb_ILAT', 'akb_MLT', 'akb_ALT', 'total_Bmdl'],
+          interp_to='Emax_amp')
 
+# plot
 tlimit(['1990-2-17 03:45:00', '1990-2-17 03:50:00'])
+
+title = 'WNA'+str(theta)+'deg,'+'H:He:O='+str(pp.ion_ratio) + \
+        ',Ne='+'{:.3g}'.format(pp.NE/1e6)+'/cc,B0='+'{:.2g}'.format(pp.B0/1e-9)+'nT'
+tplot_options('title', title)
+
+save_name = './plots/Ishigaya_event/'+year+month+date+'_WNA'+str(theta)
 tplot(['Emax_amp', 'Bmax_amp', 'obs_theor_ratio_R', 'obs_theor_ratio_L', 'Inst_flag'],
       var_label=['akb_ALT-itrp', 'akb_ILAT-itrp', 'akb_MLT-itrp'],
-      xsize=10, ysize=10)
+      xsize=16, ysize=20, save_png=save_name)

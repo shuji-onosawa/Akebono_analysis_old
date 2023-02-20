@@ -74,12 +74,20 @@ def calc_dispersion_relation(w, theta):
 
 
 def calc_amp_ratio(n, S, D, P, theta):
+    '''
+    !!!caution!!!
+    n means squared refractive index
+    '''
     theta = np.deg2rad(theta)
 
     Ey_to_Ex = -D/(S-n)
-    Ez_to_Ex = -n*np.cos(theta)*np.sin(theta)/(P-(n**2)*np.sin(theta)**2)
-    By_to_Bx = -P*(S-n)/(D*(P-n*(np.sin(theta))**2))
+    Ez_to_Ex = np.where(P-n*np.sin(theta)**2 != 0, -n*np.cos(theta)*np.sin(theta)/(P-n*(np.sin(theta))**2), 0)
+    By_to_Bx = np.where(D*(P-n*(np.sin(theta))**2) != 0, -P*(S-n)/(D*(P-n*(np.sin(theta))**2)), 0)
     Bz_to_Bx = -np.tan(theta)*np.ones(n.size)
-    E_to_cB = np.sqrt((1+((P-n)*(S-n)*(np.sin(theta)))**2/((P*np.cos(theta)*(S-n))**2-D*(P-n*(np.sin(theta))**2)**2))/n)
+    squared_E_to_cB = (1-(Ey_to_Ex)**2+Ez_to_Ex**2)/(-(Ey_to_Ex)**2+(np.cos(theta)-Ez_to_Ex*np.sin(theta))**2)/n
+    for i in range(n.size):
+        if squared_E_to_cB[i] < 0:
+            squared_E_to_cB[i] = 0
+    E_to_cB = np.sqrt(squared_E_to_cB)
 
     return Ey_to_Ex, Ez_to_Ex, By_to_Bx, Bz_to_Bx, E_to_cB

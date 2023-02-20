@@ -11,6 +11,7 @@ import time
 from calendar import timegm
 from datetime import datetime, timedelta
 
+
 # mca
 def mca(trange=['2014-01-01', '2014-01-02'],
         downloadonly=False,
@@ -18,20 +19,21 @@ def mca(trange=['2014-01-01', '2014-01-02'],
         del_invalid_data=['off']):
 
     '''
-    spec_type: dB : decibel, 0[dB]=10^-6[mV/m] for E-field and 0[dB] = 10^-6[pT] for B-field
-               amp: mV/m/Hz^1/2 or nT/Hz^1/2
-               pwr: (mV/m)^2/Hz or nT^2/Hz
-        
-    del_invalid_data: list of string. 
-                      mca cdf contain data from which the interference by BDR or SMS is *not* yet removed.
-                      You can remove data contaminated by interference by passing a list containing the following words. 
-                      off: mca is off
-                      noisy: data is noisy
-                      sms: SMS on
-                      bdr: BDR on
-                      bit rate m: Bit rate is medium
-                      pws: PWS sounder on
-    
+    spec_type: dB :
+        decibel, 0[dB]=10^-6[mV/m] for E-field and 0[dB] = 10^-6[pT] for B-field
+    amp: mV/m/Hz^1/2 or nT/Hz^1/2
+    pwr: (mV/m)^2/Hz or nT^2/Hz
+    del_invalid_data:
+        list of string.
+        mca cdf contain data from which the interference by BDR or SMS is *not* yet removed.
+        You can remove data contaminated by interference by passing a list containing the following words. 
+        off: mca is off
+        noisy: data is noisy
+        sms: SMS on
+        bdr: BDR on
+        bit rate m: Bit rate is medium
+        pws: PWS sounder on
+
     explanation of VLF/MCA data is here(https://www.stp.isas.jaxa.jp/akebono/readme/readme.vlf.txt).
     '''
     remote_name_prefix = 'https://akebono-vlf.db.kanazawa-u.ac.jp/permalink.php?keyword='
@@ -49,52 +51,47 @@ def mca(trange=['2014-01-01', '2014-01-02'],
         print(e)
         pass
 
-    for remote_name in remote_names:                           
-        
-        save_name = pathname + remote_name 
+    for remote_name in remote_names:
+
+        save_name = pathname + remote_name
         save_name = save_name.replace(remote_name_prefix, '')
 
         if (os.path.isfile(save_name)== False):
-            
+
             data = urllib.request.urlopen(remote_name).read()
-        
+
             with open(save_name, mode="wb") as f:
                 f.write(data)
-        
+
         out_files.append(save_name)
 
     if downloadonly:
-        return 
-    
+        return
+
     out_files = sorted(out_files)
-    
+
     try:
         cdf_to_tplot(out_files)
-    except:
+    except Exception as e:
         print('///////////////////////////ERROR/////////////////////////')
         print("You cannot get orbit file or you can not open orbit file \n")
+        print(e)
         os.remove(save_name)
-        return 
+        return
     '''
     if time_clip:
         for new_var in tvars:
             tclip(new_var, trange[0], trange[1], suffix='')
     '''
 
-    if del_invalid_data == False:
+    if not del_invalid_data:
         pass
     else:
         Emax, Bmax, Eave, Bave = get_data('Emax'), get_data('Bmax'), get_data('Eave'), get_data('Bave')
         Emax_array, Bmax_array, Eave_array, Bave_array = Emax.y.astype(float), Bmax.y.astype(float), Eave.y.astype(float), Bave.y.astype(float)
-        postgap = get_data('PostGap')
-        postgap_array = np.empty([postgap.y.size, 6])
-        for i in range(postgap.y.size):
-            postgap_str = format(postgap.y[i], '08b')        
-            #"off"               "noisy",             "BDR",               "SMS",               "Bit rate",          "PWS",    
-            postgap_array[i][0], postgap_array[i][1], postgap_array[i][2], postgap_array[i][3], postgap_array[i][4], postgap_array[i][5] = \
-            int(postgap_str[7]), int(postgap_str[6]), int(postgap_str[3]), int(postgap_str[2]), int(postgap_str[1]), int(postgap_str[0]) 
+        postgap_array = get_inst_flag_array()
         postgap_array = postgap_array.T
-        
+
         invalid_data_index = np.array([])
         for inst_name in del_invalid_data:
             inst_name = inst_name.lower()
@@ -102,13 +99,13 @@ def mca(trange=['2014-01-01', '2014-01-02'],
                 pass
             else:
                 raise Exception('del_invalid_data list must consist of either off, noisy, bdr, sms, bit rate m or pws')
-                
+
             if inst_name == 'off':
                 off_index_tuple = np.where(postgap_array[0] == 1)
                 invalid_data_index = np.append(invalid_data_index, off_index_tuple[0])
             if inst_name == 'noisy':
                 noisy_index_tuple = np.where(postgap_array[1] == 1)
-                invalid_data_index = np.append(invalid_data_index, noisy_index_tuple[0])     
+                invalid_data_index = np.append(invalid_data_index, noisy_index_tuple[0])
             if inst_name == 'bdr':
                 bdr_index_tuple = np.where(postgap_array[2] == 1)
                 invalid_data_index = np.append(invalid_data_index, bdr_index_tuple[0])
@@ -255,27 +252,27 @@ def orb(trange=['2013-01-01', '2013-01-02'],
     sc_vel_y = [float(n) for n in sc_vel_y]
     sc_vel_z = [float(n) for n in sc_vel_z]
 
-
     '''
-    datalist_header = [ 'PASS',
-                        'UT', 
-                        'ksc_azm(deg)', 'ksc_elv(deg)', 'ksc_dis(km)', 'ksc_ang(deg)', 
-                        'syo_azm(deg)', 'syo_elv(deg)', 'syo_dis(km)', 'syo_ang(deg)', 
-                        'pra_azm(deg)', 'pra_elv(deg)', 'pra_dis(km)', 'pra_ang(deg)', 
-                        'esr_azm(deg)', 'esr_elv(deg)', 'esr_dis(km)', 'esr_ang(deg)', 
-                        'GCLAT(deg)', 'GCLON(deg)', 
-                        'INV(deg)', 
-                        'FMLAT(deg)', 
-                        'MLAT(deg)', 
-                        'MLT(h)', 
-                        'Bmdl_X', 'Bmdl_Y', 'Bmdl_Z', :X, Y, AND Z COMPONENTS OF THE IGRF 2005 MAGNETIC FIELD (nT)   
-                        'GCLON_S/C(deg)', 'GCLAT_S/C(deg)',  
-                        'ALT(km)', 
-                        'LSUN', 
-                        's_Direc_x','s_Direc_y', 's_Direc_z', 
-                        's/c_pos_x', 's/c_pos_y', 's/c_pos_z', 
-                        's/c_vel(km/s)_x', 's/c_vel(km/s)_y','s/c_vel(km/s)_z' ]
-    header information (https://github.com/spedas-j/member_contrib/blob/master/akb_lib/Akebono_orbit_Header.txt)
+    datalist_header
+    'PASS',
+    'UT',
+    'ksc_azm(deg)', 'ksc_elv(deg)', 'ksc_dis(km)', 'ksc_ang(deg)',
+    'syo_azm(deg)', 'syo_elv(deg)', 'syo_dis(km)', 'syo_ang(deg)',
+    'pra_azm(deg)', 'pra_elv(deg)', 'pra_dis(km)', 'pra_ang(deg)',
+    'esr_azm(deg)', 'esr_elv(deg)', 'esr_dis(km)', 'esr_ang(deg)',
+    'GCLAT(deg)', 'GCLON(deg)',
+    'INV(deg)',
+    'FMLAT(deg)',
+    'MLAT(deg)',
+    'MLT(h)',
+    'Bmdl_X', 'Bmdl_Y', 'Bmdl_Z', :X, Y, AND Z COMPONENTS OF THE IGRF 2005 MAGNETIC FIELD (nT)
+    'GCLON_S/C(deg)', 'GCLAT_S/C(deg)',
+    'ALT(km)',
+    'LSUN',
+    's_Direc_x','s_Direc_y', 's_Direc_z',
+    's/c_pos_x', 's/c_pos_y', 's/c_pos_z',
+    's/c_vel(km/s)_x', 's/c_vel(km/s)_y','s/c_vel(km/s)_z' ]
+header information (https://github.com/spedas-j/member_contrib/blob/master/akb_lib/Akebono_orbit_Header.txt)
     '''
     if int((time_double(trange[1])-time_double(trange[0]))/30) > len(UT_time_double):
         start_to_end_time_double = np.arange(time_double(trange[0]), time_double(trange[1]), 30)
@@ -323,7 +320,7 @@ def orb(trange=['2013-01-01', '2013-01-02'],
     store_data(prefix+'sc_vel_z', data={'x': UT_time_double, 'y':sc_vel_z})
     store_data(prefix+'sc_vel', data={'x':UT_time_double, 'y':np.sqrt(np.array(sc_vel_x)**2+np.array(sc_vel_y)**2+np.array(sc_vel_z)**2)})
 
-    return 
+    return
 
 
 def dB_to_absolute(dB_value, reference_value):
@@ -347,14 +344,14 @@ def mca_h1cdf_dB_to_absolute(spec_type: str):
             if tvar_names[i] == 'Bmax' or tvar_names[i] == 'Bave':
                 opt_dict = {'spec': 1, 'ylog': 1, 'zlog': 1,
                             'yrange': [1, 2e4], 'ysubtitle': 'freq [Hz]',
-                            'zrange': [1e-8, 1e6], 'ztitle': '$[(mV/m)^2/Hz]$'}
+                            'zrange': [1e-8, 1e6], 'ztitle': '$[pT^2/Hz]$'}
                 options(tvar_names[i] + '_pwr', opt_dict=opt_dict)
 
     if spec_type == 'amp':
         tvar_names = ['Emax', 'Eave', 'Bmax', 'Bave']
         for i in range(4):
             tvar = get_data(tvar_names[i])
-            tvar_pwr = dB_to_absolute((tvar.y).astype(float), 1e-6)
+            tvar_pwr = dB_to_absolute((tvar.y).astype(float), 1e-12)
             tvar_amp = np.sqrt(tvar_pwr)
             # mV/m/Hz^0.5 or pT/Hz^0.5
             store_data(tvar_names[i] + '_amp',
@@ -362,10 +359,31 @@ def mca_h1cdf_dB_to_absolute(spec_type: str):
             if tvar_names[i] == 'Emax' or tvar_names[i] == 'Eave':
                 opt_dict = {'spec': 1, 'ylog': 1, 'zlog': 1,
                             'yrange': [1, 2e4], 'ysubtitle': 'freq [Hz]',
-                            'zrange': [1e-5, 10], 'ztitle': '$[(mV/m)^2/Hz]$'}
-                options(tvar_names[i] + '_pwr', opt_dict=opt_dict)
+                            'zrange': [1e-4, 10], 'ztitle': '$[mV/m/Hz^{0.5}]$'}
+                options(tvar_names[i] + '_amp', opt_dict=opt_dict)
             if tvar_names[i] == 'Bmax' or tvar_names[i] == 'Bave':
                 opt_dict = {'spec': 1, 'ylog': 1, 'zlog': 1,
                             'yrange': [1, 2e4], 'ysubtitle': 'freq [Hz]',
-                            'zrange': [1e-5, 10], 'ztitle': '$[(mV/m)^2/Hz]$'}
-                options(tvar_names[i] + '_pwr', opt_dict=opt_dict)
+                            'zrange': [1e-4, 1e3], 'ztitle': '$[pT/Hz^{0.5}]$'}
+                options(tvar_names[i] + '_amp', opt_dict=opt_dict)
+
+def get_inst_flag_array():
+    postgap = get_data('PostGap')
+    postgap_array = np.empty([postgap.y.size, 6])
+    for i in range(postgap.y.size):
+        postgap_str = format(postgap.y[i], '08b')
+        # "off"               "noisy",             "BDR",               "SMS",               "Bit rate",          "PWS",
+        postgap_array[i][0], postgap_array[i][1], postgap_array[i][2], postgap_array[i][3], postgap_array[i][4], postgap_array[i][5] = \
+        int(postgap_str[7]), int(postgap_str[6]), int(postgap_str[3]), int(postgap_str[2]), int(postgap_str[1]), int(postgap_str[0])
+    return postgap_array
+
+def calc_B0():
+    Bx = get_data('akb_Bmdl_X')
+    By = get_data('akb_Bmdl_Y')
+    Bz = get_data('akb_Bmdl_Z')
+
+    store_data(name='total_Bmdl',
+               data={'x': Bx.times, 'y': np.sqrt(Bx.y**2+By.y**2+Bz.y**2)})
+    options(name='B0',
+            opt_dict={'ytitle': 'B0', 'ysubtitle': '[nT]'})
+    return

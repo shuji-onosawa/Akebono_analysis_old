@@ -4,7 +4,7 @@ import matplotlib.colors as colors
 import calc_dispersion_in_cold_plasma as calc_dr
 import plasma_params as pp
 
-theta = 60
+theta = 0
 omega_s = pp.wlh
 freq = np.abs(omega_s['value'])*np.logspace(-3, 1, 1000)
 

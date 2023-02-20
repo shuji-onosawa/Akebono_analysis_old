@@ -83,4 +83,3 @@ def calc_amp_ratio(n, S, D, P, theta):
     E_to_cB = np.sqrt((1+((P-n)*(S-n)*(np.sin(theta)))**2/((P*np.cos(theta)*(S-n))**2-D*(P-n*(np.sin(theta))**2)**2))/n)
 
     return Ey_to_Ex, Ez_to_Ex, By_to_Bx, Bz_to_Bx, E_to_cB
-

@@ -1,6 +1,4 @@
 from pyspedas.utilities.dailynames import dailynames
-from pyspedas.utilities.download import download
-from pyspedas.analysis.time_clip import time_clip as tclip
 from pyspedas import time_double
 from pytplot import cdf_to_tplot, store_data, get_data, options
 
@@ -56,7 +54,7 @@ def mca(trange=['2014-01-01', '2014-01-02'],
         save_name = pathname + remote_name
         save_name = save_name.replace(remote_name_prefix, '')
 
-        if (os.path.isfile(save_name)== False):
+        if (os.path.isfile(save_name) == False):
 
             data = urllib.request.urlopen(remote_name).read()
 
@@ -151,21 +149,23 @@ def orb(trange=['2013-01-01', '2013-01-02'],
 
     try:
         os.mkdir(pathname)
-    except:
+    except Exception as e:
+        print(e)
         pass
 
-    for remote_name in remote_names:  
+    for remote_name in remote_names:
     # remote_name = 'https://darts.isas.jaxa.jp/stp/data/exosd/orbit/daily/%Y%m/ED%y%m%d.txt'
 
         save_name = pathname + remote_name[-12:]
-        
-        if(os.path.isfile(save_name)==False):
+
+        if (os.path.isfile(save_name) == False):
             
             try:
                 get_data = urllib.request.urlopen(remote_name).read()
-            except:
+            except Exception as e:
                 print('///////////////////////////ERROR/////////////////////////')
                 print("You can not get orbit file or you can not open orbit file \n")
+                print(e)
                 continue
             
             with open(save_name, mode="wb") as f:

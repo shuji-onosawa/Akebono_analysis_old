@@ -62,8 +62,10 @@ tinterpol(names=['akb_ILAT', 'akb_MLT', 'akb_ALT', 'total_Bmdl'],
           interp_to='Emax_amp')
 
 # plot
-tlimit(['1990-2-17 03:45:00', '1990-2-17 03:50:00'])
-
+tlimit(['1990-2-17 03:46:00', '1990-2-17 03:48:00'])
+tplot(['Emax_amp', 'Bmax_amp'], var_label=['akb_ALT-itrp', 'akb_ILAT-itrp', 'akb_MLT-itrp'],
+        xsize=10, ysize=10)
+'''
 title = 'WNA'+str(theta)+'deg,'+'H:He:O='+str(pp.ion_ratio) + \
         ',Ne='+'{:.3g}'.format(pp.NE/1e6)+'/cc,B0='+'{:.2g}'.format(pp.B0/1e-9)+'nT'
 tplot_options('title', title)
@@ -72,3 +74,4 @@ save_name = './plots/Ishigaya_event/'+year+month+date+'_WNA'+str(theta)
 tplot(['Emax_amp', 'Bmax_amp', 'obs_theor_ratio_R', 'obs_theor_ratio_L', 'Inst_flag'],
       var_label=['akb_ALT-itrp', 'akb_ILAT-itrp', 'akb_MLT-itrp'],
       xsize=16, ysize=20, save_png=save_name)
+'''

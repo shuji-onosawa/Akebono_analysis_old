@@ -1,8 +1,5 @@
-import cdflib
 import numpy as np
 import math
-import pandas as pd
-import matplotlib.pyplot as plt
 
 
 def unit_vector(vector):
@@ -24,4 +21,3 @@ Ey_antenna_vector = np.array([-np.sin(np.deg2rad(35)),
                               np.cos(np.deg2rad(35)),
                               0])
 sBy_antenna_vector = np.array([0.0, -1.0, 0.0])
-

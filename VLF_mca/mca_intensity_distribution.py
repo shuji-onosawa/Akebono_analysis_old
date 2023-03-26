@@ -121,8 +121,9 @@ def distribution_plot(channel: list,
         alt_range = dict_list[k]['alt_range']
         mlt_range = dict_list[k]['mlt_range']
 
-        title += trange + 'alt_' + str(alt_range) + \
-            ' mlt_' + str(mlt_range) + '\n'
+        title += trange[0]+'_'+trange[1]+'_' +\
+            'alt'+str(alt_range[0])+'_'+str(alt_range[1]) +\
+            'mlt'+str(mlt_range[0])+'_'+str(mlt_range[1]) + '\n'
         plot_save_name += trange[0]+'_'+trange[1]+'_' +\
             'alt'+str(alt_range[0])+'_'+str(alt_range[1]) +\
             'mlt'+str(mlt_range[0])+'_'+str(mlt_range[1])
@@ -143,14 +144,15 @@ def distribution_plot(channel: list,
     fig.suptitle(title)
     for i, ch in zip(range(len(channel)), channel):
         for j in range(len(dict_list)):
-            axs[i].plot(pwr_ary[ch], dict_list[j]['matrix'][ch],
+            axs[i].plot(pwr_ary[ch],
+                        dict_list[j]['matrix'][ch]/sum(dict_list[j]['matrix'][ch]),
                         label=dict_list[j]['trange'],
                         marker='.')
         axs[i].set_yscale('log')
         axs[i].set_xscale('log')
-        axs[i].set_ylabel('Count')
+        axs[i].set_ylabel(str(freq_array[ch])+' Hz \n Count')
         axs[i].legend()
-        if i == 3:
+        if i == len(channel) - 1:
             if field == 'electric':
                 axs[i].set_xlabel('mV/m/Hz^0.5')
             if field == 'magnetic':
@@ -160,8 +162,8 @@ def distribution_plot(channel: list,
     plt.close()
 
 
-e_dict1, _ = count_mca_intensity(trange=['1989-3-1', '1989-12-31'])
-e_dict2, _ = count_mca_intensity(trange=['1990-1-1', '1990-12-31'])
+e_dict1, _ = count_mca_intensity(trange=['1989-4-1', '1989-4-2'])
+e_dict2, _ = count_mca_intensity(trange=['1990-4-1', '1990-4-2'])
 # e_dict3, _ = count_mca_intensity(trange=['2011-1-1', '2014-12-31'])
 
-distribution_plot(channel=[1, 5], dict_list=[e_dict1, e_dict2, e_dict3])
+distribution_plot(channel=[1, 5], dict_list=[e_dict1, e_dict2])

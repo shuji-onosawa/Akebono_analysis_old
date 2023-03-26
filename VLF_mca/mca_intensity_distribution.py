@@ -4,6 +4,9 @@ from pyspedas import tinterpol
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import time
+
+start = time.time()
 
 
 def get_date_list(start_date, end_date):
@@ -56,33 +59,35 @@ def count_mca_intensity(trange,
 
         E_tvar = get_data('Emax')
         E_array = E_tvar.y
+        E_array_T = E_array.T
         B_tvar = get_data('Bmax')
         B_array = B_tvar.y
+        B_array_T = B_array.T
 
         ilat = get_data('ILAT')
         mlt = get_data('MLT')
         alt = get_data('ALT')
-        idx_target_region = \
-            np.where((ilat.y >= 60) &
-                     (mlt_range[0] <= mlt.y) & (mlt.y <= mlt_range[1]) &
-                     (alt.y >= alt_range[0]) & (alt.y <= alt_range[1]))
-        idx_target_region = idx_target_region[0]
-
-        E_array_in_target_region = E_array[idx_target_region]
-        E_array_in_target_region_T = E_array_in_target_region.T
-        E_list = E_array_in_target_region_T.tolist()
-
-        B_array_in_target_region = B_array[idx_target_region]
-        B_array_in_target_region_T = B_array_in_target_region.T
-        B_list = B_array_in_target_region_T.tolist()
 
         E_matrix_per_day = np.empty((16, 255), dtype=int)
         B_matrix_per_day = np.empty((16, 255), dtype=int)
 
+        # count the number of an intensity value
         for ch in range(freq_array.size):
             for intensity in intensity_array:
-                E_matrix_per_day[ch][intensity] = E_list[ch].count(intensity)
-                B_matrix_per_day[ch][intensity] = B_list[ch].count(intensity)
+                E_matrix_per_day[ch][intensity] = \
+                    np.count_nonzero((E_array_T[ch] == intensity) &
+                                     (ilat.y >= 60) &
+                                     (mlt_range[0] <= mlt.y) &
+                                     (mlt.y <= mlt_range[1]) &
+                                     (alt_range[0] <= alt.y) &
+                                     (alt.y <= alt_range[1]))
+                B_matrix_per_day[ch][intensity] = \
+                    np.count_nonzero((B_array_T[ch] == intensity) &
+                                     (ilat.y >= 60) &
+                                     (mlt_range[0] <= mlt.y) &
+                                     (mlt.y <= mlt_range[1]) &
+                                     (alt.y >= alt_range[0]) &
+                                     (alt.y <= alt_range[1]))
 
         E_matrix = E_matrix + E_matrix_per_day
         B_matrix = B_matrix + B_matrix_per_day
@@ -162,8 +167,11 @@ def distribution_plot(channel: list,
     plt.close()
 
 
-e_dict1, _ = count_mca_intensity(trange=['1989-4-1', '1989-4-2'])
-e_dict2, _ = count_mca_intensity(trange=['1990-4-1', '1990-4-2'])
+e_dict1, _ = count_mca_intensity(trange=['1989-4-1', '1989-5-1'])
+e_dict2, _ = count_mca_intensity(trange=['1990-4-1', '1990-5-1'])
 # e_dict3, _ = count_mca_intensity(trange=['2011-1-1', '2014-12-31'])
+
+elapsed_time = time.time() - start
+print("elapsed_time:{:.3f}".format(elapsed_time) + "[sec]")
 
 distribution_plot(channel=[1, 5], dict_list=[e_dict1, e_dict2])

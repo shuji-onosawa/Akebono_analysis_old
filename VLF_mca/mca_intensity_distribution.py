@@ -155,6 +155,8 @@ def distribution_plot(channel: list,
                         marker='.')
         axs[i].set_yscale('log')
         axs[i].set_xscale('log')
+        if field == 'electric':
+            axs[i].set_xlim(left=1e-12, right=1e2)
         axs[i].set_ylabel(str(freq_array[ch])+' Hz \n Count')
         axs[i].legend()
         if i == len(channel) - 1:
@@ -167,11 +169,11 @@ def distribution_plot(channel: list,
     plt.close()
 
 
-e_dict1, _ = count_mca_intensity(trange=['1989-4-1', '1989-5-1'])
-e_dict2, _ = count_mca_intensity(trange=['1990-4-1', '1990-5-1'])
-# e_dict3, _ = count_mca_intensity(trange=['2011-1-1', '2014-12-31'])
+e_dict1, _ = count_mca_intensity(trange=['1989-3-1', '1994-1-1'])
+e_dict2, _ = count_mca_intensity(trange=['1998-1-1', '2004-1-1'])
+e_dict3, _ = count_mca_intensity(trange=['2011-1-1', '2014-1-1'])
 
 elapsed_time = time.time() - start
 print("elapsed_time:{:.3f}".format(elapsed_time) + "[sec]")
 
-distribution_plot(channel=[1, 5], dict_list=[e_dict1, e_dict2])
+distribution_plot(channel=[1, 5], dict_list=[e_dict1, e_dict2, e_dict3])

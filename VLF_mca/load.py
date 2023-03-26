@@ -72,7 +72,7 @@ def mca(trange=['2014-01-01', '2014-01-02'],
         cdf_to_tplot(out_files)
     except Exception as e:
         print('///////////////////////////ERROR/////////////////////////')
-        print("You cannot get orbit file or you can not open orbit file \n")
+        print("You cannot get cdf file of mca or you can not open orbit file \n")
         print(e)
         os.remove(save_name)
         return

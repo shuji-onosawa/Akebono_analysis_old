@@ -19,12 +19,11 @@ def convert_dB_to_pwr(dB, center_freq):
     return pwr
 
 
-def count_mca_intnsity(start_date, end_date,
-                       postgap=['off', 'noisy', 'bdr', 'sms', 'bit rate m', 'pws'],
-                       alt_range=[0, 2000],
-                       mlt_range=[10, 14],
-                       save_name_suffix=''):
-
+def count_mca_intensity(trange,
+                        postgap=['off', 'noisy', 'bdr', 'sms', 'bit rate m', 'pws'],
+                        alt_range=[0, 12000],
+                        mlt_range=[10, 14]):
+    start_date, end_date = trange[0], trange[1]
     date_list = get_date_list(start_date, end_date)
 
     E_matrix = np.zeros((16, 255))
@@ -41,13 +40,15 @@ def count_mca_intnsity(start_date, end_date,
         load.mca([date_list[i], date_list[i+1]], del_invalid_data=postgap)
         try:
             load.orb([date_list[i], date_list[i+1]])
-        except:
+        except Exception as e:
+            print(e)
             continue
-        
+
         try:
             tinterpol('akb_ILAT', interp_to='Emax_pwr', newname='ILAT')
-        except:
+        except Exception as e:
             print('data lack in orbit data')
+            print(e)
             continue
         tinterpol('akb_MLAT', interp_to='Emax', newname='MLAT')
         tinterpol('akb_MLT', interp_to='Emax', newname='MLT', method='nearest')
@@ -86,67 +87,81 @@ def count_mca_intnsity(start_date, end_date,
         E_matrix = E_matrix + E_matrix_per_day
         B_matrix = B_matrix + B_matrix_per_day
 
-    # plot part
-    marker = '.'
-    Efield_plot_save_name = './plots/mca_intensity_distribution/Efield/' +\
-                            'mca_E_' + start_date+'_'+end_date+'_' +\
-                            'alt'+str(alt_range[0])+'_'+str(alt_range[1]) +\
-                            'mlt'+str(mlt_range[0])+'_'+str(mlt_range[1]) +\
-                            save_name_suffix
-    Mfield_plot_save_name = './plots/mca_intensity_distribution/Mfield/' +\
-                            'mca_M_' + start_date+'_'+end_date+'_' +\
-                            'alt'+str(alt_range[0])+'_'+str(alt_range[1]) +\
-                            'mlt'+str(mlt_range[0])+'_'+str(mlt_range[1]) +\
-                            save_name_suffix
+    E_dict = {'field': 'electric',
+              'matrix': E_matrix,
+              'trange': trange,
+              'alt_range': alt_range,
+              'mlt_range': mlt_range}
+    M_dict = {'field': 'electric',
+              'matrix': E_matrix,
+              'trange': trange,
+              'alt_range': alt_range,
+              'mlt_range': mlt_range}
 
-    def distribution_plot(x, matrix, title, save_name, field):
+    return E_dict, M_dict
 
-        fig, axs = plt.subplots(nrows=4, ncols=1, figsize=(10, 14))
-        fig.suptitle(title)
-        for i in range(4):
-            for j in range(4):
-                axs[i].plot(x[j+4*i], matrix[j+4*i],
-                            label=str(freq_array[j+4*i]) + ' Hz',
-                            marker=marker)
-            axs[i].set_yscale('log')
-            axs[i].set_xscale('log')
-            axs[i].set_ylabel('Count')
-            axs[i].legend()
-            if i == 3:
-                if field == 'E':
-                    axs[i].set_xlabel('mV/m/Hz^0.5')
-                if field == 'M':
-                    axs[i].set_xlabel('pT/Hz^0.5')
-        plt.savefig(save_name)
-        plt.clf()
-        plt.close()
 
-    pwr_array = np.empty((16, 255), dtype=float)
+def distribution_plot(channel: list,
+                      dict_list: list):
+    '''
+    channel: 0: 3.16, 1: 5.62, 2: 10.0, 3: 17.8, 4: 31.6, 5: 56.2, 6: 100, 7: 178, 8: 316, 9: 562, 10: 1000,
+            11: 1780, 12: 3160, 13: 5620, 14: 10000, 15: 17800 unit Hz
+    '''
+    field = dict_list[0]['field']
+    if field == 'electric':
+        save_dir = './plots/mca_intensity_distribution/Efield/'
+    elif field == 'magnetic':
+        save_dir = './plots/mca_intensity_distribution/Mfield/'
+
+    title = field + ' field ' + '\n'
+    plot_save_name = save_dir + 'mca_' + field + '_'
+
+    for k in range(len(dict_list)):
+        trange = dict_list[k]['trange']
+        alt_range = dict_list[k]['alt_range']
+        mlt_range = dict_list[k]['mlt_range']
+
+        title += trange + 'alt_' + str(alt_range) + \
+            ' mlt_' + str(mlt_range) + '\n'
+        plot_save_name += trange[0]+'_'+trange[1]+'_' +\
+            'alt'+str(alt_range[0])+'_'+str(alt_range[1]) +\
+            'mlt'+str(mlt_range[0])+'_'+str(mlt_range[1])
+        if k != len(dict_list) - 1:
+            plot_save_name += '_'
+
+    pwr_ary = np.empty((16, 255), dtype=float)
+    intensity_array = np.arange(0, 255)
+    freq_array = np.array([3.16, 5.62, 10.0, 17.8,
+                           31.6, 56.2, 100,  178,
+                           316,  562,  1000, 1780,
+                           3160, 5620, 10000, 17800])
     for ch in range(16):
-        pwr_array[ch] = convert_dB_to_pwr(intensity_array, freq_array[ch])
+        pwr_ary[ch] = convert_dB_to_pwr(intensity_array, freq_array[ch])
 
-    plot_title_suffix = start_date + ' ' + end_date + '\n' +\
-        'alt_' + str(alt_range) + ', mlt_' + str(mlt_range)
-    distribution_plot(x=pwr_array, matrix=E_matrix,
-                      title='E field ' + plot_title_suffix,
-                      save_name=Efield_plot_save_name, field='E')
-    distribution_plot(x=pwr_array, matrix=B_matrix,
-                      title='M field ' + plot_title_suffix,
-                      save_name=Mfield_plot_save_name, field='M')
+    fig, axs = plt.subplots(nrows=len(channel), ncols=1,
+                            figsize=(10, 2+3*len(channel)))
+    fig.suptitle(title)
+    for i, ch in zip(range(len(channel)), channel):
+        for j in range(len(dict_list)):
+            axs[i].plot(pwr_ary[ch], dict_list[j]['matrix'][ch],
+                        label=dict_list[j]['trange'],
+                        marker='.')
+        axs[i].set_yscale('log')
+        axs[i].set_xscale('log')
+        axs[i].set_ylabel('Count')
+        axs[i].legend()
+        if i == 3:
+            if field == 'electric':
+                axs[i].set_xlabel('mV/m/Hz^0.5')
+            if field == 'magnetic':
+                axs[i].set_xlabel('pT/Hz^0.5')
+    plt.savefig(plot_save_name)
+    plt.clf()
+    plt.close()
 
 
-count_mca_intnsity(start_date='1989-1-1', end_date='1993-1-1',
-                   postgap=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'],
-                   save_name_suffix='')
-count_mca_intnsity(start_date='1993-1-1', end_date='1998-1-1',
-                   postgap=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'],
-                   save_name_suffix='')
-count_mca_intnsity(start_date='1998-1-1', end_date='2004-1-1',
-                   postgap=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'],
-                   save_name_suffix='')
-count_mca_intnsity(start_date='2004-1-1', end_date='2011-1-1',
-                   postgap=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'],
-                   save_name_suffix='')
-count_mca_intnsity(start_date='2011-1-1', end_date='2014-1-1',
-                   postgap=['off', 'noisy', 'sms', 'bit rate m', 'bdr', 'pws'],
-                   save_name_suffix='')
+e_dict1, _ = count_mca_intensity(trange=['1989-3-1', '1989-12-31'])
+e_dict2, _ = count_mca_intensity(trange=['1990-1-1', '1990-12-31'])
+# e_dict3, _ = count_mca_intensity(trange=['2011-1-1', '2014-12-31'])
+
+distribution_plot(channel=[1, 5], dict_list=[e_dict1, e_dict2, e_dict3])
